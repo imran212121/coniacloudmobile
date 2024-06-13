@@ -8,10 +8,10 @@ import Settings from '../screen/settings/Settings';
 import BottomNavigation from './BottomNavigation';
 import EditProfile from '../screen/settings/EditProfile';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Splesh from '../screen/auth/Splesh';
 const Stack = createNativeStackNavigator();
 const StackNavigation = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(null);
-
   useEffect(() => {
     const checkLoginStatus = async () => {
       const token = JSON.parse(await AsyncStorage.getItem('user'))
@@ -19,13 +19,15 @@ const StackNavigation = () => {
     };
     checkLoginStatus();
   }, []);
+
   return (
     <NavigationContainer>
-      <Stack.Navigator >
-        {isLoggedIn ? (
-          <Stack.Screen options={{ headerShown: false }} name='Home' component={BottomNavigation} />) : (
+      <Stack.Navigator initialRouteName={isLoggedIn ? 'Home':'Splesh'}>
+      <Stack.Screen options={{headerShown:false}} name='Splesh' component={Splesh} />
+       
+          <Stack.Screen options={{ headerShown: false }} name='Home' component={BottomNavigation} />
           <Stack.Screen options={{ headerShown: false }} name='Login' component={Login} />
-        )}
+       
 
         <Stack.Screen options={{ headerShown: false }} name='Signup' component={Signup} />
 
