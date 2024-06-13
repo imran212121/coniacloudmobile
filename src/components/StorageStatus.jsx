@@ -1,16 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import makeApiCall from '../helper/apiHelper';
+import {makeApiCall} from '../helper/apiHelper';
 import { View, StyleSheet, Text } from "react-native";
 import Svg, { Circle, G } from 'react-native-svg';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const StorageStatus = ({ user,usertoken }) => {
   const radius = 70;
   const [spendStorage, setSpendStorage] = useState(0);
+  const [token, setToken] = useState(null);
   const [totalStorage, setTotalStorage] = useState(100);
   const [percentage, setPercentage] = useState(0);
   const [strokeDashoffset, setStrokeDashoffset] = useState(0);
   const circleCircumference = 2 * Math.PI * radius;
- 
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const user = JSON.parse(await AsyncStorage.getItem('user'));
+      if (user && user.access_token) {
+        setToken(user.access_token);
+      }
+    };
+    checkLoginStatus();
+  }, []);
 
   const MBtoGB = (mb) => {
     return Math.round(mb / 1024 ** 3);
@@ -23,7 +32,7 @@ const StorageStatus = ({ user,usertoken }) => {
     const fetchData = async () => {
       try {
         console.log('user?.access_token2',user?.access_token);
-        const storage = await makeApiCall(`/api/v1/user/space-usage?timestamp=${new Date().getTime()}`, user?.access_token, 'get');
+        const storage = await makeApiCall(`/api/v1/user/space-usage?timestamp=${new Date().getTime()}`, token, 'get');
         setSpendStorage(MBtoGB(storage?.used));
         let per = (storage?.used / storage?.available) * 100;
         setTotalStorage(MBtoGB(storage?.available));
@@ -38,10 +47,10 @@ const StorageStatus = ({ user,usertoken }) => {
     };
     console.log('usertoken',usertoken);
    // setTimeout(() => {
-     if(usertoken!=false){fetchData();}
+     if(token!=null){fetchData();}
     //}, 200)
 
-  }, [percentage, spendStorage,usertoken])
+  }, [percentage, spendStorage,token])
  
   return (
     <View style={styles.container}>

@@ -8,8 +8,17 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
-
-const makeApiCall = async (endpoint, access_token, method = 'GET', data = null) => {
+const apiH = axios.create({
+  baseURL: AppSettings.base_url,
+  timeout: 10000,
+  responseType: 'text',
+  // required for s3 presigned url to work
+  withCredentials: false,
+  headers: {
+    'Accept': 'text/plain',
+  },
+});
+export const makeApiCall = async (endpoint, access_token, method = 'GET', data = null) => {
   try {
     const response = await api({
       method,
@@ -23,9 +32,27 @@ const makeApiCall = async (endpoint, access_token, method = 'GET', data = null) 
     ////console.log('response',response?.data);
     return response?.data;
   } catch (error) {
+    console.error('API Error2:', error.response || error.request || error.message);
+    throw error;
+  }
+};
+export const makeApiCallWithHeader = async (endpoint,  method = 'GET', data = null) => {
+  try {
+    const response = await apiH({
+      method,
+      url: endpoint,
+      data,
+      headers: {
+        ...apiH.defaults.headers,
+        
+      },
+    });
+    ////console.log('response',response?.data);
+    return response?.data;
+  } catch (error) {
     //console.error('API Error2:', error.response || error.request || error.message);
     throw error;
   }
 };
 
-export default makeApiCall;
+

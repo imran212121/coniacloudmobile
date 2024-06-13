@@ -30,7 +30,7 @@ const DashboardShare = () => {
       
        <Header loading={loading} handleLoader={handleLoader} modalHandler ={modalHandler} active={active}/>
        <ModalView modalHandler ={modalHandler} active={active} isError={isError} message={message}/>
-       <Shared loading={loading} active={active} handleLoader={handleLoader}/>
+       <Shared />
         </ScrollView>
 
   )

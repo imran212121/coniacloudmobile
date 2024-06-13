@@ -1,35 +1,41 @@
-import { StyleSheet, Text, View, Image, TouchableOpacity, ActivityIndicator } from 'react-native'
-import React, { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux';
-import MIcon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { StyleSheet, Text, View, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import DocumentPicker from 'react-native-document-picker';
 import RNFetchBlob from 'rn-fetch-blob';
-import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useSelector } from 'react-redux';
+import { baseURL } from '../constant/settings';
 
-export default function Header({ modalHandler, handleLoader, loading }) {
-  const user = useSelector((state) => state.auth.user);
+export default function Header({ modalHandler, handleLoader, loading ,handleRefresh,refresh}) {
   const [selectedDocument, setSelectedDocument] = useState(null);
+  const [user, setUser] = useState(null);
   const navigation = useNavigation();
+
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const userData = JSON.parse(await AsyncStorage.getItem('user'));
+      if (userData && userData.access_token) {
+        setUser(userData);
+      }
+    };
+    checkLoginStatus();
+  }, []);
+
   const pickDocument = async () => {
-    //console.log('Click');
     try {
       const res = await DocumentPicker.pick({
         type: [DocumentPicker.types.allFiles],
       });
-      ////console.log('res', res);
       setSelectedDocument(res);
       handleLoader(true);
-      setTimeout(()=>{
-        
-        uploadDocument()
-      },500);
-      
+      setTimeout(() => {
+        uploadDocument();
+      }, 1000);
     } catch (err) {
       if (DocumentPicker.isCancel(err)) {
-        // User cancelled the picker
-        //console.log('User cancelled document picker');
+        console.log('User cancelled document picker');
       } else {
-        // Handle other errors
         console.error('Error picking document:', err);
       }
     }
@@ -38,12 +44,12 @@ export default function Header({ modalHandler, handleLoader, loading }) {
   const uploadDocument = async () => {
     if (!selectedDocument) {
       handleLoader(false);
-      //console.log('No document selected');
+      console.log('No document selected');
       return;
     }
     try {
       const fileUri = selectedDocument[0].uri;
-      const uploadUrl = 'https://drive.coniacloud.com/api/v1/uploads';
+      const uploadUrl = baseURL+'/uploads';
       const token = user?.access_token;
 
       const response = await RNFetchBlob.fetch('POST', uploadUrl, {
@@ -55,67 +61,94 @@ export default function Header({ modalHandler, handleLoader, loading }) {
         { name: 'parentId', data: 'null' },
         { name: 'isSQL', data: 'false' },
         { name: 'relativePath', data: '' },
-        { name: 'disk', data: 'uploads' }
+        { name: 'disk', data: 'uploads' },
       ]);
 
       console.log('Upload successful:', response.data);
       modalHandler(true, 'Upload successful', false);
       handleLoader(false);
+      handleRefresh(!refresh)
     } catch (error) {
       modalHandler(true, 'Error uploading document', true);
       handleLoader(false);
       console.error('Error uploading document:', error);
     }
-
   };
-  const settingScreen = () =>{
+
+  const settingScreen = () => {
     console.log('settings');
     navigation.navigate('Settings');
-  }
+  };
+
   return (
     <>
-
-    
+      {0 ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : (
         <View style={styles.headerContainer}>
           <View>
-            <Image source={{ uri: user?.avatar }} style={{ width: 50, height: 50, borderRadius: 25, marginTop: 12, marginLeft: 8 }} />
+            <Image source={{ uri: user?.avatar }} style={styles.avatar} />
           </View>
-
-
-          <View style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', marginLeft: 10, marginTop: 15, flexWrap: 'wrap' }}>
-            <Text style={{ fontWeight: 400, fontSize: 13, color: '#696D70', height: 20 }}>Welcome back</Text>
-            <Text style={{ fontWeight: 500, fontSize: 16, color: '#071625', height: 24 }}>{user?.display_name}</Text>
+          <View style={styles.userInfo}>
+            <Text style={styles.welcomeText}>Welcome back</Text>
+            <Text style={styles.userName}>{user?.display_name}</Text>
           </View>
-          <View style={{ width: 100 }}>
-
-          </View>
-          <TouchableOpacity onPress={() => {
-            pickDocument();
-          }}>
-            <Image source={require('../assets/upload.png')} style={styles.Icon} />
+          <TouchableOpacity onPress={pickDocument}>
+            <Image source={require('../assets/upload.png')} style={styles.icon} />
           </TouchableOpacity>
           <TouchableOpacity>
-            <Image source={require('../assets/noti.png')} style={styles.Icon} />
+            <Image source={require('../assets/noti.png')} style={styles.icon} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => {
-            settingScreen();
-          }}>
-            <Image source={require('../assets/settings.png')} style={styles.Icon} />
+          <TouchableOpacity onPress={settingScreen}>
+            <Image source={require('../assets/settings.png')} style={styles.icon} />
           </TouchableOpacity>
         </View>
-      
+      )}
     </>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
   headerContainer: {
-    height: 70, paddingHorizontal: 5, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start',
-    borderBottomColor: '#e6e6e6', borderBottomWidth: 2, borderStyle: 'solid',backgroundColor:'white'
+    height: 70,
+    paddingHorizontal: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    borderBottomColor: '#e6e6e6',
+    borderBottomWidth: 2,
+    backgroundColor: 'white',
   },
-  Icon: {
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginTop: 12,
+    marginLeft: 8,
+  },
+  userInfo: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    marginLeft: 10,
+    marginRight: 10,
+    marginTop: 15,
+  },
+  welcomeText: {
+    fontWeight: '400',
+    fontSize: 13,
+    color: '#696D70',
+    height: 20,
+  },
+  userName: {
+    fontWeight: '500',
+    fontSize: 16,
+    color: '#071625',
+    height: 24,
+  },
+  icon: {
     width: 26,
     height: 26,
-    marginLeft: 15
-  }
-})
+    marginLeft: 15,
+  },
+});

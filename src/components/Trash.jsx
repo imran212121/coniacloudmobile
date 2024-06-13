@@ -14,6 +14,7 @@ import fileIcon from '../assets/icons/file.png';
 import pdfIcon from '../assets/icons/pdf.png';
 import wordIcon from '../assets/icons/word.png';
 import imageIcon from '../assets/icons/image.png';
+import { baseURL } from '../constant/settings';
 
 const Trashed = ({ active,handleLoader,loading }) => {
   const [driveData, setDriveData] = useState(false)
@@ -35,7 +36,7 @@ const Trashed = ({ active,handleLoader,loading }) => {
 
     const fetchFolderFiles = async () => {
       handleLoader(true)
-      const response = await axios.get(`https://drive.coniacloud.com/api/v1/drive/file-entries?timestamp=${new Date().getTime()}`, {
+      const response = await axios.get(`${baseURL}/drive/file-entries?timestamp=${new Date().getTime()}`, {
         headers: {
           Authorization: 'Bearer ' + user?.access_token
         },

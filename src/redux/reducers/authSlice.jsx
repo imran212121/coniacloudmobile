@@ -1,7 +1,9 @@
 
       import { createSlice } from '@reduxjs/toolkit';
+      import React, {useState,useEffect } from 'react'
       import axios from 'axios';
-      
+      import AsyncStorage from '@react-native-async-storage/async-storage';
+     
       const initialState = {
         isLoggedIn: false,
         user: null,
@@ -39,14 +41,16 @@
       export const selectUser = (state) => state.auth.user;
       
       export const loginAsync = (credentials) => async (dispatch) => {
-      //console.log("********************");
+      console.log("********************");
         dispatch(loginStart());
         try {
-          const response = await axios.post('https://drive.coniacloud.com/api/v1/auth/login', credentials);
-          //console.log("*******loginStart*************",response.data.user);
+          const response = await axios.post(baseURL+'/auth/login', credentials);
+          console.log("*******loginStart*************",response.data.user);
+          await AsyncStorage.setItem('user', JSON.stringify(response.data.user));
+          
           dispatch(loginSuccess(response.data.user));
         } catch (error) {
-          //console.log("**********loginFailure**********",error);
+          console.log("**********loginFailure**********",error);
           dispatch(loginFailure(error.message));
         }
       };

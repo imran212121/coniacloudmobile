@@ -1,65 +1,51 @@
-import { StyleSheet, Text, View, Image, Dimensions, TouchableOpacity, Alert, Platform, PermissionsAndroid } from 'react-native'
-
+import { StyleSheet, Text, View, Dimensions, TouchableOpacity, Platform } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { AppSettings } from '../../utils/Settings'
-import {makeApiCall} from '../../helper/apiHelper';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import { AppSettings } from '../../utils/Settings';
+import { makeApiCall } from '../../helper/apiHelper';
+import FontAwesome from '@react-native-vector-icons/fontawesome';
+import { WebView } from 'react-native-webview';
 
-import PushNotification from 'react-native-push-notification';
 import RNFetchBlob from 'rn-fetch-blob';
 import { downloadFile, getDownloadPermissionAndroid } from '../../helper/downloadHelper';
-import share from '../../assets/icons/fi_user-plus.png'
-import download from '../../assets/icons/fi_download.png'
-import trash from '../../assets/icons/fi_trash-2.png'
-import close from '../../assets/icons/close.png'
 
+const WordPreview = ({ files, user, closeFile, folderId, handleFolderNavigation }) => {
+    const [PreviewToken, setPreviewToken] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
-const ImagePreview = ({ files, user, closeFile,folderId,handleFolderNavigation }) => {
-    //console.log('files', files);
-    const [PreviewToken, setPreviewToken] = useState(false)
-    let previewUrl = AppSettings.base_url + files.url;
-    let downloadUrl = AppSettings.base_url + '/api/v1/file-entries/download/' + files.hash;
+    const previewUrl = AppSettings.base_url + files.url;
+    const downloadUrl = AppSettings.base_url + '/api/v1/file-entries/download/' + files.hash;
     const deviceWidth = Dimensions.get('window').width;
     const deviceHeight = Dimensions.get('window').height;
 
-  
+
 
     useEffect(() => {
-        const fetchImageData = async () => {
+        const fetchDocumentData = async () => {
             try {
                 const token = await makeApiCall('/api/v1/file-entries/' + files.id + '/add-preview-token', user?.access_token, 'post');
-                
-                console.log('token', token?.preview_token);
                 setPreviewToken(token?.preview_token);
-                console.log(previewUrl + '?preview_token=' + PreviewToken);
-
+                setIsLoading(false);
             } catch (error) {
-                console.log('error', error);
+                console.error('Error fetching document preview token:', error);
+                setIsLoading(false);
             }
-        }
-        setTimeout(() => {
-            fetchImageData();
+        };
 
-        }, 200)
-
-    }, [])
-    //console.log('deviceWidth', deviceWidth);
+        fetchDocumentData();
+    }, [files.id, user?.access_token]);
 
     const downloadAndOpenFile = () => {
         const url = downloadUrl + '?add-preview-token=' + PreviewToken;
         const file_extension = files?.extension;
         const file_name = files?.name;
         const file_name_with_extension = file_name + '.' + file_extension;
-        //console.log(Platform.OS);
+
         if (Platform.OS === 'android') {
-            //console.log('sss');
             getDownloadPermissionAndroid().then(granted => {
                 if (granted) {
-                    //console.log('sss');
                     downloadFile(url, file_name_with_extension);
                 } else {
                     downloadFile(url, file_name_with_extension);
-                    //console.log('sssaa');
                 }
             });
         } else {
@@ -67,11 +53,7 @@ const ImagePreview = ({ files, user, closeFile,folderId,handleFolderNavigation }
                 RNFetchBlob.ios.previewDocument(res.path());
             });
         }
-
-
-
     };
-
 
     return (
         <View>
@@ -104,35 +86,34 @@ const ImagePreview = ({ files, user, closeFile,folderId,handleFolderNavigation }
 
                 </View>
             </View>
-            <View style={styles.imgcontainer}>
+            <View style={styles.doccontainer}>
                 <View style={{ justifyContent: 'center', flex: 1 }}>
-                    {PreviewToken ?
-                        <Image source={{ uri: previewUrl + '?preview_token=' + PreviewToken }} style={{ width: deviceWidth, height: deviceHeight }} />
-                        : <Text>Loading.....</Text>}
+                    {isLoading ? (
+                        <Text>Loading.....</Text>
+                    ) : (
+                        <WebView 
+                            source={{ uri: previewUrl + '?preview_token=' + PreviewToken }} 
+                            style={{ width: deviceWidth, height: deviceHeight }} 
+                        />
+                    )}
                 </View>
             </View>
         </View>
-    )
-}
+    );
+};
 
-export default ImagePreview
+export default WordPreview;
 
 const styles = StyleSheet.create({
     container: {
         width: 'auto',
         height: 'auto',
-
     },
-    imgcontainer: {
+    doccontainer: {
         width: 'auto',
         height: 'auto',
         display: 'flex',
-        flexDirection: 'row'
-    },
-    img: {
-        width: 100,
-        height: 100
-
+        flexDirection: 'row',
     },
     header: {
         backgroundColor: '#fff',
@@ -140,11 +121,11 @@ const styles = StyleSheet.create({
         width: 'auto',
         display: 'flex',
         flexDirection: 'row',
-        justifyContent: 'flex-start'
+        justifyContent: 'flex-start',
     },
     headerItem: {
         marginRight: 20,
         marginLeft: 10,
-        paddingVertical: 12
-    }
+        paddingVertical: 12,
+    },
 });
