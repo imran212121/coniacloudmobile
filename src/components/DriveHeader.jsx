@@ -3,6 +3,7 @@ import React , {useState} from 'react'
 import MIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Picker } from '@react-native-picker/picker';
 
+
 const DriveHeader = ({ folder, handleFolderNavigation }) => {
   const { height, width } = Dimensions.get('window');
   const [selectedValue, setSelectedValue] = useState('');
@@ -27,6 +28,9 @@ const DriveHeader = ({ folder, handleFolderNavigation }) => {
           return <React.Fragment key={index}></React.Fragment>;
         }
       })}
+
+    </View>
+    <View>
 
     </View>
     

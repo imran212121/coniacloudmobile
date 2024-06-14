@@ -8,9 +8,9 @@ const CustomButton = ({
 }) => {
   return (
     <View>
-      <TouchableOpacity>
+      <TouchableOpacity onPress={onPress}>
         <View style={styles.mainContainer}>
-            <Text style={styles.buttonStyle} onPress={onPress}>{buttonTitle}</Text>
+            <Text style={styles.buttonStyle} >{buttonTitle}</Text>
         </View>
       </TouchableOpacity>
     </View>
@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
     fontSize:18,
     textAlign:'center',
     
-    borderRadius:10
+    borderRadius:30
   }
 
 })

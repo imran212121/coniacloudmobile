@@ -23,6 +23,7 @@ const StackNavigation = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName={isLoggedIn ? 'Home':'Splesh'}>
+      {/* <Stack.Navigator initialRouteName={ 'Home'}> */}
       <Stack.Screen options={{headerShown:false}} name='Splesh' component={Splesh} />
        
           <Stack.Screen options={{ headerShown: false }} name='Home' component={BottomNavigation} />

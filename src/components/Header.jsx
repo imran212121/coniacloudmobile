@@ -86,22 +86,26 @@ export default function Header({ modalHandler, handleLoader, loading ,handleRefr
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
         <View style={styles.headerContainer}>
-          <View>
+          <View style={{flexDirection:'row'}}>
             <Image source={{ uri: user?.avatar }} style={styles.avatar} />
-          </View>
+          
           <View style={styles.userInfo}>
             <Text style={styles.welcomeText}>Welcome back</Text>
             <Text style={styles.userName}>{user?.display_name}</Text>
           </View>
+          </View>
+          <View style={{flexDirection:'row'}}>
+
           <TouchableOpacity onPress={pickDocument}>
             <Image source={require('../assets/upload.png')} style={styles.icon} />
           </TouchableOpacity>
           <TouchableOpacity>
             <Image source={require('../assets/noti.png')} style={styles.icon} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={settingScreen}>
+          {/* <TouchableOpacity onPress={settingScreen}>
             <Image source={require('../assets/settings.png')} style={styles.icon} />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
+          </View>
         </View>
       )}
     </>
@@ -114,10 +118,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-start',
-    borderBottomColor: '#e6e6e6',
-    borderBottomWidth: 2,
-    backgroundColor: 'white',
+    justifyContent: 'space-between',
+    // borderBottomColor: '#e6e6e6',
+    // borderBottomWidth: 2,
+    // backgroundColor: 'white',
   },
   avatar: {
     width: 50,
