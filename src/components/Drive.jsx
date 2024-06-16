@@ -13,9 +13,11 @@ import fileIcon from '../assets/icon/file.png';
 import pdfIcon from '../assets/icons/pdf.png';
 import wordIcon from '../assets/icon/word.png';
 import imageIcon from '../assets/icon/image.png';
+import moreIcon from '../assets/icon/more.png';
 import back from '../assets/icons/fi_arrow-left.png';
 import { baseURL } from '../constant/settings';
 import {fileColorCode}  from '../constant/settings';
+import { timeAgo } from '../helper/functionHelper.js';
 
 const Drive = ({ active, handleLoader, loading,refresh }) => {
   const [driveData, setDriveData] = useState([]);
@@ -68,7 +70,7 @@ const Drive = ({ active, handleLoader, loading,refresh }) => {
         if (data.folder && !isExists(data.folder.id, folder)) {
           setFolder((prev) => [...prev, { id: data.folder.id, name: data.folder.name }]);
         }
-        console.log('Rerender',data.data);
+        console.log('Rerender',data.folder);
         setDriveData(data.data);
       } catch (error) {
         handleLoader(false);
@@ -95,7 +97,19 @@ const Drive = ({ active, handleLoader, loading,refresh }) => {
   const handleFolderNavigation = (folderId) => {
     setSelected(false);
     setFolderId(folderId);
-    setFolder((prev) => prev.filter((f) => f.id !== folderId));
+    let folderArray = [];
+    let stop = false;
+    folder.forEach(item => {
+      if(item.id===folderId)
+        {
+          stop = true;
+        }else if(stop===false)
+          {
+            folderArray.push(item);
+          }
+      console.log(item);
+    });
+    setFolder(folderArray);
   };
 
   const closeFile = () => setSelected(false);
@@ -144,8 +158,13 @@ const Drive = ({ active, handleLoader, loading,refresh }) => {
                   }
                   return (
                     <TouchableOpacity key={index} style={[styles.filedata,{ width: deviceWidth * 0.4,backgroundColor:fileColorCode[Math.floor(Math.random() * 4)] }]} onPress={() => handleFile(files)}>
-                      <Image source={fileType[files.type]} style={styles.fileIcon} />
+                      <View style={{flex:1 , flexDirection:'row',justifyContent:'space-between'}}>
+                          <Image source={fileType[files.type]} style={styles.fileIcon} />
+                          <Image source={moreIcon} style={{marginRight:4,marginTop:2,width:5,height:23}}/>
+                      </View>
+                      
                       <Text style={styles.fileText}>{files.name.length > 5 ? `${files.name.substring(0, 15)}...` : files.name}</Text>
+                      <Text style={styles.fileTextTime}>{timeAgo(files.updated_at)}</Text>
                     </TouchableOpacity>
                   );
                 })}
@@ -265,5 +284,13 @@ const styles = StyleSheet.create({
     marginTop:10,
     marginLeft:5
 
+  },
+  fileTextTime:{
+    fontSize:10,
+    fontWeight:'400',
+    height:15,
+    color:'#696D70',
+    marginTop:2,
+    marginLeft:5
   }
 });
