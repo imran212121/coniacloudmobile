@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import {makeApiCall} from '../helper/apiHelper';
-import { View, StyleSheet, Text } from "react-native";
+import { View, StyleSheet, Text, Animated, } from "react-native";
 import Svg, { Circle, G } from 'react-native-svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AppColor } from '../utils/AppColors';
 const StorageStatus = ({ user,usertoken }) => {
   const radius = 70;
   const [spendStorage, setSpendStorage] = useState(0);
@@ -37,8 +38,10 @@ const StorageStatus = ({ user,usertoken }) => {
         let per = (storage?.used / storage?.available) * 100;
         setTotalStorage(MBtoGB(storage?.available));
         setPercentage(per);
+        // console.log(per)
         let sdo = circleCircumference - (circleCircumference * per) / 100;
         setStrokeDashoffset(sdo);
+        
 
       } catch (error) {
         console.error('Error fetching storage data:', error);
@@ -51,118 +54,144 @@ const StorageStatus = ({ user,usertoken }) => {
     //}, 200)
 
   }, [percentage, spendStorage,token])
+
+  const [rotationAnimation, setRotationAnimation] = useState(new Animated.Value(0));
+
+  useEffect(() => {
+    animate();
+  }, []);
+
+  const animate = () => {
+    const toValue = getPercentage();
+    const speed = 2; // default animation speed
+
+    Animated.spring(rotationAnimation, {
+      toValue,
+      speed,
+      useNativeDriver: true
+    }).start();
+  };
+
+  const getPercentage = () => {
+    const percentage = 10;
+
+    return Math.max(Math.min(percentage, 100), 0);
+  };
+
+  const circleRadius = 95;
+  const progressWidth = 30;
+  const progressShadowColor = "#E1E2E4";
+  const progressColor = "#ECA20F";
+  const interiorCircleColor = "#FFFFFF";
+
+  const getStyles = () => {
+    const interiorCircleRadius = circleRadius - progressWidth;
+
+    return StyleSheet.create({
+      exteriorCircle: {
+        width: circleRadius * 2,
+        height: circleRadius,
+        borderRadius: circleRadius,
+        backgroundColor: progressShadowColor,
+       
+      },
+      rotatingCircleWrap: {
+        width: circleRadius * 2,
+        height: circleRadius,
+        top: circleRadius
+      },
+      rotatingCircle: {
+        width: circleRadius * 2,
+        height: circleRadius,
+        borderRadius: circleRadius,
+        backgroundColor: progressColor,
+        transform: [
+          { translateY: -circleRadius / 2 },
+          {
+            rotate: rotationAnimation.interpolate({
+              inputRange: [0, 100],
+              outputRange: ['0deg', '500deg']
+            })
+          },
+          { translateY: circleRadius / 2 }
+        ]
+      },
+      interiorCircle: {
+        width: interiorCircleRadius * 2,
+        height: interiorCircleRadius,
+        borderRadius: interiorCircleRadius,
+        backgroundColor: interiorCircleColor,
+        top: progressWidth
+      }
+    });
+  };
+
+  const styles = getStyles();
+
  
   return (
-    <View style={styles.container}>
-      {/* <View style={styles.graphWrapper}>
-        <Svg height="160" width="160" viewBox="0 0 180 180">
-          <G rotation={-90} originX="90" originY="90">
-            <Circle
-              cx="50%"
-              cy="50%"
-              r={radius}
-              stroke="#004181"
-              fill="transparent"
-              strokeWidth="20"
-            />
-            <Circle
-              cx="50%"
-              cy="50%"
-              r={radius}
-              stroke="red"
-              fill="transparent"
-              strokeWidth="20"
-              strokeDasharray={circleCircumference}
-              strokeDashoffset={strokeDashoffset}
-              strokeLinecap="round"
-            />
-          </G>
-        </Svg>
-        <Text style={styles.text}>{spendStorage}GB/{totalStorage}GB</Text>
-      </View> */}
-      <View style={styles.halfTireCircle}>
-      <View style={styles.topHalf} />
-      <View style={styles.innerCircle} />
+    <>
+    <View style={[defaultStyles.exteriorCircle, styles.exteriorCircle]}>
+    <View style={[defaultStyles.rotatingCircleWrap, styles.rotatingCircleWrap]}>
+      <Animated.View style={[defaultStyles.rotatingCircle, styles.rotatingCircle]} />
+    </View>
+    <View style={[defaultStyles.interiorCircle, styles.interiorCircle]}>
       
     </View>
-    <View style={styles.bottomBox} >
-        <Text style={styles.bottomBoxText}>{spendStorage}gb</Text>
-        <Text style={styles.bottomBoxTextInner}>of {totalStorage}gb storage used</Text>
-
-
-      </View>
+  </View>
+    <View style={defaultStyles.sizeContainer}>
+      <Text style={defaultStyles.Heading}>{totalStorage} gb</Text>
+      <Text style={{fontSize:14,textAlign:'center'}}>of 100gb storage used.</Text>
     </View>
+    </>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    flexDirection:'column',
-    marginTop:10
+
+const defaultStyles = StyleSheet.create({
+  exteriorCircle: {
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    alignItems: 'center',
+    overflow: 'hidden'
   },
-  bottomBox:{
-    marginBottom:15,
-    width: 200, // Outer width
-    height: 70, // Half of the outer width
-    backgroundColor: 'white', // Outer color
+  rotatingCircleWrap: {
+    position: 'absolute',
+    left: 0
   },
-  bottomBoxText:{
-    fontWeight:'600',
-    fontSize:20,
-    height:35,
-    color:'#004181',
-    textAlign:'center'
-  },
-  bottomBoxTextInner:{
-    fontWeight:'400',
-    fontSize:12,
-    height:18,
-    color:'#004181',
-    textAlign:'center'
-  },
-  graphWrapper: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  text: {
-    position: "absolute",
-    textAlign: "center",
-    fontWeight: "600",
-    fontSize: 18,
-    color: "#394867",
-  },
-  halfTireCircle: {
-    position: 'relative',
-    width: 200, // Outer width
-    height: 100, // Half of the outer width
-    backgroundColor: '#e0e1e3', // Outer color
-    borderTopLeftRadius: 100, // Half of the outer width
-    borderTopRightRadius: 100, // Half of the outer width
-    overflow: 'hidden',
-  },
-  topHalf: {
+  rotatingCircle: {
     position: 'absolute',
     top: 0,
     left: 0,
-    
-    width: '10%', // Full width of the outer element
-    height: '100%', // Half the height of the outer element
-    backgroundColor: '#004181', // Top half color
-    borderTopLeftRadius: 100, // Half of the outer width
-    borderTopRightRadius: 100, // Half of the outer width
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
   },
-  innerCircle: {
-    position: 'absolute',
-    top: 16, // Adjust for inner circle's top position
-    left: 19, // Adjust for inner circle's left position
-    width: 160, // Inner width (outer width - 2 * top/left positions)
-    height: 90, // Half of the inner width
-    backgroundColor: 'white', // Inner color
-    borderTopLeftRadius: 90, // Half of the inner width
-    borderTopRightRadius: 90, // Half of the inner width
+  interiorCircle: {
+    overflow: 'hidden',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
   },
+  Heading:{
+    fontSize:20,
+    color:'#004181',
+    fontWeight:'600',
+    lineHeight:30,
+    textAlign:'center'
+  },
+  sizeContainer:{
+    height:80,width:190,
+    backgroundColor:AppColor.white,
+    shadowColor: "#000",
+shadowOffset: {
+	width: 0,
+	height: 6,
+},
+shadowOpacity: 0.39,
+shadowRadius: 8.30,
+
+elevation: 13,
+  }
 });
 export default StorageStatus;
