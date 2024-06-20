@@ -8,6 +8,7 @@ const DriveHeader = ({ folder, handleFolderNavigation }) => {
   const { height, width } = Dimensions.get('window');
   const [selectedValue, setSelectedValue] = useState('');
   const size = 60;
+  console.log('******folder********',folder);
   return (
     <>
     <View style={{ display: 'flex', flexWrap: 'wrap', flexDirection: 'row' }}>
@@ -16,7 +17,7 @@ const DriveHeader = ({ folder, handleFolderNavigation }) => {
         if (index < 3 || isLast) {
           return (
             <View key={index} style={{}}>
-              <TouchableOpacity onPress={async () => { await handleFolderNavigation(fold.id) }} style={{ margin: 10 }}>
+              <TouchableOpacity onPress={async () => { if(!isLast) { await handleFolderNavigation(fold.id) }}} style={{ margin: 10 }}>
                 <Text style={{ color: 'black',paddingTop:5 }}>
                   {fold.name && fold.name.length > 10 ? fold.name.slice(0, 10) + '...' : fold.name}
                   <Text>&nbsp;&nbsp;</Text> {!isLast && <MIcon name='arrow-right'></MIcon>}
