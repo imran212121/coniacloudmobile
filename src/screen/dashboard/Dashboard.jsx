@@ -30,11 +30,11 @@ const Dashboard = () => {
   return (
     <>
       <Header handleRefresh={handleRefresh} refresh={refresh} loading={loading} handleLoader={handleLoader} modalHandler={modalHandler} active={active} />
- <ScrollView style={styles.mainContainer} showsVerticalScrollIndicator={false}>
+ <View style={styles.mainContainer} showsVerticalScrollIndicator={false}>
      
-      <ModalView modalHandler={modalHandler} active={active} isError={isError} message={message} />
+      {/* <ModalView modalHandler={modalHandler} active={active} isError={isError} message={message} /> */}
       <Drive loading={loading} refresh={refresh} active={active} handleLoader={handleLoader} />
-    </ScrollView>
+    </View>
     </>
    
   )

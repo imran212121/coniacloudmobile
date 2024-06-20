@@ -11,7 +11,7 @@ const CustomHeader = ({ title, left, right,back,OnPress,textcolor,bgColor }) => 
       <View style={styles.leftContainer}>
       {left && (
           <TouchableOpacity style={[styles.iconContainer,]}  onPress={OnPress}>
-            <Image source={back ? require('../assets/icons/back.png') : require('../assets/Ellipse.png')} style={{height:40,width:40}} tintColor={textcolor ? AppColor.white:AppColor.black} />
+            <Image source={back ? require('../assets/icons/back.png') : require('../assets/Ellipse.png')} style={{height:25,width:25}} tintColor={textcolor ? AppColor.white:AppColor.black} />
           </TouchableOpacity>
         )}
       </View>

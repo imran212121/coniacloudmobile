@@ -37,8 +37,8 @@ const StorageStatus = ({ user,usertoken }) => {
         setSpendStorage(MBtoGB(storage?.used));
         let per = (storage?.used / storage?.available) * 100;
         setTotalStorage(MBtoGB(storage?.available));
-        setPercentage(per);
-        // console.log(per)
+        setPercentage(per*(1800/100));
+         console.log(per*(1800/100))
         let sdo = circleCircumference - (circleCircumference * per) / 100;
         setStrokeDashoffset(sdo);
         
@@ -110,7 +110,7 @@ const StorageStatus = ({ user,usertoken }) => {
           {
             rotate: rotationAnimation.interpolate({
               inputRange: [0, 100],
-              outputRange: ['0deg', '500deg']
+              outputRange: ['0deg', `${percentage}deg`]
             })
           },
           { translateY: circleRadius / 2 }
