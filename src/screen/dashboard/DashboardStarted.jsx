@@ -6,7 +6,7 @@ import Started from '../../components/Started';
 import ModalView from '../../components/ModalView';
 
 
-const DashboardStarted = () => {
+const DashboardMyfiles = () => {
   const [active , setActive] = useState(false);
   const [loading , setLoading] = useState(true);
   const [message , setMessage] = useState('');
@@ -25,17 +25,21 @@ const DashboardStarted = () => {
     setLoading(status);
   }
   return (
-    <ScrollView style={styles.mainContainer}>
+    <>
+
+       <Header loading={loading} handleLoader={handleLoader} modalHandler ={modalHandler} active={active}
       
-       <Header loading={loading} handleLoader={handleLoader} modalHandler ={modalHandler} active={active}/>
-       <ModalView modalHandler ={modalHandler} active={active} isError={isError} message={message}/>
+       notiIcon={require('../../assets/Plus.png')}
+       uploadIcon={require('../../assets/icons/fi_grid.png')}/>
+    <ScrollView style={styles.mainContainer} showsVerticalScrollIndicator={false}>
+       {/* <ModalView modalHandler ={modalHandler} active={active} isError={isError} message={message}/> */}
        <Started loading={loading} active={active} handleLoader={handleLoader}/>
         </ScrollView>
-
+        </>
   )
 }
 
-export default DashboardStarted
+export default DashboardMyfiles
 
 const styles = StyleSheet.create({
   mainContainer:{

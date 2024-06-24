@@ -7,7 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSelector } from 'react-redux';
 import { baseURL } from '../constant/settings';
 
-export default function Header({ modalHandler, handleLoader, loading ,handleRefresh,refresh}) {
+export default function Header({ modalHandler, handleLoader, loading, handleRefresh, refresh, uploadIcon, notiIcon, settingsIcon }) {
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [user, setUser] = useState(null);
   const navigation = useNavigation();
@@ -49,7 +49,7 @@ export default function Header({ modalHandler, handleLoader, loading ,handleRefr
     }
     try {
       const fileUri = selectedDocument[0].uri;
-      const uploadUrl = baseURL+'/uploads';
+      const uploadUrl = `${baseURL}/uploads`;
       const token = user?.access_token;
 
       const response = await RNFetchBlob.fetch('POST', uploadUrl, {
@@ -67,7 +67,7 @@ export default function Header({ modalHandler, handleLoader, loading ,handleRefr
       console.log('Upload successful:', response.data);
       modalHandler(true, 'Upload successful', false);
       handleLoader(false);
-      handleRefresh(!refresh)
+      handleRefresh(!refresh);
     } catch (error) {
       modalHandler(true, 'Error uploading document', true);
       handleLoader(false);
@@ -82,32 +82,29 @@ export default function Header({ modalHandler, handleLoader, loading ,handleRefr
 
   return (
     <>
-      {0 ? (
-        <ActivityIndicator size="large" color="#0000ff" />
-      ) : (
+    
         <View style={styles.headerContainer}>
-          <View style={{flexDirection:'row'}}>
+          <View style={{ flexDirection: 'row' }}>
             <Image source={{ uri: user?.avatar }} style={styles.avatar} />
-          
-          <View style={styles.userInfo}>
-            <Text style={styles.welcomeText}>Welcome back</Text>
-            <Text style={styles.userName}>{user?.display_name}</Text>
+            <View style={styles.userInfo}>
+              <Text style={styles.welcomeText}>Welcome back</Text>
+              <Text style={styles.userName}>{user?.display_name}</Text>
+            </View>
           </View>
-          </View>
-          <View style={{flexDirection:'row'}}>
-
-          <TouchableOpacity onPress={pickDocument}>
-            <Image source={require('../assets/upload.png')} style={styles.icon} />
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Image source={require('../assets/noti.png')} style={styles.icon} />
-          </TouchableOpacity>
-          {/* <TouchableOpacity onPress={settingScreen}>
-            <Image source={require('../assets/settings.png')} style={styles.icon} />
-          </TouchableOpacity> */}
+          <View style={{ flexDirection: 'row' }}>
+            <TouchableOpacity onPress={() => navigation.navigate('UploadDoc')}>
+              <Image source={uploadIcon || require('../assets/upload.png')} style={styles.icon} />
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <Image source={notiIcon || require('../assets/noti.png')} style={styles.icon} />
+            </TouchableOpacity>
+            {/* Uncomment this if you want to include the settings button */}
+            {/* <TouchableOpacity onPress={settingScreen}>
+              <Image source={settingsIcon || require('../assets/settings.png')} style={styles.icon} />
+            </TouchableOpacity> */}
           </View>
         </View>
-      )}
+     
     </>
   );
 }

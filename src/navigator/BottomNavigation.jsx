@@ -2,10 +2,12 @@ import { StyleSheet, Text, Image, View } from 'react-native';
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Dashboard from '../screen/dashboard/Dashboard';
-import DashboardStarted from '../screen/dashboard/DashboardStarted';
+import DashboardMyfiles from '../screen/dashboard/DashboardStarted';
 import DashboardShare from '../screen/dashboard/DashboardShare';
 import DashboardTrash from '../screen/dashboard/DashboardTrash';
 import UserProfile from '../screen/dashboard/UserProfile';
+import SettingsScreen from '../components/SettingsScreen';
+import Settings from '../screen/settings/Settings';
 
 
 const Tab = createBottomTabNavigator();
@@ -71,9 +73,10 @@ const BottomNavigation = () => {
       })}
     >
       <Tab.Screen name='My Drive' component={Dashboard} />
-      <Tab.Screen name='MyFiles' component={DashboardStarted} />
+      <Tab.Screen name='MyFiles' component={DashboardMyfiles} />
       <Tab.Screen name='Shared' component={DashboardShare} />
-      <Tab.Screen name='Settings' component={DashboardTrash} />
+      <Tab.Screen name='Settings' component={SettingsScreen} />
+      {/* <Tab.Screen name='Settings' component={DashboardTrash} /> */}
       <Tab.Screen name='User' component={UserProfile} />
     </Tab.Navigator>
   );
@@ -91,7 +94,8 @@ const styles = StyleSheet.create({
   },
   tabItemFocused: {
     backgroundColor: '#F1F4FE',
-    borderRadius: 30,
+    borderRadius: 15,
+    padding:9,
   },
   label: {
     marginLeft: 5,

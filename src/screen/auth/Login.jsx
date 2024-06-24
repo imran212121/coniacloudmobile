@@ -18,16 +18,14 @@ const Login = () => {
     const { isLoggedIn, loading, error, user } = useSelector((state) => state.auth);
 
     useEffect(() => {
-        console.log('user*****************************', user, isLoggedIn);
         if (user !== null) {
             navigation.navigate('Dashboard');
         }
-    }, [isLoggedIn, navigation, dispatch]);
+    }, [user, navigation]);
 
     const handleLogin = async (values) => {
         const { email, password } = values;
-        console.log('Login start');
-        dispatch(loginAsync({ email, password, token_name: 'android' }))
+        dispatch(loginAsync({ email, password, token_name: 'android' }));
         await dispatch(loginUser({ email, password, token_name: 'android' }))
             .then((data) => {
                 if (data.type === "auth/loginUser/fulfilled") {
@@ -41,16 +39,11 @@ const Login = () => {
 
     return (
         <View style={styles.loginMainContainer}>
-            <CustomHeader back={true} left={true} title={'Welcome back!'}
-            OnPress={()=>navigation.goBack()} />
+            <CustomHeader back={true} left={true} title={'Welcome back!'} onPress={() => navigation.goBack()} />
             <View style={styles.logoContainer}>
                 <Text style={styles.text}>Let’s get to know each other, input personal details to begin</Text>
-                {/* <Image source={require('../../assets/logo1.png')} style={styles.logoImage} /> */}
             </View>
             <View style={styles.inputContainer}>
-                {/* <View style={{ alignItems: 'center', height: 33 }}>
-                    <Text style={{ color: '#263c69', fontSize: 22, fontWeight: '700' }}>Sign in to your account</Text>
-                </View> */}
                 {error && <Alertm type={'error'} text={'Invalid username or password!'} />}
                 <Formik
                     initialValues={LoginInitialValue}
@@ -88,7 +81,7 @@ const Login = () => {
                                 secure={true}
                                 icon={require('../../assets/Lock.png')}
                             />
-                              <Text style={styles.Forget}>Foerget Password</Text>
+                            <Text style={styles.forget}>Forget Password?</Text>
                             <CustomButton buttonTitle={'Log in'} onPress={handleSubmit} disabled={!isValid || loading} />
                         </View>
                     )}
@@ -97,7 +90,7 @@ const Login = () => {
             <View style={styles.signUpButton}>
                 <Text style={styles.text}>Don’t have an account? </Text>
                 <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-                    <Text style={[styles.text,{color:AppColor.blue,fontSize:16,marginTop:5}]}>Create a new account</Text>
+                    <Text style={[styles.text, { color: AppColor.blue, fontSize: 16, marginTop: 5 }]}>Create a new account</Text>
                 </TouchableOpacity>
             </View>
             {loading && (
@@ -120,10 +113,9 @@ const styles = StyleSheet.create({
         padding: 15
     },
     logoContainer: {
-         width: '70%',
-         position:'absolute',
-         top:60
-
+        width: '70%',
+        position: 'absolute',
+        top: 60
     },
     logoImage: {
         height: 100,
@@ -138,7 +130,6 @@ const styles = StyleSheet.create({
     signUpButton: {
         flex: 0.2,
         marginBottom: 20,
-        
     },
     loadingOverlay: {
         position: 'absolute',
@@ -155,16 +146,16 @@ const styles = StyleSheet.create({
         fontSize: 14,
         lineHeight: 18,
         textAlign: 'center',
-        fontWeight:'400'
+        fontWeight: '400'
     },
-    Forget:{
+    forget: {
         color: AppColor.textSecondery,
         fontSize: 14,
         lineHeight: 18,
         textAlign: 'center',
-        alignSelf:'flex-end',
-        fontWeight:'400',
-        padding:10,
-        paddingBottom:40
+        alignSelf: 'flex-end',
+        fontWeight: '400',
+        padding: 10,
+        paddingBottom: 40
     }
 });

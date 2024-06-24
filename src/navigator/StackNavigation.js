@@ -9,6 +9,7 @@ import BottomNavigation from './BottomNavigation';
 import EditProfile from '../screen/settings/EditProfile';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Splesh from '../screen/auth/Splesh';
+import UploadDoc from '../screen/dashboard/UploadDoc';
 const Stack = createNativeStackNavigator();
 const StackNavigation = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(null);
@@ -35,6 +36,7 @@ const StackNavigation = () => {
         <Stack.Screen options={{ headerShown: false }} name='Settings' component={Settings} />
         <Stack.Screen options={{ headerShown: false }} name='Dashboard' component={BottomNavigation} />
         <Stack.Screen options={{ headerShown: false }} name='Profile' component={EditProfile} />
+        <Stack.Screen options={{ headerShown: false }} name='UploadDoc' component={UploadDoc} />
       </Stack.Navigator>
     </NavigationContainer>
   )
