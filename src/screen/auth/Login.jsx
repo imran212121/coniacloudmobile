@@ -11,17 +11,16 @@ import { loginAsync } from '../../redux/reducers/authSlice';
 import Alertm from '../../components/alert/Alertm';
 import CustomHeader from '../../components/CustomHeader';
 import { AppColor } from '../../utils/AppColors';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const Login = () => {
     const navigation = useNavigation();
     const dispatch = useDispatch();
     const { isLoggedIn, loading, error, user } = useSelector((state) => state.auth);
 
-    useEffect(() => {
-        if (user !== null) {
-            navigation.navigate('Dashboard');
-        }
-    }, [user, navigation]);
+
+
 
     const handleLogin = async (values) => {
         const { email, password } = values;

@@ -38,7 +38,7 @@ const StorageStatus = ({ user,usertoken }) => {
         let per = (storage?.used / storage?.available) * 100;
         setTotalStorage(MBtoGB(storage?.available));
         setPercentage(per*(1800/100));
-         console.log(per*(1800/100))
+        //  console.log(per*(1800/100))
         let sdo = circleCircumference - (circleCircumference * per) / 100;
         setStrokeDashoffset(sdo);
         
@@ -81,8 +81,8 @@ const StorageStatus = ({ user,usertoken }) => {
   const circleRadius = 95;
   const progressWidth = 30;
   const progressShadowColor = "#E1E2E4";
-  const progressColor = "#ECA20F";
-  const interiorCircleColor = "#FFFFFF";
+  const progressColor = "#004181";
+  const interiorCircleColor = AppColor.bgcolor;
 
   const getStyles = () => {
     const interiorCircleRadius = circleRadius - progressWidth;
@@ -141,7 +141,7 @@ const StorageStatus = ({ user,usertoken }) => {
   </View>
     <View style={defaultStyles.sizeContainer}>
       <Text style={defaultStyles.Heading}>{totalStorage} gb</Text>
-      <Text style={{fontSize:14,textAlign:'center'}}>of 100gb storage used.</Text>
+      <Text style={{fontSize:14,textAlign:'center'}}>of {spendStorage} GB storage used.</Text>
     </View>
     </>
   );

@@ -5,7 +5,7 @@ import { AppColor } from '../utils/AppColors';
 const Width = Dimensions.get('window').width;
 const Height = Dimensions.get('window').height;
 
-const CustomHeader = ({ title, left, right,back,OnPress,textcolor,bgColor }) => {
+const CustomHeader = ({ title, left, right,back,OnPress,textcolor,bgColor,grid }) => {
   return (
     <View style={[styles.container,{backgroundColor:bgColor}]}>
       <View style={styles.leftContainer}>
@@ -25,10 +25,13 @@ const CustomHeader = ({ title, left, right,back,OnPress,textcolor,bgColor }) => 
       <View style={styles.rightContainer}>
         {right &&
           <View style={styles.iconContainer}>
+            {grid &&
+            
             <TouchableOpacity style={styles.iconContainer}>
 
             <Image source={require('../assets/icons/fi_grid.png')} style={[styles.icon,{right:30}]}  tintColor={textcolor ? AppColor.white:AppColor.black}/>
             </TouchableOpacity>
+}
             <TouchableOpacity style={styles.iconContainer}>
 
              <Image source={require('../assets/icons/fi_plus.png')} style={[styles.icon,{right:20}]}  tintColor={textcolor ? AppColor.white:AppColor.black}/>

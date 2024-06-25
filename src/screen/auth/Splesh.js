@@ -5,14 +5,29 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Splesh = () => {
     const navigation=useNavigation()
-    useEffect(()=>{
-        const timer= setTimeout(()=>{
-         navigation.navigate('Login')
-        },2000)
-        return ()=>clearTimeout(timer)
-     },[])
-     
 
+    useEffect(() => {
+        const checkLoginStatus = async () => {
+          try {
+            const userData=await AsyncStorage.getItem('user')
+            if (userData) {
+              // User is logged in, navigate to HomeScreen
+              navigation.navigate('Dashboard', { userData });
+            } else {
+            
+              navigation.navigate('Splesh');
+            }
+          } catch (error) {
+            console.error('Error checking login status:', error);
+
+            navigation.navigate('Splesh');
+          }
+        };
+    
+        const timer = setTimeout(checkLoginStatus, 2000);
+    
+        return () => clearTimeout(timer);
+      }, [navigation]);
       return (
     <View>
      <Image source={require('../../assets/Splashscreen.png')}

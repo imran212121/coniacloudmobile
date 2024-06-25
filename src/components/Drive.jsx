@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
     height: 115,
     padding: 12,
     borderRadius: 20,
-
+    justifyContent:'center'
 
   },
   loader: {

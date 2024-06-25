@@ -1,12 +1,5 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
+import 'react-native-gesture-handler';
 import React from 'react';
-
 import {
   SafeAreaView,
   ScrollView,
@@ -16,16 +9,11 @@ import {
   useColorScheme,
   View,
 } from 'react-native';
-
-import {
-  Colors,
-
-} from 'react-native/Libraries/NewAppScreen';
-;
+import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { Provider } from 'react-redux';
 import StackNavigation from './src/navigator/StackNavigation';
-import store from './src/redux/store'
-
+import store from './src/redux/store';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -35,13 +23,13 @@ function App() {
   };
 
   return (
-    <View style={{ flex: 1 }}>
-  <Provider store={store}>
-      <StackNavigation />
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Provider store={store}>
+        <View style={{ flex: 1 }}>
+          <StackNavigation />
+        </View>
       </Provider>
-    </View>
-
-
+    </GestureHandlerRootView>
   );
 }
 
@@ -65,4 +53,3 @@ const styles = StyleSheet.create({
 });
 
 export default App;
-

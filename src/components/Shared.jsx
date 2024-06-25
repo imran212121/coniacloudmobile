@@ -188,7 +188,9 @@ const Shared = ({ active, handleLoader, loading, refresh }) => {
           <View style={styles.container}>
       {showItem.map((item) => (
         <TouchableOpacity key={item.id} style={styles.itemContainer}>
+          <View style={{ backgroundColor: fileColorCode[Math.floor(Math.random() * 4)],padding:10,borderRadius:10}}>
           <Image source={item.Image} style={styles.image} />
+          </View>
           <Text style={styles.noremalText}>{item.text}</Text>
         </TouchableOpacity>
       ))}
@@ -350,7 +352,8 @@ const styles = StyleSheet.create({
     height: 115,
     padding: 12,
     borderRadius: 20,
-
+// alignItems:'center',
+justifyContent:'center'
 
   },
   loader: {

@@ -1,117 +1,37 @@
-import React, { useEffect, useState } from 'react';
-import { Animated, View, StyleSheet } from 'react-native';
+import React, { useCallback, useRef } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 
-const CustomSemiCircleProgress = () => {
-  const [rotationAnimation, setRotationAnimation] = useState(new Animated.Value(0));
+const ModalComponent = ({ isVisible, onClose }) => {
+  const bottomSheetRef = useRef(null);
 
-  useEffect(() => {
-    animate();
-  }, []);
-
-  const animate = () => {
-    const toValue = getPercentage();
-    const speed = 2; // default animation speed
-
-    Animated.spring(rotationAnimation, {
-      toValue,
-      speed,
-      useNativeDriver: true
-    }).start();
-  };
-
-  const getPercentage = () => {
-    const percentage = 10; // default percentage
-
-    return Math.max(Math.min(percentage, 100), 0);
-  };
-
-  const circleRadius = 75;
-  const progressWidth = 30;
-  const progressShadowColor = "#E1E2E4";
-  const progressColor = "#ECA20F";
-  const interiorCircleColor = "#FFFFFF";
-
-  const getStyles = () => {
-    const interiorCircleRadius = circleRadius - progressWidth;
-
-    return StyleSheet.create({
-      exteriorCircle: {
-        width: circleRadius * 2,
-        height: circleRadius,
-        borderRadius: circleRadius,
-        backgroundColor: progressShadowColor,
-       
-      },
-      rotatingCircleWrap: {
-        width: circleRadius * 2,
-        height: circleRadius,
-        top: circleRadius
-      },
-      rotatingCircle: {
-        width: circleRadius * 2,
-        height: circleRadius,
-        borderRadius: circleRadius,
-        backgroundColor: progressColor,
-        transform: [
-          { translateY: -circleRadius / 2 },
-          {
-            rotate: rotationAnimation.interpolate({
-              inputRange: [0, 100],
-              outputRange: ['0deg', '1080deg']
-            })
-          },
-          { translateY: circleRadius / 2 }
-        ]
-      },
-      interiorCircle: {
-        width: interiorCircleRadius * 2,
-        height: interiorCircleRadius,
-        borderRadius: interiorCircleRadius,
-        backgroundColor: interiorCircleColor,
-        top: progressWidth
-      }
-    });
-  };
-
-  const styles = getStyles();
+  const handleSheetChanges = useCallback((index) => {
+    console.log('handleSheetChanges', index);
+    if (index === -1) {
+      onClose();
+    }
+  }, [onClose]);
 
   return (
-    <View style={[defaultStyles.exteriorCircle, styles.exteriorCircle]}>
-      <View style={[defaultStyles.rotatingCircleWrap, styles.rotatingCircleWrap]}>
-        <Animated.View style={[defaultStyles.rotatingCircle, styles.rotatingCircle]} />
-      </View>
-      <View style={[defaultStyles.interiorCircle, styles.interiorCircle]}>
-        {/* Render children here if needed */}
-      </View>
-    </View>
+    <BottomSheet
+      ref={bottomSheetRef}
+      index={isVisible ? 0 : -1}
+      snapPoints={['50%']}
+      onChange={handleSheetChanges}
+    >
+      <BottomSheetView style={styles.contentContainer}>
+        <Text>Awesome 🎉</Text>
+      </BottomSheetView>
+    </BottomSheet>
   );
 };
 
-export default CustomSemiCircleProgress;
-
-const defaultStyles = StyleSheet.create({
-  exteriorCircle: {
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
+const styles = StyleSheet.create({
+  contentContainer: {
+    flex: 1,
     alignItems: 'center',
-    overflow: 'hidden'
+    justifyContent: 'center',
   },
-  rotatingCircleWrap: {
-    position: 'absolute',
-    left: 0
-  },
-  rotatingCircle: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
-  },
-  interiorCircle: {
-    overflow: 'hidden',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-  }
 });
+
+export default ModalComponent;

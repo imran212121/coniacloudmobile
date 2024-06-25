@@ -75,7 +75,7 @@ const Started = ({ active, handleLoader, loading, refresh }) => {
         style={[
           styles.fileData,
           {
-            backgroundColor: fileColorCode[Math.floor(Math.random() * 4)],
+            backgroundColor:AppColor.white,
             height: 90
           },
         ]}
@@ -181,7 +181,9 @@ const Started = ({ active, handleLoader, loading, refresh }) => {
           <View style={styles.container}>
       {showItem.map((item) => (
         <TouchableOpacity key={item.id} style={styles.itemContainer}>
+          <View style={{ backgroundColor: fileColorCode[Math.floor(Math.random() * 4)],padding:10,borderRadius:10}}>
           <Image source={item.Image} style={styles.image} />
+          </View>
           <Text style={styles.noremalText}>{item.text}</Text>
         </TouchableOpacity>
       ))}
@@ -343,7 +345,7 @@ const styles = StyleSheet.create({
     height: 115,
     padding: 12,
     borderRadius: 20,
-
+    justifyContent:'center'
 
   },
   loader: {
@@ -459,6 +461,7 @@ const styles = StyleSheet.create({
   },
   itemContainer: {
     alignItems: 'center',
+
   },
   image: {
     height: 50,

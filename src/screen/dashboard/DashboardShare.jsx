@@ -34,7 +34,7 @@ const DashboardShare = () => {
       uploadIcon={require('../../assets/icons/fi_grid.png')}/> */}
       <View style={{padding:15}}>
 
-      <CustomHeader back={true} left={true} right={true} title={'Shared'}/>
+      <CustomHeader back={true} left={true} right={true} title={'Shared'} grid={true}/>
       </View>
    <ScrollView style={styles.mainContainer} showsVerticalScrollIndicator={false}>
       {/* <ModalView modalHandler ={modalHandler} active={active} isError={isError} message={message}/> */}
