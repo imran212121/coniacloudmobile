@@ -2,7 +2,7 @@ import { StyleSheet, Text, Image, View } from 'react-native';
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Dashboard from '../screen/dashboard/Dashboard';
-import DashboardStarted from '../screen/dashboard/DashboardStarted';
+import DashboardMydrive from '../screen/dashboard/DashboardMydrive';
 import DashboardShare from '../screen/dashboard/DashboardShare';
 import DashboardTrash from '../screen/dashboard/DashboardTrash';
 import UserProfile from '../screen/dashboard/UserProfile';
@@ -26,15 +26,15 @@ const BottomNavigation = () => {
         tabBarIcon: ({ focused }) => {
           let iconName;
           let label;
-          let iconSize = 20;
+          let iconSize = 18;
 
           switch (route.name) {
-            case 'My Drive':
+            case 'Recent':
               iconName = require('../assets/icons/home.png');
               label = 'Home';
-              iconSize = 20;
+              iconSize = 18;
               break;
-              case 'MyFiles':
+              case 'My Drive':
               iconName = require('../assets/icons/AddDoc.png');
               label = 'MyFiles';
               break;
@@ -42,9 +42,9 @@ const BottomNavigation = () => {
               iconName = require('../assets/icons/Users.png');
               label = 'Shared';
               break;
-            case 'Settings':
-              iconName = require('../assets/icons/setting.png');
-              label = 'Setting';
+            case 'Trash':
+              iconName = require('../assets/icons/fi_trash-2.png');
+              label = 'Trash';
               break;
               case 'User':
                 iconName = require('../assets/icons/user.png');
@@ -70,10 +70,10 @@ const BottomNavigation = () => {
         },
       })}
     >
-      <Tab.Screen name='My Drive' component={Dashboard} />
-      <Tab.Screen name='MyFiles' component={DashboardStarted} />
+      <Tab.Screen name='Recent' component={Dashboard} />
+      <Tab.Screen name='My Drive' component={DashboardMydrive} />
       <Tab.Screen name='Shared' component={DashboardShare} />
-      <Tab.Screen name='Settings' component={DashboardTrash} />
+      <Tab.Screen name='Trash' component={DashboardTrash} />
       <Tab.Screen name='User' component={UserProfile} />
     </Tab.Navigator>
   );
@@ -87,15 +87,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 10,
-    height:40
+    height:35
   },
   tabItemFocused: {
     backgroundColor: '#F1F4FE',
-    borderRadius: 30,
+    borderRadius: 10,
+    fontSize:12
   },
   label: {
     marginLeft: 5,
     color: '#007bff',
-    fontSize: 14,
+    fontSize: 12,
   },
 });

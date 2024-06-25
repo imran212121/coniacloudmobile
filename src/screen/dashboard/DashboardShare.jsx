@@ -13,7 +13,7 @@ const DashboardShare = () => {
   const [message , setMessage] = useState('');
   const [isError , setIsError] = useState(false); 
   useEffect(()=>{
-   ////console.log('rnder',active,message)
+   //////console.log('rnder',active,message)
   },[active,loading])
   const modalHandler = (status,msg,isError=false) =>{
       setActive(!active);
@@ -22,7 +22,7 @@ const DashboardShare = () => {
    }
   
   const handleLoader = (status) => {
-    console.log('status',status);
+    //console.log('status',status);
     setLoading(status);
   }
   return (

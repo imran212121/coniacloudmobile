@@ -29,7 +29,7 @@ export const makeApiCall = async (endpoint, access_token, method = 'GET', data =
         'Authorization': `Bearer ${access_token}`,
       },
     });
-    ////console.log('response',response?.data);
+    //////console.log('response',response?.data);
     return response?.data;
   } catch (error) {
     console.error('API Error2:', error.response || error.request || error.message);
@@ -47,7 +47,7 @@ export const makeApiCallWithHeader = async (endpoint,  method = 'GET', data = nu
         
       },
     });
-    ////console.log('response',response?.data);
+    //////console.log('response',response?.data);
     return response?.data;
   } catch (error) {
     //console.error('API Error2:', error.response || error.request || error.message);

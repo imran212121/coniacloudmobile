@@ -79,7 +79,7 @@ const WordPreview = ({ files, user, closeFile, folderId, handleFolderNavigation 
                            }
                            const res = await makeApiCall('/api/v1/file-entries/delete', user?.access_token, 'post',data);
                            handleFolderNavigation(0);
-                           //console.log('res',res)
+                           ////console.log('res',res)
                     }}>
                         <Image source={trash} style={{width:15,height:15}}/>
                     </TouchableOpacity>

@@ -15,7 +15,7 @@ export const getDownloadPermissionAndroid = async () => {
     );
     if (granted === PermissionsAndroid.RESULTS.GRANTED) return true;
   } catch (err) {
-    //console.log('err', err);
+    ////console.log('err', err);
   }
 };
 
@@ -51,7 +51,7 @@ export const downloadFile = async (url, filename) => {
     });
 
     const response = await RNFetchBlob.config(configOptions).fetch('GET', url);
-   // //console.log(response)
+   // ////console.log(response)
     // Return the path to the downloaded file
     return response;
   } catch (error) {

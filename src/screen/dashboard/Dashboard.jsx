@@ -12,7 +12,7 @@ const Dashboard = () => {
   const [isError, setIsError] = useState(false);
   const [refresh, setRefresh] = useState(false);
   useEffect(() => {
-    ////console.log('rnder',active,message)
+    //////console.log('rnder',active,message)
   }, [active, loading])
   const modalHandler = (status, msg, isError = false) => {
     setActive(!active);
@@ -21,7 +21,7 @@ const Dashboard = () => {
   }
 
   const handleLoader = (status) => {
-    console.log('status', status);
+    //console.log('status', status);
     setLoading(status);
   }
   const handleRefresh = () => {

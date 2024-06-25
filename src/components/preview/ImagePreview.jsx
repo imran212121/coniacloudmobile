@@ -15,7 +15,7 @@ import close from '../../assets/icons/close.png'
 
 
 const ImagePreview = ({ files, user, closeFile,folderId,handleFolderNavigation }) => {
-    //console.log('files', files);
+    ////console.log('files', files);
     const [PreviewToken, setPreviewToken] = useState(false)
     let previewUrl = AppSettings.base_url + files.url;
     let downloadUrl = AppSettings.base_url + '/api/v1/file-entries/download/' + files.hash;
@@ -29,12 +29,12 @@ const ImagePreview = ({ files, user, closeFile,folderId,handleFolderNavigation }
             try {
                 const token = await makeApiCall('/api/v1/file-entries/' + files.id + '/add-preview-token', user?.access_token, 'post');
                 
-                console.log('token', token?.preview_token);
+                //console.log('token', token?.preview_token);
                 setPreviewToken(token?.preview_token);
-                console.log(previewUrl + '?preview_token=' + PreviewToken);
+                //console.log(previewUrl + '?preview_token=' + PreviewToken);
 
             } catch (error) {
-                console.log('error', error);
+                //console.log('error', error);
             }
         }
         setTimeout(() => {
@@ -43,23 +43,23 @@ const ImagePreview = ({ files, user, closeFile,folderId,handleFolderNavigation }
         }, 200)
 
     }, [])
-    //console.log('deviceWidth', deviceWidth);
+    ////console.log('deviceWidth', deviceWidth);
 
     const downloadAndOpenFile = () => {
         const url = downloadUrl + '?add-preview-token=' + PreviewToken;
         const file_extension = files?.extension;
         const file_name = files?.name;
         const file_name_with_extension = file_name + '.' + file_extension;
-        //console.log(Platform.OS);
+        ////console.log(Platform.OS);
         if (Platform.OS === 'android') {
-            //console.log('sss');
+            ////console.log('sss');
             getDownloadPermissionAndroid().then(granted => {
                 if (granted) {
-                    //console.log('sss');
+                    ////console.log('sss');
                     downloadFile(url, file_name_with_extension);
                 } else {
                     downloadFile(url, file_name_with_extension);
-                    //console.log('sssaa');
+                    ////console.log('sssaa');
                 }
             });
         } else {
@@ -97,7 +97,7 @@ const ImagePreview = ({ files, user, closeFile,folderId,handleFolderNavigation }
                            }
                            const res = await makeApiCall('/api/v1/file-entries/delete', user?.access_token, 'post',data);
                            handleFolderNavigation(0);
-                           //console.log('res',res)
+                           ////console.log('res',res)
                     }}>
                         <Image source={trash} style={{width:15,height:15}}/>
                     </TouchableOpacity>

@@ -15,7 +15,7 @@ const EditProfile = () => {
     const error = useSelector((state) => state.auth.error);
     const handleProfile = (values) => {
         const { first_name,last_name,mobile,email} = values;
-       console.log(first_name,last_name,mobile,email);
+       //console.log(first_name,last_name,mobile,email);
     }
     if (loading) {
         return <Text>Loading</Text>;

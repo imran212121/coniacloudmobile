@@ -36,6 +36,7 @@ const Trashed = ({ active,handleLoader,loading }) => {
 
     const fetchFolderFiles = async () => {
       handleLoader(true)
+      console.log('Trash');
       const response = await axios.get(`${baseURL}/drive/file-entries?timestamp=${new Date().getTime()}`, {
         headers: {
           Authorization: 'Bearer ' + user?.access_token
@@ -59,7 +60,7 @@ const Trashed = ({ active,handleLoader,loading }) => {
         folder.push({ 'id': response?.data?.folder?.id, 'name': response?.data?.folder?.name })
         setFolder(folder);
       }
-      console.log('response?.data',response?.data);
+      //console.log('response?.data',response?.data);
       setDriveData(response?.data);
       setCurrentPage(response?.data?.current_page);
       setLastPage(response?.data?.last_page)
@@ -69,7 +70,7 @@ const Trashed = ({ active,handleLoader,loading }) => {
     };
     //setTimeout(() => {
     if (user && user?.access_token != 'undefined') {
-      console.log('user.access_token1', user?.access_token);
+      //console.log('user.access_token1', user?.access_token);
       setUserToken(user?.access_token);
       fetchFolderFiles();
     }
@@ -160,7 +161,7 @@ const Trashed = ({ active,handleLoader,loading }) => {
             }
 
             {driveData?.data?.map((files, index) => {
-              console.log('files',files);
+              //console.log('files',files);
               if(files.extension=="jpg" || files.extension=="jpeg" || files.extension=="svg")
               {
                 files.type='image';

@@ -16,7 +16,7 @@ import imageIcon from '../assets/icons/image.png';
 import back from '../assets/icons/fi_arrow-left.png';
 import { baseURL } from '../constant/settings';
 
-const Started = ({ active, handleLoader, loading,refresh }) => {
+const MyDrive = ({ active, handleLoader, loading,refresh }) => {
   const [driveData, setDriveData] = useState([]);
   const [token, setToken] = useState(null);
   
@@ -44,7 +44,7 @@ const Started = ({ active, handleLoader, loading,refresh }) => {
   useEffect(() => {
     const fetchFolderFiles = async () => {
       if (!token) return;
-
+      console.log('Started');
       handleLoader(true);
       try {
         const response = await axios.get(`${baseURL}/drive/file-entries?timestamp=${new Date().getTime()}`, {
@@ -55,7 +55,7 @@ const Started = ({ active, handleLoader, loading,refresh }) => {
             page,
             workspaceId: 0,
             deletedOnly: false,
-            starredOnly: true,
+            starredOnly: false,
             recentOnly: false,
             sharedOnly: false,
             per_page: 100
@@ -67,7 +67,7 @@ const Started = ({ active, handleLoader, loading,refresh }) => {
         if (data.folder && !isExists(data.folder.id, folder)) {
           setFolder((prev) => [...prev, { id: data.folder.id, name: data.folder.name }]);
         }
-        console.log('Rerender');
+        //console.log('Rerender');
         setDriveData(data.data);
       } catch (error) {
         handleLoader(false);
@@ -177,7 +177,7 @@ const Started = ({ active, handleLoader, loading,refresh }) => {
   );
 };
 
-export default Started;
+export default MyDrive;
 
 const styles = StyleSheet.create({
   driveContainer: {

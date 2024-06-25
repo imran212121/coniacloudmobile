@@ -32,13 +32,13 @@ const StorageStatus = ({ user,usertoken }) => {
 
     const fetchData = async () => {
       try {
-        console.log('user?.access_token2',user?.access_token);
+        //console.log('user?.access_token2',user?.access_token);
         const storage = await makeApiCall(`/api/v1/user/space-usage?timestamp=${new Date().getTime()}`, token, 'get');
         setSpendStorage(MBtoGB(storage?.used));
         let per = (storage?.used / storage?.available) * 100;
         setTotalStorage(MBtoGB(storage?.available));
         setPercentage(per*(1800/100));
-         console.log(per*(1800/100))
+         //console.log(per*(1800/100))
         let sdo = circleCircumference - (circleCircumference * per) / 100;
         setStrokeDashoffset(sdo);
         
@@ -48,7 +48,7 @@ const StorageStatus = ({ user,usertoken }) => {
         //fetchData();
       }
     };
-    console.log('usertoken',usertoken);
+    //console.log('usertoken',usertoken);
    // setTimeout(() => {
      if(token!=null){fetchData();}
     //}, 200)

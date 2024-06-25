@@ -54,7 +54,7 @@ const AudioPreview = ({ files, user, closeFile, folderId, handleFolderNavigation
                 setIsPlaying(true);
                 newSound.play((success) => {
                     if (success) {
-                        console.log('Successfully finished playing');
+                        //console.log('Successfully finished playing');
                     } else {
                         console.error('Playback failed due to audio decoding errors');
                     }
@@ -111,7 +111,7 @@ const AudioPreview = ({ files, user, closeFile, folderId, handleFolderNavigation
                            }
                            const res = await makeApiCall('/api/v1/file-entries/delete', user?.access_token, 'post',data);
                            handleFolderNavigation(0);
-                           //console.log('res',res)
+                           ////console.log('res',res)
                     }}>
                         <Image source={trash} style={{width:15,height:15}}/>
                     </TouchableOpacity>

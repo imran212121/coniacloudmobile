@@ -34,7 +34,7 @@ export default function Header({ modalHandler, handleLoader, loading ,handleRefr
       }, 1000);
     } catch (err) {
       if (DocumentPicker.isCancel(err)) {
-        console.log('User cancelled document picker');
+        //console.log('User cancelled document picker');
       } else {
         console.error('Error picking document:', err);
       }
@@ -44,7 +44,7 @@ export default function Header({ modalHandler, handleLoader, loading ,handleRefr
   const uploadDocument = async () => {
     if (!selectedDocument) {
       handleLoader(false);
-      console.log('No document selected');
+      //console.log('No document selected');
       return;
     }
     try {
@@ -64,7 +64,7 @@ export default function Header({ modalHandler, handleLoader, loading ,handleRefr
         { name: 'disk', data: 'uploads' },
       ]);
 
-      console.log('Upload successful:', response.data);
+      //console.log('Upload successful:', response.data);
       modalHandler(true, 'Upload successful', false);
       handleLoader(false);
       handleRefresh(!refresh)
@@ -76,7 +76,7 @@ export default function Header({ modalHandler, handleLoader, loading ,handleRefr
   };
 
   const settingScreen = () => {
-    console.log('settings');
+    //console.log('settings');
     navigation.navigate('Settings');
   };
 
@@ -102,9 +102,9 @@ export default function Header({ modalHandler, handleLoader, loading ,handleRefr
           <TouchableOpacity>
             <Image source={require('../assets/noti.png')} style={styles.icon} />
           </TouchableOpacity>
-          {/* <TouchableOpacity onPress={settingScreen}>
+          <TouchableOpacity onPress={settingScreen}>
             <Image source={require('../assets/settings.png')} style={styles.icon} />
-          </TouchableOpacity> */}
+          </TouchableOpacity>
           </View>
         </View>
       )}

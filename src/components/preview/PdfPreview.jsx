@@ -23,9 +23,9 @@ const PdfPreview = ({ files, user, closeFile, folderId, handleFolderNavigation }
                 const token = await makeApiCall('/api/v1/file-entries/' + files.id + '/add-preview-token', user?.access_token, 'post');
                 setPreviewToken(token?.preview_token);
                 setPdfSource({ uri: previewUrl + '?preview_token=' + PreviewToken });
-                console.log('previewUrl', previewUrl + '?preview_token=' + PreviewToken);
+                //console.log('previewUrl', previewUrl + '?preview_token=' + PreviewToken);
             } catch (error) {
-                console.log('error', error);
+                //console.log('error', error);
             }
         };
         setTimeout(() => {
@@ -83,13 +83,13 @@ const PdfPreview = ({ files, user, closeFile, folderId, handleFolderNavigation }
                             trustAllCerts={false}
                             source={{ uri: previewUrl + '?preview_token=' + PreviewToken }}
                             onLoadComplete={(numberOfPages, filePath) => {
-                                console.log(`Number of pages: ${numberOfPages}`);
+                                //console.log(`Number of pages: ${numberOfPages}`);
                             }}
                             onPageChanged={(page, numberOfPages) => {
-                                console.log(`Current page: ${page}`);
+                                //console.log(`Current page: ${page}`);
                             }}
                             onError={(error) => {
-                                console.log(error);
+                                //console.log(error);
                             }}
                             style={styles.pdf}
                         />

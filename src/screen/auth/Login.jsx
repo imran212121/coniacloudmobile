@@ -18,7 +18,7 @@ const Login = () => {
     const { isLoggedIn, loading, error, user } = useSelector((state) => state.auth);
 
     useEffect(() => {
-        console.log('user*****************************', user, isLoggedIn);
+        //console.log('user*****************************', user, isLoggedIn);
         if (user !== null) {
             navigation.navigate('Dashboard');
         }
@@ -26,7 +26,7 @@ const Login = () => {
 
     const handleLogin = async (values) => {
         const { email, password } = values;
-        console.log('Login start');
+        //console.log('Login start');
         dispatch(loginAsync({ email, password, token_name: 'android' }))
         await dispatch(loginUser({ email, password, token_name: 'android' }))
             .then((data) => {

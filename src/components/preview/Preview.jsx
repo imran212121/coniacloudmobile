@@ -8,7 +8,7 @@ import TextPreview from './TextPreview';
 
 export default function Preview({selectedFile,user,closeFile,handleFolderNavigation,folderId}) {
     let content;
-console.log('selectedFile',selectedFile.type);
+//console.log('selectedFile',selectedFile.type);
   switch (selectedFile.type) {
     case 'image':
       content = <ImagePreview handleFolderNavigation={handleFolderNavigation} files={selectedFile} folderId={folderId} closeFile={closeFile} user={user}/>;

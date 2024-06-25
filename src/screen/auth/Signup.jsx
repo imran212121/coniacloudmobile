@@ -9,7 +9,7 @@
 // const Signup = () => {
 //     const navigation = useNavigation();
 //     const handleSignup = () => {
-//         //console.log("Signup");
+//         ////console.log("Signup");
 //     }
 //     return (
 //         <View style={styles.loginMainContainer}>
@@ -126,7 +126,7 @@ const Signup = () => {
     const dispatch = useDispatch();
     const { isLoggedIn, loading, error, user } = useSelector((state) => state.auth);
     const handleSignup = () => {
-        console.log("Signup");
+        //console.log("Signup");
     }
 
 

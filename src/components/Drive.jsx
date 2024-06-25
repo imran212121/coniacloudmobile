@@ -37,6 +37,7 @@ const Drive = ({ handleLoader, loading, refresh }) => {
   useEffect(() => {
     const fetchFolderFiles = async () => {
       if (!token) return;
+      console.log('Recent');
       handleLoader(true);
       try {
         const response = await axios.get(`${baseURL}/drive/file-entries?timestamp=${new Date().getTime()}`, {
@@ -48,7 +49,7 @@ const Drive = ({ handleLoader, loading, refresh }) => {
             workspaceId: 0,
             deletedOnly: false,
             starredOnly: false,
-            recentOnly: false,
+            recentOnly: true,
             sharedOnly: false,
             per_page: 100
           }

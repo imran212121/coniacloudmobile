@@ -3,7 +3,7 @@ import { StyleSheet, View , Text , Modal , Button } from 'react-native';
 
 const ModalView = ({active,message,isError,modalHandler}) => {
     useEffect(()=>{
-        //console.log('Render Again');
+        ////console.log('Render Again');
     },[active])
     //setIsVisible(active);
     

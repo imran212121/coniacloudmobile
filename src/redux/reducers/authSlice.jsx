@@ -42,16 +42,16 @@
       export const selectUser = (state) => state.auth.user;
       
       export const loginAsync = (credentials) => async (dispatch) => {
-      console.log("********************");
+      //console.log("********************");
         dispatch(loginStart());
         try {
           const response = await axios.post(baseURL+'/auth/login', credentials);
-          console.log("*******loginStart*************",response.data.user);
+          //console.log("*******loginStart*************",response.data.user);
           await AsyncStorage.setItem('user', JSON.stringify(response.data.user));
           
           dispatch(loginSuccess(response.data.user));
         } catch (error) {
-          console.log("**********loginFailure**********",error);
+          //console.log("**********loginFailure**********",error);
           dispatch(loginFailure(error.message));
         }
       };

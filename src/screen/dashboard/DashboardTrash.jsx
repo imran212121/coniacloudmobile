@@ -2,7 +2,8 @@ import { StyleSheet,ScrollView } from 'react-native'
 
 import React ,{useState,useEffect} from 'react'
 import Header from '../../components/Header';
-import Started from '../../components/Started';
+//import Started from '../../components/Started';
+import Trashed from '../../components/Trash';
 import ModalView from '../../components/ModalView';
 
 
@@ -12,7 +13,7 @@ const DashboardTrash = () => {
   const [message , setMessage] = useState('');
   const [isError , setIsError] = useState(false); 
   useEffect(()=>{
-   ////console.log('rnder',active,message)
+   //////console.log('rnder',active,message)
   },[active,loading])
   const modalHandler = (status,msg,isError=false) =>{
       setActive(!active);
@@ -21,7 +22,7 @@ const DashboardTrash = () => {
    }
   
   const handleLoader = (status) => {
-    console.log('status',status);
+    //console.log('status',status);
     setLoading(status);
   }
   return (
@@ -29,7 +30,7 @@ const DashboardTrash = () => {
       
        <Header loading={loading} handleLoader={handleLoader} modalHandler ={modalHandler} active={active}/>
        <ModalView modalHandler ={modalHandler} active={active} isError={isError} message={message}/>
-       <Started loading={loading} active={active} handleLoader={handleLoader}/>
+       <Trashed loading={loading} active={active} handleLoader={handleLoader}/>
         </ScrollView>
 
   )
