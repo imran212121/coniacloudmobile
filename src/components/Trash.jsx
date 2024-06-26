@@ -1,85 +1,105 @@
-import { StyleSheet, Text, View, Image, ActivityIndicator, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { StyleSheet, Text, View, Image, ActivityIndicator, TouchableOpacity, Dimensions, TextInput, FlatList, ScrollView } from 'react-native';
 import axios from 'axios';
-import MIcon from 'react-native-vector-icons/MaterialCommunityIcons';
-import DriveHeader from './DriveHeader';
-import { isExists } from '../utils/DriveHelper';
-import { useNavigation } from '@react-navigation/native'
-import Preview from './preview/Preview';
-import StorageStatus from './StorageStatus'
-// Import images at the top of your file
-import folderIcon from '../assets/icons/folder.png';
-import fileIcon from '../assets/icons/file.png';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import folderIcon from '../assets/icon/folder.png';
+import fileIcon from '../assets/icon/file.png';
 import pdfIcon from '../assets/icons/pdf.png';
-import wordIcon from '../assets/icons/word.png';
-import imageIcon from '../assets/icons/image.png';
-import { baseURL } from '../constant/settings';
-
-const Trashed = ({ active,handleLoader,loading }) => {
-  const [driveData, setDriveData] = useState(false)
-  const [usertoken, setUserToken] = useState(false)
-  const [disabled, setDisabled] = useState(false);
-  const [selected, setSelected] = useState(false)
-  const [selectedFile, setSelectedFile] = useState(false)
-  const [pageId, setPageId] = useState('trash');
+import wordIcon from '../assets/icon/word.png';
+import imageIcon from '../assets/icon/image.png';
+import noTrash from '../assets/no_trash.png';
+import back from '../assets/icons/fi_arrow-left.png';
+import { baseURL, fileColorCode } from '../constant/settings';
+import StorageStatus from './StorageStatus';
+import DriveHeader from './DriveHeader';
+import Preview from './preview/Preview';
+const Trash = ({ handleLoader, loading, refresh }) => {
+  const [driveData, setDriveData] = useState([]);
+  const [token, setToken] = useState(null);
   const [page, setPage] = useState(1);
-  const [lastPage, setLastPage] = useState(5);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [nextPage, setNextPage] = useState(false);
-  const [prevPage, setPrevPage] = useState(false);
   const [folderId, setFolderId] = useState(0);
   const [folder, setFolder] = useState([]);
-  const user = useSelector((state) => state.auth.user);
-  const navigation = useNavigation();
+  const [selected, setSelected] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [user, setUser] = useState(false);
+  const [viewType, setViewType] = useState('grid');
+  const deviceWidth = Dimensions.get('window').width;
+
   useEffect(() => {
-
-    const fetchFolderFiles = async () => {
-      handleLoader(true)
-      console.log('Trash');
-      const response = await axios.get(`${baseURL}/drive/file-entries?timestamp=${new Date().getTime()}`, {
-        headers: {
-          Authorization: 'Bearer ' + user?.access_token
-        },
-        params: {
-          pageId: pageId,
-          folderId: folderId,
-          page: page,
-          workspaceId: 0,
-          deletedOnly: true,
-          starredOnly: false,
-          recentOnly: false,
-          sharedOnly: false,
-          per_page: 100
-
-        }
-      });
-      handleLoader(false);
-      let isExist = isExists(response?.data?.folder?.id, folder);
-      if (!isExist && response?.data?.folder) {
-        folder.push({ 'id': response?.data?.folder?.id, 'name': response?.data?.folder?.name })
-        setFolder(folder);
+    const checkLoginStatus = async () => {
+      const users = JSON.parse(await AsyncStorage.getItem('user'));
+      if (users && users.access_token) {
+        setToken(users.access_token);
+        setUser(users);
       }
-      //console.log('response?.data',response?.data);
-      setDriveData(response?.data);
-      setCurrentPage(response?.data?.current_page);
-      setLastPage(response?.data?.last_page)
-      if (response?.data?.next_page === null) { setNextPage(true) } else { setNextPage(false) }
-      if (response?.data?.prev_page === null) { setPrevPage(true) } else { setPrevPage(false) }
-
     };
-    //setTimeout(() => {
-    if (user && user?.access_token != 'undefined') {
-      //console.log('user.access_token1', user?.access_token);
-      setUserToken(user?.access_token);
-      fetchFolderFiles();
+    checkLoginStatus();
+  }, []);
+
+  useEffect(() => {
+    const fetchFolderFiles = async () => {
+      if (!token) return;
+      console.log('Recent');
+      handleLoader(true);
+      try {
+        const response = await axios.get(`${baseURL}/drive/file-entries?timestamp=${new Date().getTime()}`, {
+          headers: { Authorization: `Bearer ${token}` },
+          params: {
+            pageId: 0,
+            folderId,
+            page,
+            workspaceId: 0,
+            deletedOnly: true,
+            starredOnly: false,
+            recentOnly: false,
+            sharedOnly: false,
+            per_page: 100
+          }
+        });
+        handleLoader(false);
+        const { data } = response;
+        if (data.folder && !folder.some(f => f.id === data.folder.id)) {
+          setFolder(prev => [...prev, { id: data.folder.id, name: data.folder.name }]);
+        }
+        setDriveData(data.data);
+      } catch (error) {
+        handleLoader(false);
+        console.error('Failed to fetch folder files:', error);
+      }
+    };
+    fetchFolderFiles();
+  }, [token, folderId, page, refresh]);
+
+  const handleFile = (files) => {
+    if (files.type === 'folder') {
+      setFolderId(files.id);
+      setSelected(false);
+      setSelectedFile(null);
+    } else {
+      setSelected(true);
+      setSelectedFile(files);
     }
+  };
 
-    // }, 200)
+  const handleFolderNavigation = (folderId) => {
+    setSelected(false);
+    setFolderId(folderId);
+    let folderArray = [];
+    for(x in folder)
+      {
+        if(folder[x].id==folderId)
+          {
+            folderArray.push(folder[x]); 
+            break;  
+          }else{
+            folderArray.push(folder[x]);
+          }
+      }
+    setFolder(folderArray);
+  };
 
+  const closeFile = () => setSelected(false);
 
-  }, [user?.access_token, usertoken, folderId, folder, selected, active, page])
-  const size = 60;
   const fileType = {
     folder: folderIcon,
     file: fileIcon,
@@ -87,186 +107,270 @@ const Trashed = ({ active,handleLoader,loading }) => {
     word: wordIcon,
     image: imageIcon
   };
-  const handleNextMore = () => {
-    setPage(page + 1);
-  };
-  const handlePrevMore = () => {
-    setPage(page - 1);
-  };
-  const handleFile = (files) => {
 
-    if (files?.type == 'folder') {
-      setFolderId(files?.id);
-      setSelected(false);
-      setSelectedFile(false);
-    } else {
-      setSelected(true);
-      setSelectedFile(files)
+  const renderGridItem = ({ item, index }) => {
+    if (item.extension === 'jpg' || item.extension === 'jpeg' || item.extension === 'svg') {
+      item.type = 'image';
     }
-  }
+    return (
+      <TouchableOpacity
+        key={index}
+        style={[
+          styles.fileData,
+          {
+            width: deviceWidth * 0.42,
+            backgroundColor: fileColorCode[Math.floor(Math.random() * 4)],
+            flexDirection: 'column',
+          },
+        ]}
+        onPress={() => handleFile(item)}
+      >
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <Image source={fileType[item.type]} style={styles.fileIcon} />
+          <Image source={require('../assets/MoreOption.png')} style={[styles.moreicon]} />
+        </View>
+        <Text style={styles.fileText}>{item.name.length > 15 ? `${item.name.substring(0, 15)}...` : item.name}</Text>
+        <Text style={styles.filetxtnormal}>Edited 9m ago</Text>
+      </TouchableOpacity>
+      
+    );
+  };
 
-  const handleFolderNavigation = async (folderId) => {
-    setSelected(false);
-    setFolderId(folderId);
-    let folderArray = [];
-    let satisfy = false;
-    folder.map((folders, key) => {
-
-      if (folders.id === folderId) {
-        //setFolder([]);
-        satisfy = true;
-        setFolder(folderArray);
-
-      } else {
-        if (!satisfy) {
-          folderArray.push({ 'id': folders?.id, 'name': folders?.name })
-        }
-      }
-
-    })
-  }
-  const closeFile = () => {
-    setSelected(false);
-  }
+  const renderListItem = ({ item, index }) => {
+    if (item.extension === 'jpg' || item.extension === 'jpeg' || item.extension === 'svg') {
+      item.type = 'image';
+    }
+  
+    return (
+      <TouchableOpacity
+        key={index}
+        style={[
+          styles.fileData,
+          {
+            backgroundColor: fileColorCode[Math.floor(Math.random() * 4)],
+            height:90
+          },
+        ]}
+        onPress={() => handleFile(item)}
+      >
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <View style={{flexDirection:'row',alignItems:'center',gap:15}}>
+            
+          <Image source={fileType[item.type]} style={[styles.fileIcon,{height:40,width:40}]} />
+          <View>
+         <Text style={[styles.fileText,{marginTop:0,}]}>
+          {item.name.length > 15 ? `${item.name.substring(0, 15)}...` : item.name}
+        </Text>
+        <Text style={styles.filetxtnormal}>Edited 9m ago</Text>
+         </View>
+          </View>
+        
+          <Image source={require('../assets/MoreOption.png')} style={[styles.moreicon,{height:30,width:20}]} />
+        </View>
+        
+      </TouchableOpacity>
+    );
+  };
+  
 
   return (
-    <View style={{ marginTop: 2 }}>
+    <View style={{ marginTop: 2, flex: 1 }}>
       {loading ? (
-         <View style={{ flex: 1,paddingVertical:150, justifyContent: 'center', alignItems: 'center' }}>
-         <ActivityIndicator size="extra-large" color="#004181" animating={true} />
-         {/* Other content */}
-       </View>
-        
-      ):
-      <>
-      <View style={styles.StatusContainer}>
-        <StorageStatus user={user} usertoken={usertoken} />
-      </View>
-      <View style={styles.headerBottom}>
-        <DriveHeader lastPage={lastPage} currentPage={currentPage} folder={folder} selected={selected} handleFolderNavigation={handleFolderNavigation} />
-      </View>
-      {!selected ? (
+        <View style={styles.loader}>
+          <ActivityIndicator size="large" color="#004181" />
+        </View>
+      ) : (
         <>
-          <View style={styles.driveContainer}>
-            {driveData?.data?.length === 0 ?
-              <>
-                <View style={{ justifyContent: 'center', display: 'flex', flexDirection: 'column', marginLeft: 42, height: 300 }}>
-                  <Image source={require('../assets/no_data.png')} style={{ width: 300, height: 220, borderRadius: 5 }} />
-                  <Text style={{ fontSize: 18, justifyContent: 'center', fontWeight: 500, paddingLeft: 32, paddingTop: 20 }}>Upload files or folders here</Text>
-                </View>
-
-              </>
-              :
-              <></>
-            }
-
-            {driveData?.data?.map((files, index) => {
-              //console.log('files',files);
-              if(files.extension=="jpg" || files.extension=="jpeg" || files.extension=="svg")
-              {
-                files.type='image';
-              }
-              return (
-                <TouchableOpacity key={index} style={styles.filedata} onPress={() => { handleFile(files) }}>
-
-                  {/* <MIcon color={'#ffde6c'} name={fileType[files.type]} size={size}></MIcon> */}
-                  <Image
-                    source={fileType[files.type]}
-                    style={{ width: 70, height: 70 }}
-                  />
-
-                  <Text>{files?.name?.length > 5 ? files?.name.substring(0, 5) + '...' : files?.name}</Text>
-                </TouchableOpacity>
-              )
-
-            })}
-
-          </View>
-          {(!prevPage || !nextPage) &&
-            <View style={styles.paginationContainer}>
-              <TouchableOpacity style={[styles.paginationButton, prevPage && styles.disabledButton]} onPress={handlePrevMore} disabled={prevPage}>
-                <Text style={styles.paginationButtonText}>Prev</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.paginationButton, nextPage && styles.disabledButton]} onPress={handleNextMore} disabled={nextPage}>
-                <Text style={styles.paginationButtonText}>Next</Text>
+          {selected && (
+            <View style={styles.backContainer}>
+              <TouchableOpacity style={{ marginLeft: 5, marginTop: 5 }} onPress={() => handleFolderNavigation(folderId)}>
+                <Image source={back} style={{ width: 25, height: 15 }} />
               </TouchableOpacity>
             </View>
-          }
-
+          )}
+          <View style={styles.StatusContainer}>
+            <StorageStatus user={user} usertoken={token} />
+          </View>
+          {/* <View style={styles.inputContainer}>
+            <TouchableOpacity>
+              <Image source={require('../assets/Search.png')} style={styles.leftImage} />
+            </TouchableOpacity>
+            <TextInput style={styles.input} placeholder="Search" />
+            <TouchableOpacity>
+              <Image source={require('../assets/Filter.png')} style={styles.rightImage} />
+            </TouchableOpacity>
+          </View> */}
+          {/* <View style={styles.headerBottom}>
+            <DriveHeader folder={folder} selected={selected} handleFolderNavigation={handleFolderNavigation} />
+          </View> */}
+          {!selected ? (
+            <>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: 18 }}>
+                <Text style={styles.heading}>Trash</Text>
+                <View style={{ flexDirection: "row", gap: 10 }}>
+                  <TouchableOpacity onPress={() => setViewType('list')}>
+                    <Image source={require('../assets/list.png')} style={[styles.rightImage, { tintColor: viewType === 'list' ? '#004181' : '#B3B4B6' }]} />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => setViewType('grid')}>
+                    <Image source={require('../assets/Grid.png')} style={[styles.rightImage, { tintColor: viewType === 'list' ? '#B3B4B6' : '#004181' }]} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+              <ScrollView showsVerticalScrollIndicator={false}>
+              {driveData && driveData.length>0 ? 
+                <FlatList
+                key={viewType} 
+                data={driveData}
+                renderItem={viewType === 'grid' ? renderGridItem : renderListItem}
+                keyExtractor={(item, index) => index.toString()}
+                numColumns={viewType === 'grid' ? 2 : 1}
+                // contentContainerStyle={styles.driveContainer}
+              />
+         
+              :
+              <View style={{display:'flex', flexDirection:'column', alignItems:'center'}}>
+              <Image source={noTrash} />
+              <Text style={{fontSize:14, fontWeight:'500'}}>Nothing in Trash</Text> 
+              </View>
+              }
+              </ScrollView>
+            </>
+          ) : (
+            <View style={styles.previewContainer}>
+              <Preview selectedFile={selectedFile} handleFolderNavigation={handleFolderNavigation} closeFile={closeFile} user={user} />
+            </View>
+          )}
         </>
-      ) : (
-        <View style={styles.previewContainer}>
-          <Preview selectedFile={selectedFile} handleFolderNavigation={handleFolderNavigation} folderId={folderId} closeFile={closeFile} user={user} />
-        </View>
       )}
-</>
-      }
-
-
     </View>
+  );
+};
 
-  )
-}
-
-export default Trashed
+export default Trash;
 
 const styles = StyleSheet.create({
   driveContainer: {
-    display: 'flex',
     flexDirection: 'row',
-    flexWrap: 'wrap'
+    flexWrap: 'wrap',
+    flex: 1
   },
   StatusContainer: {
-    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  backContainer: {
+    alignItems: 'flex-start',
   },
   previewContainer: {
     width: 'auto',
     height: 'auto',
   },
-  filedata: {
-    backgroundColor: 'white',
+  fileData: {
     margin: 15,
-    height: 100,
-    alignItems: 'center',
-    width: 100,
-    padding: 10,
-    borderRadius: 10
-  },
-  headerBottom: {
-    height: 50,
-    backgroundColor: '#FFF',
-    borderBottomWidth: 1,
-    borderBlockColor: '#e5e7eb'
+    height: 115,
+    padding: 12,
+    borderRadius: 20,
+
+
   },
   loader: {
     marginTop: 10,
     alignItems: 'center',
   },
   paginationContainer: {
-    flex: 1,
     flexDirection: 'row',
-    flexWrap: 'wrap',
     marginTop: 10,
-    alignItems: 'flex-start',
-    marginBottom: 10
+    marginBottom: 10,
   },
-
   paginationButton: {
     backgroundColor: '#007bff',
     borderRadius: 8,
     alignItems: 'center',
-    width: 175,
     height: 40,
-    marginLeft: 15
+    marginHorizontal: 15,
   },
   paginationButtonText: {
     color: '#fff',
     fontSize: 16,
-    paddingTop: 9
+    paddingVertical: 9,
   },
   disabledButton: {
-    opacity: 0.5, // Example style for disabled button
+    opacity: 0.5,
   },
-})
+  noDataContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 300,
+    marginLeft: 42,
+  },
+  noDataImage: {
+    width: 300,
+    height: 220,
+    borderRadius: 5,
+  },
+  noDataText: {
+    fontSize: 18,
+    fontWeight: '500',
+    paddingLeft: 32,
+    paddingTop: 20,
+  },
+  fileIcon: {
+    width: 30,
+    height: 30,
+    // margin: 5,
+    alignItems: 'flex-start',
+  },
+  fileText: {
+    fontSize: 14,
+    fontWeight: '500',
+    height: 21,
+    color: '#071625',
+    marginTop: 20,
+    // marginLeft: 5,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    backgroundColor: '#fff',
+    borderRadius: 25,
+    paddingHorizontal: 15,
+    height: 45,
+    width: '95%',
+    alignSelf: 'center',
+    marginTop: 40,
+  },
+  leftImage: {
+    width: 24,
+    height: 24,
+    marginRight: 10,
+  },
+  input: {
+    flex: 1,
+    height: '100%',
+  },
+  rightImage: {
+    width: 20,
+    height: 20,
+    marginLeft: 10,
+  },
+  filetxtnormal: {
+    background: '#696D70',
+    fontWeight: '400',
+    fontSize: 12
+
+  },
+  moreicon: {
+    height: 25,
+    width: 10,
+    // tintColor:'red'
+    resizeMode: 'contain'
+  },
+  heading:{
+    fontSize:18,
+    color:'#071625',
+    lineHeight:27,
+    fontWeight:'600'
+  }
+});

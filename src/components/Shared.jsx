@@ -7,9 +7,11 @@ import fileIcon from '../assets/icon/file.png';
 import pdfIcon from '../assets/icons/pdf.png';
 import wordIcon from '../assets/icon/word.png';
 import imageIcon from '../assets/icon/image.png';
+import noShare from '../assets/no_share.png';
 import back from '../assets/icons/fi_arrow-left.png';
 import { baseURL, fileColorCode } from '../constant/settings';
 import StorageStatus from './StorageStatus';
+import DriveHeader from './DriveHeader';
 import Preview from './preview/Preview';
 const Shared = ({ handleLoader, loading, refresh }) => {
   const [driveData, setDriveData] = useState([]);
@@ -49,7 +51,7 @@ const Shared = ({ handleLoader, loading, refresh }) => {
             workspaceId: 0,
             deletedOnly: false,
             starredOnly: false,
-            recentOnly: true,
+            recentOnly: false,
             sharedOnly: false,
             per_page: 100
           }
@@ -82,7 +84,18 @@ const Shared = ({ handleLoader, loading, refresh }) => {
   const handleFolderNavigation = (folderId) => {
     setSelected(false);
     setFolderId(folderId);
-    setFolder(prev => prev.filter(f => f.id !== folderId));
+    let folderArray = [];
+    for(x in folder)
+      {
+        if(folder[x].id==folderId)
+          {
+            folderArray.push(folder[x]); 
+            break;  
+          }else{
+            folderArray.push(folder[x]);
+          }
+      }
+    setFolder(folderArray);
   };
 
   const closeFile = () => setSelected(false);
@@ -187,10 +200,13 @@ const Shared = ({ handleLoader, loading, refresh }) => {
               <Image source={require('../assets/Filter.png')} style={styles.rightImage} />
             </TouchableOpacity>
           </View>
+          <View style={styles.headerBottom}>
+            <DriveHeader folder={folder} selected={selected} handleFolderNavigation={handleFolderNavigation} />
+          </View>
           {!selected ? (
             <>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: 18 }}>
-                <Text style={styles.heading}>Recently Edited</Text>
+                <Text style={styles.heading}>Shared</Text>
                 <View style={{ flexDirection: "row", gap: 10 }}>
                   <TouchableOpacity onPress={() => setViewType('list')}>
                     <Image source={require('../assets/list.png')} style={[styles.rightImage, { tintColor: viewType === 'list' ? '#004181' : '#B3B4B6' }]} />
@@ -201,14 +217,22 @@ const Shared = ({ handleLoader, loading, refresh }) => {
                 </View>
               </View>
               <ScrollView showsVerticalScrollIndicator={false}>
+              {driveData && driveData.length>0 ? 
                 <FlatList
-                  key={viewType} 
-                  data={driveData}
-                  renderItem={viewType === 'grid' ? renderGridItem : renderListItem}
-                  keyExtractor={(item, index) => index.toString()}
-                  numColumns={viewType === 'grid' ? 2 : 1}
-                  // contentContainerStyle={styles.driveContainer}
-                />
+                key={viewType} 
+                data={driveData}
+                renderItem={viewType === 'grid' ? renderGridItem : renderListItem}
+                keyExtractor={(item, index) => index.toString()}
+                numColumns={viewType === 'grid' ? 2 : 1}
+                // contentContainerStyle={styles.driveContainer}
+              />
+         
+              :
+              <View style={{display:'flex', flexDirection:'column', alignItems:'center'}}>
+              <Image source={noShare} />
+              <Text style={{fontSize:14, fontWeight:'500'}}>Nothing is shared</Text> 
+              </View>
+              }
               </ScrollView>
             </>
           ) : (

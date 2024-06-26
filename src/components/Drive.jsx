@@ -7,6 +7,7 @@ import fileIcon from '../assets/icon/file.png';
 import pdfIcon from '../assets/icons/pdf.png';
 import wordIcon from '../assets/icon/word.png';
 import imageIcon from '../assets/icon/image.png';
+import noRecent from '../assets/no_recent.png';
 import back from '../assets/icons/fi_arrow-left.png';
 import { baseURL, fileColorCode } from '../constant/settings';
 import StorageStatus from './StorageStatus';
@@ -79,10 +80,22 @@ const Drive = ({ handleLoader, loading, refresh }) => {
     }
   };
 
+ 
   const handleFolderNavigation = (folderId) => {
     setSelected(false);
     setFolderId(folderId);
-    setFolder(prev => prev.filter(f => f.id !== folderId));
+    let folderArray = [];
+    for(x in folder)
+      {
+        if(folder[x].id==folderId)
+          {
+            folderArray.push(folder[x]); 
+            break;  
+          }else{
+            folderArray.push(folder[x]);
+          }
+      }
+    setFolder(folderArray);
   };
 
   const closeFile = () => setSelected(false);
@@ -201,15 +214,20 @@ const Drive = ({ handleLoader, loading, refresh }) => {
                 </View>
               </View>
               <ScrollView showsVerticalScrollIndicator={false}>
+                {driveData && driveData.length>0 ? 
                 <FlatList
-                  key={viewType} 
-                  data={driveData}
-                  renderItem={viewType === 'grid' ? renderGridItem : renderListItem}
-                  keyExtractor={(item, index) => index.toString()}
-                  numColumns={viewType === 'grid' ? 2 : 1}
-                  // contentContainerStyle={styles.driveContainer}
-                />
-              </ScrollView>
+                key={viewType} 
+                data={driveData}
+                renderItem={viewType === 'grid' ? renderGridItem : renderListItem}
+                keyExtractor={(item, index) => index.toString()}
+                numColumns={viewType === 'grid' ? 2 : 1}
+                // contentContainerStyle={styles.driveContainer}
+              />
+         
+              :
+              <Image source={noRecent} /> 
+              }
+                   </ScrollView>
             </>
           ) : (
             <View style={styles.previewContainer}>
