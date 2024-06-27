@@ -18,13 +18,13 @@ const BottomNavigation = () => {
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#fff', // Default tab bar background color
+          backgroundColor: '#fff',
           height: 70,
           paddingBottom: 5,
           paddingHorizontal:15
         
         },
-        tabBarShowLabel: false, // Hide default label
+        tabBarShowLabel: false, 
         tabBarIcon: ({ focused }) => {
           let iconName;
           let label;
@@ -62,7 +62,7 @@ const BottomNavigation = () => {
                 style={{
                   width: iconSize,
                   height: iconSize,
-                  tintColor: focused ? '#007bff' : '#414a4c'  // White when focused, gray otherwise
+                  tintColor: focused ? '#007bff' : '#414a4c' 
                 }}
                 source={iconName}
               />

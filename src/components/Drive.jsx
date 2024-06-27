@@ -11,6 +11,8 @@ import back from '../assets/icons/fi_arrow-left.png';
 import { baseURL, fileColorCode } from '../constant/settings';
 import StorageStatus from './StorageStatus';
 import Preview from './preview/Preview';
+import ModalComponent from './ModalComponent';
+
 const Drive = ({ handleLoader, loading, refresh }) => {
   const [driveData, setDriveData] = useState([]);
   const [token, setToken] = useState(null);
@@ -22,6 +24,19 @@ const Drive = ({ handleLoader, loading, refresh }) => {
   const [user, setUser] = useState(false);
   const [viewType, setViewType] = useState('grid');
   const deviceWidth = Dimensions.get('window').width;
+
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+
+  const handleModalOpen = (item) => {
+    setSelectedItem(item);
+    setModalVisible(true);
+  };
+
+  const handleModalClose = () => {
+    setModalVisible(false);
+    setSelectedItem(null);
+  };
 
   useEffect(() => {
     const checkLoginStatus = async () => {
@@ -61,6 +76,14 @@ const Drive = ({ handleLoader, loading, refresh }) => {
         setDriveData(data.data);
       } catch (error) {
         handleLoader(false);
+        if (error.response) {
+          console.log('Server responded with status:', error.response.status);
+          console.log('Error message from server:', error.response.data);
+        } else if (error.request) {
+          console.log('No response received from server:', error.request);
+        } else {
+          console.log('Error setting up the request:', error.message);
+        }
         console.error('Failed to fetch folder files:', error);
       }
     };
@@ -113,12 +136,13 @@ const Drive = ({ handleLoader, loading, refresh }) => {
       >
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <Image source={fileType[item.type]} style={styles.fileIcon} />
-          <Image source={require('../assets/MoreOption.png')} style={[styles.moreicon]} />
+          <TouchableOpacity onPress={() => handleModalOpen(item)}>
+            <Image source={require('../assets/MoreOption.png')} style={[styles.moreicon]} />
+          </TouchableOpacity>
         </View>
         <Text style={styles.fileText}>{item.name.length > 15 ? `${item.name.substring(0, 15)}...` : item.name}</Text>
         <Text style={styles.filetxtnormal}>Edited 9m ago</Text>
       </TouchableOpacity>
-      
     );
   };
 
@@ -126,7 +150,6 @@ const Drive = ({ handleLoader, loading, refresh }) => {
     if (item.extension === 'jpg' || item.extension === 'jpeg' || item.extension === 'svg') {
       item.type = 'image';
     }
-  
     return (
       <TouchableOpacity
         key={index}
@@ -134,30 +157,28 @@ const Drive = ({ handleLoader, loading, refresh }) => {
           styles.fileData,
           {
             backgroundColor: fileColorCode[Math.floor(Math.random() * 4)],
-            height:90
+            height: 90
           },
         ]}
         onPress={() => handleFile(item)}
       >
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <View style={{flexDirection:'row',alignItems:'center',gap:15}}>
-            
-          <Image source={fileType[item.type]} style={[styles.fileIcon,{height:40,width:40}]} />
-          <View>
-         <Text style={[styles.fileText,{marginTop:0,}]}>
-          {item.name.length > 15 ? `${item.name.substring(0, 15)}...` : item.name}
-        </Text>
-        <Text style={styles.filetxtnormal}>Edited 9m ago</Text>
-         </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}>
+            <Image source={fileType[item.type]} style={[styles.fileIcon, { height: 40, width: 40 }]} />
+            <View>
+              <Text style={[styles.fileText, { marginTop: 0 }]}>
+                {item.name.length > 15 ? `${item.name.substring(0, 15)}...` : item.name}
+              </Text>
+              <Text style={styles.filetxtnormal}>Edited 9m ago</Text>
+            </View>
           </View>
-        
-          <Image source={require('../assets/MoreOption.png')} style={[styles.moreicon,{height:30,width:20}]} />
+          <TouchableOpacity onPress={() => handleModalOpen(item)}>
+            <Image source={require('../assets/MoreOption.png')} style={[styles.moreicon, { height: 30, width: 20 }]} />
+          </TouchableOpacity>
         </View>
-        
       </TouchableOpacity>
     );
   };
-  
 
   return (
     <View style={{ marginTop: 2, flex: 1 }}>
@@ -201,12 +222,11 @@ const Drive = ({ handleLoader, loading, refresh }) => {
               </View>
               <ScrollView showsVerticalScrollIndicator={false}>
                 <FlatList
-                  key={viewType} 
+                  key={viewType}
                   data={driveData}
                   renderItem={viewType === 'grid' ? renderGridItem : renderListItem}
                   keyExtractor={(item, index) => index.toString()}
                   numColumns={viewType === 'grid' ? 2 : 1}
-                  // contentContainerStyle={styles.driveContainer}
                 />
               </ScrollView>
             </>
@@ -215,6 +235,7 @@ const Drive = ({ handleLoader, loading, refresh }) => {
               <Preview selectedFile={selectedFile} handleFolderNavigation={handleFolderNavigation} closeFile={closeFile} user={user} />
             </View>
           )}
+          <ModalComponent isVisible={isModalVisible} onClose={handleModalClose} item={selectedItem} />
         </>
       )}
     </View>
@@ -245,8 +266,7 @@ const styles = StyleSheet.create({
     height: 115,
     padding: 12,
     borderRadius: 20,
-    justifyContent:'center'
-
+    justifyContent: 'center'
   },
   loader: {
     marginTop: 10,
@@ -292,7 +312,6 @@ const styles = StyleSheet.create({
   fileIcon: {
     width: 30,
     height: 30,
-    // margin: 5,
     alignItems: 'flex-start',
   },
   fileText: {
@@ -301,7 +320,6 @@ const styles = StyleSheet.create({
     height: 21,
     color: '#071625',
     marginTop: 20,
-    // marginLeft: 5,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -334,18 +352,16 @@ const styles = StyleSheet.create({
     background: '#696D70',
     fontWeight: '400',
     fontSize: 12
-
   },
   moreicon: {
     height: 25,
     width: 10,
-    // tintColor:'red'
     resizeMode: 'contain'
   },
-  heading:{
-    fontSize:18,
-    color:'#071625',
-    lineHeight:27,
-    fontWeight:'600'
+  heading: {
+    fontSize: 18,
+    color: '#071625',
+    lineHeight: 27,
+    fontWeight: '600'
   }
 });

@@ -21,7 +21,7 @@ const Dashboard = () => {
   }
 
   const handleLoader = (status) => {
-    console.log('status', status);
+    // console.log('status', status);
     setLoading(status);
   }
   const handleRefresh = () => {

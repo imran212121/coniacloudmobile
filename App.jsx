@@ -23,13 +23,16 @@ function App() {
   };
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+   
+ <GestureHandlerRootView style={{ flex: 1 }}>
       <Provider store={store}>
         <View style={{ flex: 1 }}>
           <StackNavigation />
         </View>
       </Provider>
     </GestureHandlerRootView>
+    
+   
   );
 }
 

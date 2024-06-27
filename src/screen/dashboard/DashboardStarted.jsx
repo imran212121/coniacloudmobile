@@ -23,7 +23,7 @@ const DashboardMyfiles = () => {
   }
 
   const handleLoader = (status) => {
-    console.log('status', status);
+    // console.log('status', status);
     setLoading(status);
   }
   return (

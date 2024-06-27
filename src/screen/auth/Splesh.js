@@ -15,12 +15,12 @@ const Splesh = () => {
               navigation.navigate('Dashboard', { userData });
             } else {
             
-              navigation.navigate('Splesh');
+              navigation.navigate('Login');
             }
           } catch (error) {
             console.error('Error checking login status:', error);
 
-            navigation.navigate('Splesh');
+            navigation.navigate('Login');
           }
         };
     
