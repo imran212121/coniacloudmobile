@@ -2,7 +2,7 @@ import { StyleSheet,ScrollView } from 'react-native'
 
 import React ,{useState,useEffect} from 'react'
 import Header from '../../components/Header';
-import Started from '../../components/Started';
+
 import ModalView from '../../components/ModalView';
 import Shared from '../../components/Shared';
 

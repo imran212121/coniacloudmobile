@@ -12,7 +12,7 @@ const DriveHeader = ({ folder, handleFolderNavigation }) => {
   return (
     <>
     <View style={{ display: 'flex', flexWrap: 'wrap', flexDirection: 'row' }}>
-      {folder.map((fold, index) => {
+      {folder?.map((fold, index) => {
         const isLast = folder.length === index + 1;
         if (index < 3 || isLast) {
           return (
