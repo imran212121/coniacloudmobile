@@ -6,8 +6,9 @@ import RNFetchBlob from 'rn-fetch-blob';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSelector } from 'react-redux';
 import { baseURL } from '../constant/settings';
+import IconBadge from 'react-native-icon-badge';
 
-export default function Header({ modalHandler, handleLoader, loading, handleRefresh, refresh, uploadIcon, notiIcon, settingsIcon }) {
+export default function Header({ modalHandler, handleLoader, loading, handleRefresh, refresh, uploadIcon, notiIcon, settingsIcon,onPress }) {
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [user, setUser] = useState(null);
   const navigation = useNavigation();
@@ -95,9 +96,13 @@ export default function Header({ modalHandler, handleLoader, loading, handleRefr
             <TouchableOpacity onPress={() => navigation.navigate('UploadDoc')}>
               <Image source={uploadIcon || require('../assets/upload.png')} style={styles.icon} />
             </TouchableOpacity>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={onPress}>
               <Image source={notiIcon || require('../assets/noti.png')} style={styles.icon} />
+            
             </TouchableOpacity>
+          {!notiIcon ? 
+          <View style={{height:13,width:13,backgroundColor:'red',position:'absolute',right:0,bottom:15,borderRadius:10}}>
+            </View>:null}
             {/* Uncomment this if you want to include the settings button */}
             {/* <TouchableOpacity onPress={settingScreen}>
               <Image source={settingsIcon || require('../assets/settings.png')} style={styles.icon} />

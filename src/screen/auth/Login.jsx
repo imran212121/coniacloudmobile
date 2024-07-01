@@ -20,7 +20,7 @@ const Login = () => {
     const { email, password } = values;
     try {
       const loginResponse = await dispatch(loginAsync({ email, password, token_name: 'android' })).unwrap();
-    //   console.log('Login response:', loginResponse);
+      //  console.log('Login response:', loginResponse);
 
       if (loginResponse) {
         navigation.navigate('Dashboard');

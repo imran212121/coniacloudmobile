@@ -67,8 +67,8 @@ const SettingsScreen = () => {
             <View style={styles.Box}>
               {Data.map((item) => (
                 <TouchableOpacity key={item.id} style={{ flexDirection: 'row',marginTop:10,marginVertical:15}}>
-                  <Image source={item.ImagePath} style={{ height: 30, width: 30, marginRight: 15 ,resizeMode:'contain'}} />
-                  <Text style={{ fontSize: 16 }}>{item.text}</Text>
+                  <Image source={item.ImagePath} style={{ height: 25, width: 25, marginRight: 15 ,resizeMode:'contain'}} />
+                  <Text style={{ fontSize: 14,color:'#696D70',fontWeight:"400" }}>{item.text}</Text>
                 </TouchableOpacity>
               ))}
               <View style={{flexDirection:'row',justifyContent:"space-between"}}>
@@ -81,7 +81,7 @@ const SettingsScreen = () => {
               </View>
               <TouchableOpacity style={{marginTop:40,flexDirection:'row',alignItems:'center',gap:20}}>
                 <Image source={require('../assets/icon/Logout.png')}
-                style={{height:40,width:40}}/>
+                style={{height:30,width:30}}/>
                 <Text  style={[styles.headingText,{color:'#FF4E4E',marginTop:0}]}>Logout</Text>
               </TouchableOpacity>
             </View>
@@ -115,24 +115,24 @@ const styles = StyleSheet.create({
  
   Box: {
     width: '100%',
-    height: '90%',
+    height: '89%',
     backgroundColor: AppColor.white,
     borderRadius: 15,
     padding: 15,
     shadowColor: "#000",
-shadowOffset: {
-	width: 0,
-	height: 5,
-},
-shadowOpacity: 0.36,
-shadowRadius: 6.68,
-
-elevation: 8,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.23,
+    shadowRadius: 2.62,
+    
+    elevation: 4,
 marginTop:10
   },
   headingText:{
     fontWeight:'600',
-    fontSize:15,
+    fontSize:14,
     lineHeight:21,
     color:AppColor.noermalText,
     marginTop:14

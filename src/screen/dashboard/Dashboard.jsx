@@ -5,12 +5,14 @@ import Drive from '../../components/Drive';
 import ModalView from '../../components/ModalView';
 import CustomHeader from '../../components/CustomHeader';
 import { AppColor } from '../../utils/AppColors';
+import { useNavigation } from '@react-navigation/native';
 const Dashboard = () => {
   const [active, setActive] = useState(false);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [isError, setIsError] = useState(false);
   const [refresh, setRefresh] = useState(false);
+  const navigation=useNavigation()
   useEffect(() => {
     ////console.log('rnder',active,message)
   }, [active, loading])
@@ -29,7 +31,7 @@ const Dashboard = () => {
   }
   return (
     <>
-      <Header handleRefresh={handleRefresh} refresh={refresh} loading={loading} handleLoader={handleLoader} modalHandler={modalHandler} active={active} />
+      <Header handleRefresh={handleRefresh} refresh={refresh} loading={loading} handleLoader={handleLoader} modalHandler={modalHandler} active={active} onPress={()=>navigation.navigate('Notification')} />
  <View style={styles.mainContainer} showsVerticalScrollIndicator={false}>
      
       {/* <ModalView modalHandler={modalHandler} active={active} isError={isError} message={message} /> */}

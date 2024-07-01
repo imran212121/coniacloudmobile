@@ -10,6 +10,7 @@ import EditProfile from '../screen/settings/EditProfile';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Splesh from '../screen/auth/Splesh';
 import UploadDoc from '../screen/dashboard/UploadDoc';
+import Notification from '../screen/dashboard/Notification';
 // import Test from '../../Test'
 const Stack = createNativeStackNavigator();
 const StackNavigation = () => {
@@ -21,7 +22,7 @@ const StackNavigation = () => {
     };
     checkLoginStatus();
   }, []);
-
+// console.log(token)
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName={isLoggedIn ? 'Home':'Splesh'}>
@@ -38,6 +39,7 @@ const StackNavigation = () => {
         <Stack.Screen options={{ headerShown: false }} name='Dashboard' component={BottomNavigation} />
         <Stack.Screen options={{ headerShown: false }} name='Profile' component={EditProfile} />
         <Stack.Screen options={{ headerShown: false }} name='UploadDoc' component={UploadDoc} />
+        <Stack.Screen options={{ headerShown: false }} name='Notification' component={Notification} />
         {/* <Stack.Screen options={{ headerShown: false }} name='Test' component={Test} /> */}
       </Stack.Navigator>
     </NavigationContainer>
