@@ -12,7 +12,7 @@ import { baseURL, fileColorCode } from '../constant/settings';
 import StorageStatus from './StorageStatus';
 import Preview from './preview/Preview';
 import ModalComponent from './ModalComponent';
-
+import { timeAgo } from '../helper/functionHelper';
 const Drive = ({ handleLoader, loading, refresh }) => {
   const [driveData, setDriveData] = useState([]);
   const [token, setToken] = useState(null);
@@ -141,7 +141,7 @@ const Drive = ({ handleLoader, loading, refresh }) => {
           </TouchableOpacity>
         </View>
         <Text style={styles.fileText}>{item.name.length > 15 ? `${item.name.substring(0, 15)}...` : item.name}</Text>
-        <Text style={styles.filetxtnormal}>Edited 9m ago</Text>
+        <Text style={styles.filetxtnormal}>{timeAgo(item.created_at)}</Text>
       </TouchableOpacity>
     );
   };
@@ -169,7 +169,7 @@ const Drive = ({ handleLoader, loading, refresh }) => {
               <Text style={[styles.fileText, { marginTop: 0 }]}>
                 {item.name.length > 15 ? `${item.name.substring(0, 15)}...` : item.name}
               </Text>
-              <Text style={styles.filetxtnormal}>Edited 9m ago</Text>
+              <Text style={styles.filetxtnormal}>{timeAgo(item.created_at)}</Text>
             </View>
           </View>
           <TouchableOpacity onPress={() => handleModalOpen(item)}>

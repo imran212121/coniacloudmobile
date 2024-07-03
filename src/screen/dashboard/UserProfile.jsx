@@ -26,15 +26,7 @@ const data = [
 ];
 
 const UserProfile = () => {
-  const [isModalVisible, setModalVisible] = useState(false);
 
-  const handleModalOpen = () => {
-    setModalVisible(true);
-  };
-
-  const handleModalClose = () => {
-    setModalVisible(false);
-  };
 
   return (
     <View style={styles.container}>
@@ -67,11 +59,10 @@ const UserProfile = () => {
           />
         </TouchableOpacity>
       ))}
-      <TouchableOpacity style={styles.Box} onPress={handleModalOpen}>
+      <TouchableOpacity style={styles.Box}>
         <Text>Use data for file transfer</Text>
         <Switchcomponent />
       </TouchableOpacity>
-      <ModalComponent isVisible={isModalVisible} onClose={handleModalClose} />
     </View>
   );
 };

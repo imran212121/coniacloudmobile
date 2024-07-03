@@ -21,7 +21,6 @@ const Login = () => {
     try {
       const loginResponse = await dispatch(loginAsync({ email, password, token_name: 'android' })).unwrap();
       //  console.log('Login response:', loginResponse);
-
       if (loginResponse) {
         navigation.navigate('Dashboard');
       } else {

@@ -16,8 +16,9 @@ import imageIcon from '../assets/icons/image.png';
 import back from '../assets/icons/fi_arrow-left.png';
 import { baseURL, fileColorCode } from '../constant/settings';
 import { AppColor } from '../utils/AppColors';
+import { timeAgo } from '../helper/functionHelper';
 
-showItem = [{
+const showItem = [{
   id: 1,
   Image: require('../assets/icon/image.png'),
   text: 'Image'
@@ -89,7 +90,7 @@ const Shared = ({ active, handleLoader, loading, refresh }) => {
               <Text style={[styles.fileText, { marginTop: 0, }]}>
                 {item.name.length > 15 ? `${item.name.substring(0, 15)}...` : item.name}
               </Text>
-              <Text style={styles.filetxtnormal}>Edited 9m ago</Text>
+              <Text style={styles.filetxtnormal}>{timeAgo(item.created_at)}</Text>
             </View>
           </View>
 
@@ -224,7 +225,7 @@ const Shared = ({ active, handleLoader, loading, refresh }) => {
                 // contentContainerStyle={styles.driveContainer}
                 />
               </View>
-              <View style={[styles.paginationContainer, { width: deviceWidth * 0.9 }]}>
+              {/* <View style={[styles.paginationContainer, { width: deviceWidth * 0.9 }]}>
                 <TouchableOpacity
                   style={[styles.paginationButton, page <= 1 && styles.disabledButton && { width: deviceWidth * 0.4 }]}
                   onPress={() => setPage((prev) => Math.max(prev - 1, 1))}
@@ -239,7 +240,7 @@ const Shared = ({ active, handleLoader, loading, refresh }) => {
                 >
                   <Text style={styles.paginationButtonText}>Next</Text>
                 </TouchableOpacity>
-              </View>
+              </View> */}
             </>
           ) : (
             <View style={styles.previewContainer}>
@@ -471,8 +472,8 @@ justifyContent:'center'
     alignItems: 'center',
   },
   image: {
-    height: 50,
-    width: 50,
+    height: 40,
+    width: 40,
     resizeMode: 'contain',
   },
 });

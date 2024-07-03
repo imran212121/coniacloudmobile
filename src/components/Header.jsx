@@ -101,7 +101,7 @@ export default function Header({ modalHandler, handleLoader, loading, handleRefr
             
             </TouchableOpacity>
           {!notiIcon ? 
-          <View style={{height:13,width:13,backgroundColor:'red',position:'absolute',right:0,bottom:15,borderRadius:10}}>
+          <View style={{height:10,width:10,backgroundColor:'red',position:'absolute',right:0,bottom:15,borderRadius:10}}>
             </View>:null}
             {/* Uncomment this if you want to include the settings button */}
             {/* <TouchableOpacity onPress={settingScreen}>

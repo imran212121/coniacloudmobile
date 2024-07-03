@@ -11,7 +11,6 @@ const Splesh = () => {
           try {
             const userData=await AsyncStorage.getItem('user')
             if (userData) {
-              // User is logged in, navigate to HomeScreen
               navigation.navigate('Dashboard', { userData });
             } else {
             
