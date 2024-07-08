@@ -1,9 +1,11 @@
 import { StyleSheet,ScrollView } from 'react-native'
 
 import React ,{useState,useEffect} from 'react'
+import { useSelector,useDispatch } from 'react-redux';
 import Header from '../../components/Header';
 import SettingsScreen from '../../components/SettingsScreen';
 import ModalView from '../../components/ModalView';
+import { logout } from '../../redux/reducers/authSlice';
 
 
 const Settings = () => {
@@ -11,6 +13,7 @@ const Settings = () => {
   const [loading , setLoading] = useState(true);
   const [message , setMessage] = useState('');
   const [isError , setIsError] = useState(false); 
+  const dispacth = useDispatch();
   useEffect(()=>{
    ////console.log('rnder',active,message)
   },[active,loading])

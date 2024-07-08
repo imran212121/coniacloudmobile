@@ -1,9 +1,12 @@
 import { StyleSheet, Text, View, Image, ActivityIndicator, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react';
+import { useDispatch , useSelector} from 'react-redux';
 import { useNavigation } from '@react-navigation/native'
 import { AppColor } from '../utils/AppColors';
 import CustomHeader from './CustomHeader';
 import Switch from './Switchcomponent';
+import { logout } from '../redux/reducers/authSlice';
+
 
 const Data = [
   {
@@ -41,16 +44,27 @@ const Data = [
 const SettingsScreen = () => {
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
-
+  const dispacth = useDispatch();
+  const { user } = useSelector((state) => state.auth);
   useEffect(() => {
     setTimeout(() => {
       setLoading(false);
     }, 500);
   }, []);
 
+  useEffect(()=>{
+   if(user===null)
+    {
+      navigation.navigate('Login');
+    }
+  },[user])
   const profileHandler = () => {
     navigation.navigate('Profile');
   };
+
+  const logoutHandler = () => {
+    dispacth(logout)
+  }
 
   return (
     <View style={{ marginTop: 2, flex: 1, flexDirection: 'column' }}>
@@ -79,7 +93,7 @@ const SettingsScreen = () => {
               <Text style={styles.headingText}>Enable 2 Step Verification</Text>
              <Switch/>
               </View>
-              <TouchableOpacity style={{marginTop:40,flexDirection:'row',alignItems:'center',gap:20}}>
+              <TouchableOpacity onPress={logoutHandler} style={{marginTop:40,flexDirection:'row',alignItems:'center',gap:20}}>
                 <Image source={require('../assets/icon/Logout.png')}
                 style={{height:30,width:30}}/>
                 <Text  style={[styles.headingText,{color:'#FF4E4E',marginTop:0}]}>Logout</Text>
