@@ -1,37 +1,19 @@
-import React, { useCallback, useRef } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
+// ExampleComponent.js
+import React from 'react';
+import { View, Text } from 'react-native';
+import { useSelector } from 'react-redux';
+import { selectLanguage } from './src/redux/reducers/languageSlice';
+import strings from './src/helper/Language/LocalizedStrings'; // Import your localized strings
 
-const ModalComponent = ({ isVisible, onClose }) => {
-  const bottomSheetRef = useRef(null);
-
-  const handleSheetChanges = useCallback((index) => {
-    console.log('handleSheetChanges', index);
-    if (index === -1) {
-      onClose();
-    }
-  }, [onClose]);
+const ExampleComponent = () => {
+  const currentLanguage = useSelector(selectLanguage);
 
   return (
-    <BottomSheet
-      ref={bottomSheetRef}
-      index={isVisible ? 0 : -1}
-      snapPoints={['50%']}
-      onChange={handleSheetChanges}
-    >
-      <BottomSheetView style={styles.contentContainer}>
-        <Text>Awesome 🎉</Text>
-      </BottomSheetView>
-    </BottomSheet>
+    <View>
+      <Text>{strings.WELCOME_TEXT}</Text>
+      <Text>{strings.GREETING}</Text>
+    </View>
   );
 };
 
-const styles = StyleSheet.create({
-  contentContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
-
-export default ModalComponent;
+export default ExampleComponent;

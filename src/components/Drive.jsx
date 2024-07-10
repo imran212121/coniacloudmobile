@@ -14,6 +14,7 @@ import Preview from './preview/Preview';
 import ModalComponent from './ModalComponent';
 import { timeAgo } from '../helper/functionHelper';
 const Drive = ({ handleLoader, loading, refresh }) => {
+  
   const [driveData, setDriveData] = useState([]);
   const [token, setToken] = useState(null);
   const [page, setPage] = useState(1);
@@ -54,7 +55,7 @@ const Drive = ({ handleLoader, loading, refresh }) => {
       if (!token) return;
       handleLoader(true);
       try {
-        const response = await axios.get(`${baseURL}/drive/file-entries?timestamp=${new Date().getTime()}`, {
+        const response = await axios.get(`${baseURL}/drive/file-entries?timestamp=}`, {
           headers: { Authorization: `Bearer ${token}` },
           params: {
             pageId: 0,
