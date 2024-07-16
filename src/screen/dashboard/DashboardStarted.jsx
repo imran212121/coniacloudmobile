@@ -6,12 +6,15 @@ import Started from '../../components/Started';
 import ModalView from '../../components/ModalView';
 import CustomHeader from '../../components/CustomHeader';
 import { useNavigation } from '@react-navigation/native';
-
+import { setLanguage } from '../../redux/reducers/languageSlice'; 
+import strings from '../../helper/Language/LocalizedStrings';
+import { useSelector } from 'react-redux';
 const DashboardMyfiles = () => {
   const [active, setActive] = useState(false);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [isError, setIsError] = useState(false);
+  const language = useSelector((state) => state.language.language);
   const navigation=useNavigation()
   useEffect(() => {
     ////console.log('rnder',active,message)
@@ -30,7 +33,7 @@ const DashboardMyfiles = () => {
     <>
       <View style={{padding:15}}>
 
-        <CustomHeader back={true} left={true} right={true} title={'My Files'} grid={true} 
+        <CustomHeader back={true} left={true} right={true} title={strings.MY_FILES} grid={true} 
         OnPress={()=>navigation.goBack()}/>
       </View>
       <ScrollView style={styles.mainContainer} showsVerticalScrollIndicator={false}>

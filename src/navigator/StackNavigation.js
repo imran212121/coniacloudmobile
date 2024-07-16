@@ -12,7 +12,7 @@ import Splesh from '../screen/auth/Splesh';
 import UploadDoc from '../screen/dashboard/UploadDoc';
 import Notification from '../screen/dashboard/Notification';
 import choselanguage from '../components/preview/choselanguage';
-// import Test from '../../Test'
+import Test from '../../Test'
 const Stack = createNativeStackNavigator();
 const StackNavigation = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(null);
@@ -42,7 +42,7 @@ const StackNavigation = () => {
         <Stack.Screen options={{ headerShown: false }} name='UploadDoc' component={UploadDoc} />
         <Stack.Screen options={{ headerShown: false }} name='Notification' component={Notification} />
         <Stack.Screen options={{ headerShown: false }} name='choselanguage' component={choselanguage} />
-        {/* <Stack.Screen options={{ headerShown: false }} name='Test' component={Test} /> */}
+        <Stack.Screen options={{ headerShown: false }} name='Test' component={Test} />
       </Stack.Navigator>
     </NavigationContainer>
   )

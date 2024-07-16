@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, TouchableOpacity, Text, Alert } from 'react-native';
 import Modal from 'react-native-modal';
 import Checkbox from '../Checkbox';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch } from 'react-redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setLanguage } from '../../redux/reducers/languageSlice';
 import strings from '../../helper/Language/LocalizedStrings'; // Import your localized strings
 
@@ -28,12 +29,13 @@ const ChoseLanguage = () => {
     navigation.goBack();
   };
 
-  const applyLanguage = () => {
+  const applyLanguage = async () => {
     if (selectedCheckboxIndex !== null) {
       const selectedLanguage = checkboxLabels[selectedCheckboxIndex].value;
+      await AsyncStorage.setItem('language', selectedLanguage); // Save language to AsyncStorage
       dispatch(setLanguage(selectedLanguage));
       strings.setLanguage(selectedLanguage);
-      
+
       // Show alert after successfully changing language
       Alert.alert(
         'Language Changed',
@@ -42,6 +44,20 @@ const ChoseLanguage = () => {
       );
     }
   };
+
+  useEffect(() => {
+    const loadLanguage = async () => {
+      const savedLanguage = await AsyncStorage.getItem('language');
+      if (savedLanguage) {
+        const selectedIndex = checkboxLabels.findIndex(item => item.value === savedLanguage);
+        setSelectedCheckboxIndex(selectedIndex);
+        dispatch(setLanguage(savedLanguage));
+        strings.setLanguage(savedLanguage);
+      }
+    };
+
+    loadLanguage();
+  }, []);
 
   return (
     <Modal isVisible={modalVisible} onBackdropPress={closeModal} style={styles.modal}>

@@ -6,13 +6,16 @@ import Started from '../../components/Started';
 import ModalView from '../../components/ModalView';
 import Shared from '../../components/Shared';
 import CustomHeader from '../../components/CustomHeader';
-
+import { setLanguage } from '../../redux/reducers/languageSlice'; 
+import strings from '../../helper/Language/LocalizedStrings';
+import { useSelector } from 'react-redux';
 
 const DashboardShare = () => {
   const [active , setActive] = useState(false);
   const [loading , setLoading] = useState(true);
   const [message , setMessage] = useState('');
   const [isError , setIsError] = useState(false); 
+  const language = useSelector((state) => state.language.language);
   useEffect(()=>{
    ////console.log('rnder',active,message)
   },[active,loading])
@@ -34,7 +37,7 @@ const DashboardShare = () => {
       uploadIcon={require('../../assets/icons/fi_grid.png')}/> */}
       <View style={{padding:15}}>
 
-      <CustomHeader back={true} left={true} right={true} title={'Shared'} grid={true}/>
+      <CustomHeader back={true} left={true} right={true} title={strings.SHARED} grid={true}/>
       </View>
    <ScrollView style={styles.mainContainer} showsVerticalScrollIndicator={false}>
       {/* <ModalView modalHandler ={modalHandler} active={active} isError={isError} message={message}/> */}

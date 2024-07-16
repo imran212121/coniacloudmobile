@@ -5,12 +5,16 @@ import Svg, { Circle, G } from 'react-native-svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppColor } from '../utils/AppColors';
 import Logo from '../assets/AppLogo.png';
+import { setLanguage } from '../redux/reducers/languageSlice'; 
+import strings from '../helper/Language/LocalizedStrings';
+import { useSelector } from 'react-redux';
 const StorageStatus = ({ user,usertoken }) => {
   const radius = 70;
   const [spendStorage, setSpendStorage] = useState(0);
   const [token, setToken] = useState(null);
   const [totalStorage, setTotalStorage] = useState(100);
   const [percentage, setPercentage] = useState(0);
+  const language = useSelector((state) => state.language.language);
   const [strokeDashoffset, setStrokeDashoffset] = useState(0);
   const circleCircumference = 2 * Math.PI * radius;
   useEffect(() => {
@@ -128,7 +132,7 @@ const StorageStatus = ({ user,usertoken }) => {
   };
 
   const styles = getStyles();
-console.log('percent',percentage);
+// console.log('percent',percentage);
  
   return (
    <View style={defaultStyles.StorageStatusContainer}>
@@ -140,7 +144,7 @@ console.log('percent',percentage);
           <View style={[defaultStyles.percentBar,{width:percentage+'%'}]}></View>
          </View>
          <Text style={defaultStyles.pregressText}>
-         {spendStorage} GB of {totalStorage} GB used
+         {spendStorage} GB of {totalStorage} {strings.GB_USED}
          </Text>
       </View>
       

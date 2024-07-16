@@ -4,15 +4,16 @@ import { useNavigation } from '@react-navigation/native';
 import DocumentPicker from 'react-native-document-picker';
 import RNFetchBlob from 'rn-fetch-blob';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useSelector } from 'react-redux';
 import { baseURL } from '../constant/settings';
 import IconBadge from 'react-native-icon-badge';
-
+import { setLanguage } from '../redux/reducers/languageSlice'; 
+import strings from '../helper/Language/LocalizedStrings';
+import { useSelector } from 'react-redux';
 export default function Header({ modalHandler, handleLoader, loading, handleRefresh, refresh, uploadIcon, notiIcon, settingsIcon,onPress }) {
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [user, setUser] = useState(null);
   const navigation = useNavigation();
-
+  const language = useSelector((state) => state.language.language);
   useEffect(() => {
     const checkLoginStatus = async () => {
       const userData = JSON.parse(await AsyncStorage.getItem('user'));
@@ -88,7 +89,7 @@ export default function Header({ modalHandler, handleLoader, loading, handleRefr
           <View style={{ flexDirection: 'row' }}>
             <Image source={{ uri: user?.avatar }} style={styles.avatar} />
             <View style={styles.userInfo}>
-              <Text style={styles.welcomeText}>Welcome back</Text>
+              <Text style={styles.welcomeText}>{strings.WELCOME_BACK}</Text>
               <Text style={styles.userName}>{user?.display_name}</Text>
             </View>
           </View>

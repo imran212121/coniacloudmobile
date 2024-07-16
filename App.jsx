@@ -10,17 +10,30 @@ import {
   View,
 } from 'react-native';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
-import { Provider } from 'react-redux';
+import { Provider, useDispatch } from 'react-redux';
 import StackNavigation from './src/navigator/StackNavigation';
 import store from './src/redux/store';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { setLanguage } from './src/redux/reducers/languageSlice';
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
+  // const changelanguage= useDispatch();
+  // useEffect(() => {
+  //   const loadLanguage = async () => {
+  //     const savedLanguage = await AsyncStorage.getItem('language');
+  //     if (savedLanguage) {
+  //       store.dispatch(setLanguage(savedLanguage)); // Dispatch action to set language
+  //       // strings.setLanguage(savedLanguage); // Assuming strings is imported properly
+  //     }
+  //   };
+
+  //   loadLanguage();
+  // }, []);
 
   return (
    

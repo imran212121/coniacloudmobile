@@ -2,7 +2,7 @@
 // src/redux/store.js
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './reducers/authSlice';
-import languageSlice from './reducers/languageSlice';
+import languageSlice , { loadLanguageFromStorage } from './reducers/languageSlice';
 
 const store = configureStore({
   reducer: {
@@ -10,6 +10,6 @@ const store = configureStore({
     language: languageSlice,
   },
 });
-
+store.dispatch(loadLanguageFromStorage());
 export default store;
 

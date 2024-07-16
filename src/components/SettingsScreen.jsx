@@ -105,8 +105,8 @@ const SettingsScreen = () => {
                 <Image source={require('../assets/icon/Logout.png')} style={{ height: 30, width: 30 }} />
                 <Text style={[styles.headingText, { color: '#FF4E4E', marginTop: 0 }]}>{strings.LOGOUT}</Text>
               </TouchableOpacity>
-              <CustomButton buttonTitle="Turkish" onPress={() => onChangeLanguage('tur')} />
-              <CustomButton buttonTitle="English" onPress={() => onChangeLanguage('eng')} />
+              {/* <CustomButton buttonTitle="Turkish" onPress={() => onChangeLanguage('tur')} /> */}
+              {/* <CustomButton buttonTitle="English" onPress={() => onChangeLanguage('eng')} /> */}
             </View>
           </View>
         </>

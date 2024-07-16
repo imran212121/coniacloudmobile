@@ -17,26 +17,27 @@ import back from '../assets/icons/fi_arrow-left.png';
 import { baseURL, fileColorCode } from '../constant/settings';
 import { AppColor } from '../utils/AppColors';
 import { timeAgo } from '../helper/functionHelper';
-
+import { setLanguage } from '../redux/reducers/languageSlice'; 
+import strings from '../helper/Language/LocalizedStrings';
 showItem = [{
   id: 1,
   Image: require('../assets/icon/image.png'),
-  text: 'Image'
+  text: strings.Image
 },
 {
   id: 2,
   Image: require('../assets/icon/file.png'),
-  text: 'file'
+  text:strings.File
 },
 {
   id: 3,
   Image: require('../assets/icon/video.png'),
-  text: 'Video'
+  text: strings.Video
 },
 {
   id: 4,
   Image: require('../assets/icon/folder.png'),
-  text: 'folder'
+  text: strings.Folder
 },
 ]
 
@@ -53,6 +54,7 @@ const Started = ({ active, handleLoader, loading, refresh }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [user, setUser] = useState(false);
   //const user = useSelector((state) => state.auth.user);
+  const language = useSelector((state) => state.language.language);
   const deviceWidth = Dimensions.get('window').width;
 
   useEffect(() => {

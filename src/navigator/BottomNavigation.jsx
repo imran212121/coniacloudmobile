@@ -8,11 +8,14 @@ import DashboardTrash from '../screen/dashboard/DashboardTrash';
 import UserProfile from '../screen/dashboard/UserProfile';
 import SettingsScreen from '../components/SettingsScreen';
 import Settings from '../screen/settings/Settings';
-
+import { setLanguage } from '../redux/reducers/languageSlice'; 
+import strings from '../helper/Language/LocalizedStrings';
+import { useSelector } from 'react-redux';
 
 const Tab = createBottomTabNavigator();
 
 const BottomNavigation = () => {
+  const language = useSelector((state) => state.language.language);
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -33,24 +36,24 @@ const BottomNavigation = () => {
           switch (route.name) {
             case 'My Drive':
               iconName = require('../assets/icons/home.png');
-              label = 'Home';
+              label = strings.HOME;
               iconSize = 20;
               break;
               case 'MyFiles':
               iconName = require('../assets/icons/AddDoc.png');
-              label = 'MyFiles';
+              label = strings.MyFiles;
               break;
             case 'Shared':
               iconName = require('../assets/icons/Users.png');
-              label = 'Shared';
+              label = strings.Shared;
               break;
             case 'Settings':
               iconName = require('../assets/icons/setting.png');
-              label = 'Setting';
+              label = strings.Settings;
               break;
               case 'User':
                 iconName = require('../assets/icons/user.png');
-                label = 'User';
+                label = strings.User;
                 break;
             default:
               break;
@@ -95,7 +98,8 @@ const styles = StyleSheet.create({
   tabItemFocused: {
     backgroundColor: '#F1F4FE',
     borderRadius: 15,
-    padding:9,
+    paddingHorizontal:5,
+    width:115
   },
   label: {
     marginLeft: 5,
