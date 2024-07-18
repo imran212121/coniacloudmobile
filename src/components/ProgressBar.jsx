@@ -3,11 +3,8 @@ import { View, StyleSheet } from 'react-native';
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { AppColor } from '../utils/AppColors';
 
-const ProgressBar = ({progress}) => {
-const ProgressBar = ({percentage}) => {
-  // Hardcoded progress value (change this value as needed)
-  // const progress = 70; // Adjust this number between 0 and 100
-// console.log('0000000',progress)
+const ProgressBar = ({ progress }) => {
+
   const animatedStyle = useAnimatedStyle(() => ({
     width: withTiming(`${progress}%`, { duration: 1000 }),
   }));

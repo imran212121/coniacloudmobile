@@ -56,6 +56,7 @@ const [token, setToken] = useState(null);
       }else{
         navigation.navigate('Login');
       }
+      
     };
     checkLoginStatus();
   }, []);

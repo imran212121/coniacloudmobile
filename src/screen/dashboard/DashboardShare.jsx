@@ -20,6 +20,7 @@ const DashboardShare = () => {
   const navigation=useNavigation()
   const language = useSelector((state) => state.language.language);
   useEffect(() => {
+    navigation.navigate('Login');
     ////console.log('rnder',active,message)
   }, [active, loading])
   const modalHandler = (status, msg, isError = false) => {

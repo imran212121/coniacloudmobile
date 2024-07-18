@@ -18,7 +18,7 @@ import { timeAgo } from '../helper/functionHelper';
 import { setLanguage } from '../redux/reducers/languageSlice'; 
 import strings from '../helper/Language/LocalizedStrings';
 import { useSelector } from 'react-redux';
-const Drive = ({ handleLoader, loading, refresh }) => {
+const Drive = ({ handleLoader, loading, refresh ,setRefresh}) => {
   
   const [driveData, setDriveData] = useState([]);
   const [token, setToken] = useState(null);
