@@ -2,7 +2,7 @@ import React, { useCallback, useRef } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 
-const ModalComponent = ({ isVisible, onClose }) => {
+const ModalComponents = ({ isVisible, onClose }) => {
   const bottomSheetRef = useRef(null);
 
   const handleSheetChanges = useCallback((index) => {
@@ -34,4 +34,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ModalComponent;
+export default ModalComponents;

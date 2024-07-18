@@ -35,7 +35,7 @@ const Dashboard = () => {
  <View style={styles.mainContainer} showsVerticalScrollIndicator={false}>
      
       {/* <ModalView modalHandler={modalHandler} active={active} isError={isError} message={message} /> */}
-      <Drive loading={loading} refresh={refresh} active={active} handleLoader={handleLoader} />
+      <Drive loading={loading} refresh={refresh} active={active} handleLoader={handleLoader} setRefresh={setRefresh} />
     </View>
     </>
    

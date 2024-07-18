@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, Image, ActivityIndicator, TouchableOpacity, Dimensions, TextInput, FlatList, ScrollView } from 'react-native';
 import axios from 'axios';
-import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import folderIcon from '../assets/icon/folder.png';
 import fileIcon from '../assets/icon/file.png';
@@ -13,10 +12,10 @@ import { baseURL, fileColorCode } from '../constant/settings';
 import StorageStatus from './StorageStatus';
 import ShareFileModal from './model/Share';
 import Preview from './preview/Preview';
-
-import ModalTrashedComponent from './ModalTrashedComponent';
+import DriveHeader from './DriveHeader';
+import ModalComponent from './ModalComponent';
 import { timeAgo } from '../helper/functionHelper';
-const Trashed = ({ handleLoader, loading, refresh, setRefresh }) => {
+const MyDrive = ({ handleLoader, loading, refresh, setRefresh }) => {
   const [driveData, setDriveData] = useState([]);
   const [token, setToken] = useState(null);
   const [page, setPage] = useState(1);
@@ -31,7 +30,6 @@ const Trashed = ({ handleLoader, loading, refresh, setRefresh }) => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [files, setFile] = useState(null);
-  const navigation = useNavigation();
   const fetchImageData = async (file_id) => {
     try {
       const token = await makeApiCall('/api/v1/file-entries/' + file_id + '/add-preview-token', user?.access_token, 'post');
@@ -79,7 +77,7 @@ const Trashed = ({ handleLoader, loading, refresh, setRefresh }) => {
             folderId,
             page,
             workspaceId: 0,
-            deletedOnly: true,
+            deletedOnly: false,
             starredOnly: false,
             recentOnly: false,
             sharedOnly: false,
@@ -236,6 +234,9 @@ const Trashed = ({ handleLoader, loading, refresh, setRefresh }) => {
               <Image source={require('../assets/Filter.png')} style={styles.rightImage} />
             </TouchableOpacity>
           </View>
+          <View style={[styles.headerBottom,{marginTop:10}]}>
+            <DriveHeader folder={folder} selected={selected} handleFolderNavigation={handleFolderNavigation} />
+          </View>
           {!selected ? (
             <>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: 18 }}>
@@ -264,7 +265,7 @@ const Trashed = ({ handleLoader, loading, refresh, setRefresh }) => {
               <Preview selectedFile={selectedFile} handleFolderNavigation={handleFolderNavigation} closeFile={closeFile} user={user} />
             </View>
           )}
-          <ModalTrashedComponent setModalVisible={setModalVisible} refresh={refresh} setRefresh={setRefresh} isVisible={isModalVisible} onClose={handleModalClose} item={files} user={user} PreviewToken={PreviewToken} />
+          <ModalComponent setModalVisible={setModalVisible} refresh={refresh} setRefresh={setRefresh} isVisible={isModalVisible} onClose={handleModalClose} item={files} user={user} PreviewToken={PreviewToken} />
 
         </>
       )}
@@ -272,13 +273,18 @@ const Trashed = ({ handleLoader, loading, refresh, setRefresh }) => {
   );
 };
 
-export default Trashed;
+export default MyDrive;
 
 const styles = StyleSheet.create({
   driveContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     flex: 1
+  },headerBottom: {
+    height: 50,
+    backgroundColor: '#FFF',
+    borderBottomWidth: 1,
+    borderBlockColor: '#e5e7eb'
   },
   StatusContainer: {
     alignItems: 'center',

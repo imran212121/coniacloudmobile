@@ -23,6 +23,28 @@ export const loginAsync = createAsyncThunk(
   }
 );
 
+export const updateUserAsync = createAsyncThunk(
+  'auth/updateUser',
+  async (userData, { getState, rejectWithValue }) => {
+    try {
+      const state = getState();
+      const token = state.auth.user.access_token;
+      console.log('token',token);
+      const response = await axios.post(`${baseURL}/users/me?_method=PUT`, userData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log('response',response);
+      await AsyncStorage.setItem('user', JSON.stringify(response.data.user));
+      return response.data.user;
+    } catch (error) {
+      return rejectWithValue(error.response ? error.response.data : error.message);
+    }
+  }
+);
+
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -46,7 +68,20 @@ const authSlice = createSlice({
       .addCase(loginAsync.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      .addCase(updateUserAsync.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateUserAsync.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+      })
+      .addCase(updateUserAsync.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
+
   },
 });
 

@@ -10,10 +10,12 @@ import imageIcon from '../assets/icon/image.png';
 import back from '../assets/icons/fi_arrow-left.png';
 import { baseURL, fileColorCode } from '../constant/settings';
 import StorageStatus from './StorageStatus';
+import ShareFileModal from './model/Share';
 import Preview from './preview/Preview';
+
 import ModalComponent from './ModalComponent';
 import { timeAgo } from '../helper/functionHelper';
-const Drive = ({ handleLoader, loading, refresh }) => {
+const Drive = ({ handleLoader, loading, refresh, setRefresh }) => {
   const [driveData, setDriveData] = useState([]);
   const [token, setToken] = useState(null);
   const [page, setPage] = useState(1);
@@ -24,13 +26,27 @@ const Drive = ({ handleLoader, loading, refresh }) => {
   const [user, setUser] = useState(false);
   const [viewType, setViewType] = useState('grid');
   const deviceWidth = Dimensions.get('window').width;
-
+  const [PreviewToken, setPreviewToken] = useState(false)
   const [isModalVisible, setModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [files, setFile] = useState(null);
+  const fetchImageData = async (file_id) => {
+    try {
+      const token = await makeApiCall('/api/v1/file-entries/' + file_id + '/add-preview-token', user?.access_token, 'post');
+      console.log('token', token?.preview_token);
+      setPreviewToken(token?.preview_token);
+      //console.log(previewUrl + '?preview_token=' + PreviewToken);
 
+    } catch (error) {
+      console.log('error', error);
+    }
+  }
   const handleModalOpen = (item) => {
     setSelectedItem(item);
     setModalVisible(true);
+    setFile({ id: item.id, hash: item.hash, name: item.name, extension: item.extension });
+    fetchImageData(item.id);
+
   };
 
   const handleModalClose = () => {
@@ -104,7 +120,16 @@ const Drive = ({ handleLoader, loading, refresh }) => {
   const handleFolderNavigation = (folderId) => {
     setSelected(false);
     setFolderId(folderId);
-    setFolder(prev => prev.filter(f => f.id !== folderId));
+    let folderArray = [];
+    for (let x in folder) {
+      if (folder[x].id == folderId) {
+        folderArray.push(folder[x]);
+        break;
+      } else {
+        folderArray.push(folder[x]);
+      }
+    }
+    setFolder(folderArray);
   };
 
   const closeFile = () => setSelected(false);
@@ -132,10 +157,12 @@ const Drive = ({ handleLoader, loading, refresh }) => {
             flexDirection: 'column',
           },
         ]}
-        onPress={() => handleFile(item)}
+
       >
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <Image source={fileType[item.type]} style={styles.fileIcon} />
+          <TouchableOpacity onPress={() => handleFile(item)}>
+            <Image source={fileType[item.type]} style={styles.fileIcon} />
+          </TouchableOpacity>
           <TouchableOpacity onPress={() => handleModalOpen(item)}>
             <Image source={require('../assets/MoreOption.png')} style={[styles.moreicon]} />
           </TouchableOpacity>
@@ -235,7 +262,8 @@ const Drive = ({ handleLoader, loading, refresh }) => {
               <Preview selectedFile={selectedFile} handleFolderNavigation={handleFolderNavigation} closeFile={closeFile} user={user} />
             </View>
           )}
-          <ModalComponent isVisible={isModalVisible} onClose={handleModalClose} item={selectedItem} />
+          <ModalComponent setModalVisible={setModalVisible} refresh={refresh} setRefresh={setRefresh} isVisible={isModalVisible} onClose={handleModalClose} item={files} user={user} PreviewToken={PreviewToken} />
+
         </>
       )}
     </View>

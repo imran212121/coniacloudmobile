@@ -8,7 +8,7 @@ import RNFetchBlob from 'rn-fetch-blob';
 import { AppSettings } from '../utils/Settings';
 import { makeApiCall } from '../helper/apiHelper';
 
-const ModalComponent = ({ isVisible, onClose, item, user, PreviewToken, setRefresh, refresh, setModalVisible }) => {
+const ModalTrashedComponent = ({ isVisible, onClose, item, user, PreviewToken, setRefresh, refresh, setModalVisible }) => {
   const [isShareModalVisible, setShareModalVisible] = useState(false);
   const [isRenameModalVisible, setRenameModalVisible] = useState(false);
   const bottomSheetRef = useRef(null);
@@ -24,11 +24,6 @@ const ModalComponent = ({ isVisible, onClose, item, user, PreviewToken, setRefre
   );
 
   const items = [
-    { id: 1, ImagePath: require('../assets/icon/fi_user-plus.png'), text: 'Share', actionEvent: sharePopup },
-
-    // { id: 3, ImagePath: require('../assets/icons/Vector.png'), text: 'Add to Starred' },
-
-    { id: 5, ImagePath: require('../assets/icons/fi_download.png'), text: 'Download' },
     { id: 6, ImagePath: require('../assets/Modalicon/Link.png'), text: 'Copy link' },
 
     { id: 9, ImagePath: require('../assets/Modalicon/fi_edit-2.png'), text: 'Rename' },
@@ -105,36 +100,13 @@ const ModalComponent = ({ isVisible, onClose, item, user, PreviewToken, setRefre
         onChange={handleSheetChanges}
       >
         <BottomSheetView style={styles.contentContainer}>
-          <TouchableOpacity style={{ alignSelf: 'flex-end', right: 10, top: 10 }}
-            onPress={handleClosePress}>
-            <Image source={require('../assets/icons/close.png')}
-              style={{ height: 30, with: 30, resizeMode: 'contain', }} />
-          </TouchableOpacity>
-          {/* <Button title="Close Sheet" onPress={handleClosePress} /> */}
-
           <>
             <TouchableOpacity style={styles.itemContainer} onPress={sharePopup}>
               <Image source={require('../assets/icons/fi_download.png')} style={styles.image}
               />
-              <Text>Share</Text>
+              <Text>Restore</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.itemContainer} onPress={() => { downloadAndOpenFile() }}>
-              <Image source={require('../assets/icons/Vector.png')} style={styles.image}
-              />
-              <Text>Download</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.itemContainer} onPress={() => { toggleRenameModal() }}>
-              <Image source={require('../assets/Modalicon/fi_edit-2.png')} style={styles.image}
-              />
-              <Text>Rename</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.itemContainer} onPress={() => { deleteFile() }}>
-              <Image source={require('../assets/Modalicon/fi_trash-2.png')} style={styles.image}
-              />
-              <Text>Delete</Text>
-            </TouchableOpacity>
-          </>
+                </>
 
 
 

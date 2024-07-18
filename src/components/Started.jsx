@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Image, ActivityIndicator, TouchableOpacity, Dimensions, FlatList } from 'react-native';
+import { StyleSheet, Text, View, Image, ActivityIndicator,TextInput, TouchableOpacity, Dimensions, FlatList,ScrollView } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
@@ -17,6 +17,8 @@ import back from '../assets/icons/fi_arrow-left.png';
 import { baseURL, fileColorCode } from '../constant/settings';
 import { AppColor } from '../utils/AppColors';
 import { timeAgo } from '../helper/functionHelper';
+import ModalComponent from './ModalComponent';
+
 
 showItem = [{
   id: 1,
@@ -41,20 +43,44 @@ showItem = [{
 ]
 
 
-const Started = ({ active, handleLoader, loading, refresh }) => {
+const Started = ({ active, handleLoader, loading, refresh,setRefresh }) => {
   const [driveData, setDriveData] = useState([]);
   const [token, setToken] = useState(null);
-
+  const [viewType, setViewType] = useState('grid');
   const [page, setPage] = useState(1);
   const [folderId, setFolderId] = useState(0);
   const [folder, setFolder] = useState([]);
-
+  const [files, setFile] = useState(null);
   const [selected, setSelected] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [user, setUser] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [PreviewToken, setPreviewToken] = useState(false)
   //const user = useSelector((state) => state.auth.user);
   const deviceWidth = Dimensions.get('window').width;
+  const [isModalVisible, setModalVisible] = useState(false);
+  const handleModalClose = () => {
+setModalVisible(false);
+setSelectedItem(null);
+};
+const handleModalOpen = (item) => {
+  setSelectedItem(item);
+  setModalVisible(true);
+  setFile({ id: item.id, hash: item.hash, name: item.name, extension: item.extension });
+  fetchImageData(item.id);
 
+};
+const fetchImageData = async (file_id) => {
+  try {
+    const token = await makeApiCall('/api/v1/file-entries/' + file_id + '/add-preview-token', user?.access_token, 'post');
+    console.log('token', token?.preview_token);
+    setPreviewToken(token?.preview_token);
+    //console.log(previewUrl + '?preview_token=' + PreviewToken);
+
+  } catch (error) {
+    console.log('error', error);
+  }
+}
   useEffect(() => {
     const checkLoginStatus = async () => {
       const users = JSON.parse(await AsyncStorage.getItem('user'));
@@ -65,41 +91,73 @@ const Started = ({ active, handleLoader, loading, refresh }) => {
     };
     checkLoginStatus();
   }, []);
-  const renderListItem = ({ item, index }) => {
+  const renderGridItem = ({ item, index }) => {
     if (item.extension === 'jpg' || item.extension === 'jpeg' || item.extension === 'svg') {
       item.type = 'image';
     }
-
     return (
       <TouchableOpacity
         key={index}
         style={[
           styles.fileData,
           {
-            backgroundColor:AppColor.white,
+            width: deviceWidth * 0.42,
+            backgroundColor: fileColorCode[Math.floor(Math.random() * 4)],
+            flexDirection: 'column',
+          },
+        ]}
+
+      >
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <TouchableOpacity onPress={() => handleFile(item)}>
+            <Image source={fileType[item.type]} style={styles.fileIcon} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleModalOpen(item)}>
+            <Image source={require('../assets/MoreOption.png')} style={[styles.moreicon]} />
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.fileText}>{item.name.length > 15 ? `${item.name.substring(0, 15)}...` : item.name}</Text>
+        <Text style={styles.filetxtnormal}>{timeAgo(item.created_at)}</Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderListItem = ({ item, index }) => {
+    if (item.extension === 'jpg' || item.extension === 'jpeg' || item.extension === 'svg') {
+      item.type = 'image';
+    }
+    return (
+      <TouchableOpacity
+        key={index}
+        style={[
+          styles.fileData,
+          {
+            backgroundColor: fileColorCode[Math.floor(Math.random() * 4)],
             height: 90
           },
         ]}
-        onPress={() => handleFile(item)}
+        
       >
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}>
-
+            <TouchableOpacity onPress={() => handleFile(item)}>
             <Image source={fileType[item.type]} style={[styles.fileIcon, { height: 40, width: 40 }]} />
+            </TouchableOpacity>
             <View>
-              <Text style={[styles.fileText, { marginTop: 0, }]}>
+              <Text style={[styles.fileText, { marginTop: 0 }]}>
                 {item.name.length > 15 ? `${item.name.substring(0, 15)}...` : item.name}
               </Text>
               <Text style={styles.filetxtnormal}>{timeAgo(item.created_at)}</Text>
             </View>
           </View>
-
-          <Image source={require('../assets/MoreOption.png')} style={[styles.moreicon, { height: 30, width: 20 }]} />
+          <TouchableOpacity onPress={() => handleModalOpen(item)}>
+            <Image source={require('../assets/MoreOption.png')} style={[styles.moreicon, { height: 30, width: 20 }]} />
+          </TouchableOpacity>
         </View>
-
       </TouchableOpacity>
     );
   };
+
 
   useEffect(() => {
     const fetchFolderFiles = async () => {
@@ -162,7 +220,7 @@ const Started = ({ active, handleLoader, loading, refresh }) => {
   };
 
   return (
-    <View style={{ marginTop: 2, width: deviceWidth - 5 }}>
+    <View style={{ marginTop: 2 ,flex:1}}>
       {loading ? (
         <View style={styles.loader}>
           <ActivityIndicator size="large" color="#004181" />
@@ -179,69 +237,52 @@ const Started = ({ active, handleLoader, loading, refresh }) => {
           <View style={styles.StatusContainer}>
             <StorageStatus user={user} usertoken={token} />
           </View>
-          <View style={styles.container}>
-      {showItem.map((item) => (
-        <TouchableOpacity key={item.id} style={styles.itemContainer}>
-          <View style={{ backgroundColor: fileColorCode[Math.floor(Math.random() * 4)],padding:10,borderRadius:10}}>
-          <Image source={item.Image} style={styles.image} />
+          <View style={styles.inputContainer}>
+            <TouchableOpacity>
+              <Image source={require('../assets/Search.png')} style={styles.leftImage} />
+            </TouchableOpacity>
+            <TextInput style={styles.input} placeholder="Search" />
+            <TouchableOpacity>
+              <Image source={require('../assets/Filter.png')} style={styles.rightImage} />
+            </TouchableOpacity>
           </View>
-          <Text style={styles.noremalText}>{item.text}</Text>
-        </TouchableOpacity>
-      ))}
-    </View>
+          <View style={[styles.headerBottom,{marginTop:10}]}>
+            <DriveHeader folder={folder} selected={selected} handleFolderNavigation={handleFolderNavigation} />
+          </View>
           {!selected ? (
             <>
-              <View style={styles.driveContainer}>
-                {driveData.length === 0 && (
-                  <View style={styles.noDataContainer}>
-                    <Image source={require('../assets/no_data.png')} style={styles.noDataImage} />
-                    <Text style={styles.noDataText}>Upload files or folders here</Text>
-                  </View>
-                )}
-                {/* {driveData.map((files, index) => {
-                  if (files.extension === "jpg" || files.extension === "jpeg" || files.extension === "svg") {
-                    files.type = 'image';
-                  }
-                  return (
-                    <TouchableOpacity key={index} style={styles.filedata} onPress={() => handleFile(files)}>
-                      <Image source={fileType[files.type]} style={styles.fileIcon} />
-                      <Text>{files.name.length > 5 ? `${files.name.substring(0, 5)}...` : files.name}</Text>
-                    </TouchableOpacity>
-                  );
-                })} */}
-                <FlatList
-
-                  data={driveData}
-                  renderItem={renderListItem}
-                  keyExtractor={(item, index) => index.toString()}
-                // numColumns={viewType === 'grid' ? 2 : 1}
-                // contentContainerStyle={styles.driveContainer}
-                />
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: 18 }}>
+                <Text style={styles.heading}>Recently Edited</Text>
+                <View style={{ flexDirection: "row", gap: 10 }}>
+                  <TouchableOpacity onPress={() => setViewType('list')}>
+                    <Image source={require('../assets/list.png')} style={[styles.rightImage, { tintColor: viewType === 'list' ? '#004181' : '#B3B4B6' }]} />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => setViewType('grid')}>
+                    <Image source={require('../assets/Grid.png')} style={[styles.rightImage, { tintColor: viewType === 'list' ? '#B3B4B6' : '#004181' }]} />
+                  </TouchableOpacity>
+                </View>
               </View>
-              {/* <View style={[styles.paginationContainer, { width: deviceWidth * 0.9 }]}>
-                <TouchableOpacity
-                  style={[styles.paginationButton, page <= 1 && styles.disabledButton && { width: deviceWidth * 0.4 }]}
-                  onPress={() => setPage((prev) => Math.max(prev - 1, 1))}
-                  disabled={page <= 1}
-                >
-                  <Text style={styles.paginationButtonText}>Prev</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.paginationButton, page >= 5 && styles.disabledButton && { width: deviceWidth * 0.4 }]}
-                  onPress={() => setPage((prev) => prev + 1)}
-                  disabled={page >= 5}
-                >
-                  <Text style={styles.paginationButtonText}>Next</Text>
-                </TouchableOpacity>
-              </View> */}
+              <ScrollView showsVerticalScrollIndicator={false}>
+                <FlatList
+                  key={viewType}
+                  data={driveData}
+                  renderItem={viewType === 'grid' ? renderGridItem : renderListItem}
+                  keyExtractor={(item, index) => index.toString()}
+                  numColumns={viewType === 'grid' ? 2 : 1}
+                />
+              </ScrollView>
             </>
           ) : (
             <View style={styles.previewContainer}>
               <Preview selectedFile={selectedFile} handleFolderNavigation={handleFolderNavigation} closeFile={closeFile} user={user} />
             </View>
           )}
+          <ModalComponent setModalVisible={setModalVisible} refresh={refresh} setRefresh={setRefresh} isVisible={isModalVisible} onClose={handleModalClose} item={files} user={user} PreviewToken={PreviewToken} />
+
         </>
       )}
+ 
+     
     </View>
   );
 };
@@ -277,7 +318,8 @@ const styles = StyleSheet.create({
     height: 50,
     backgroundColor: '#FFF',
     borderBottomWidth: 1,
-    borderColor: '#e5e7eb'
+    borderColor: '#e5e7eb',
+    width: '100%'
   },
   loader: {
     marginTop: 10,
@@ -346,7 +388,7 @@ const styles = StyleSheet.create({
     height: 115,
     padding: 12,
     borderRadius: 20,
-    justifyContent:'center'
+    justifyContent: 'center'
 
   },
   loader: {

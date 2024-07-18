@@ -13,7 +13,7 @@ const UploadDoc = () => {
   const [selectedDocument, setSelectedDocument] = useState(null)
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(false)
-
+  const navigation = useNavigation()
   useEffect(() => {
     const checkLoginStatus = async () => {
       const userData = JSON.parse(await AsyncStorage.getItem('user'))
@@ -55,7 +55,7 @@ const UploadDoc = () => {
       const fileUri = selectedDocument[0].uri
       const uploadUrl = baseURL+'/uploads';
       const token = user?.access_token
-
+      
       const response = await RNFetchBlob.fetch('POST', uploadUrl, {
         Authorization: 'Bearer ' + token,
         'Content-Type': 'multipart/form-data',
@@ -76,6 +76,9 @@ const UploadDoc = () => {
         button: 'close',
       })
       setLoading(false)
+      setTimeout(()=>{
+        navigation.navigate('Home');
+      },1000);
     } catch (error) {
       console.error('Error uploading document:', error)
       Dialog.show({
@@ -88,7 +91,7 @@ const UploadDoc = () => {
     }
   }
 
-  const navigation = useNavigation()
+  
   return (
     <AlertNotificationRoot>
       <View style={styles.container}>

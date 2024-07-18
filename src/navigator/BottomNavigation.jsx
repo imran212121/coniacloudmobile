@@ -8,6 +8,7 @@ import DashboardTrash from '../screen/dashboard/DashboardTrash';
 import UserProfile from '../screen/dashboard/UserProfile';
 import SettingsScreen from '../components/SettingsScreen';
 import Settings from '../screen/settings/Settings';
+import Trashed from '../components/Trash';
 
 
 const Tab = createBottomTabNavigator();
@@ -52,6 +53,10 @@ const BottomNavigation = () => {
                 iconName = require('../assets/icons/user.png');
                 label = 'User';
                 break;
+                case 'Trash':
+                iconName = require('../assets/icons/trash.png');
+                label = 'Trash';
+                break;
             default:
               break;
           }
@@ -75,7 +80,7 @@ const BottomNavigation = () => {
       <Tab.Screen name='My Drive' component={Dashboard} />
       <Tab.Screen name='MyFiles' component={DashboardMyfiles} />
       <Tab.Screen name='Shared' component={DashboardShare} />
-      <Tab.Screen name='Settings' component={SettingsScreen} />
+      <Tab.Screen name='Trash' component={Trashed} />
       {/* <Tab.Screen name='Settings' component={DashboardTrash} /> */}
       <Tab.Screen name='User' component={UserProfile} />
     </Tab.Navigator>

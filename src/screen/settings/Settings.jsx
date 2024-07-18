@@ -8,6 +8,7 @@ import ModalView from '../../components/ModalView';
 import { logout } from '../../redux/reducers/authSlice';
 
 
+
 const Settings = () => {
   const [active , setActive] = useState(false);
   const [loading , setLoading] = useState(true);

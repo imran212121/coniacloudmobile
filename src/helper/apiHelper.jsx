@@ -32,8 +32,8 @@ export const makeApiCall = async (endpoint, access_token, method = 'GET', data =
     ///console.log('response',response?.data);
     return response?.data;
   } catch (error) {
-    console.error('API Error2:', error.response || error.request || error.message);
-    throw error;
+    console.error('API Error2:', JSON.stringify(error.response.data.message));
+    throw JSON.parse(JSON.stringify(error.response.data));
   }
 };
 export const makeApiCallWithHeader = async (endpoint,  method = 'GET', data = null) => {

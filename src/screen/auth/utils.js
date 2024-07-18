@@ -19,9 +19,16 @@ export const profileInitialValue = {
 export const profileValidtionSchema = yup.object().shape({
     first_name:yup.string().required('FirstNaame is required'),
     lastname:yup.string().required('LastName is required'),
-    email:yup.string().required('Email is required'),
-    mobile:yup.string().required('Mobile is required'),
+    company:yup.string().notRequired('Company name must be string'),
+    mobile:yup.string().notRequired('Mobile is required'),
 })
+export const updatepasswordValidtionSchema = yup.object().shape({
+    current_password:yup.string().required('Current password is required'),
+    new_password:yup.string().required('New password is required'),
+    new_password_confirmation:yup.string().required('Confirm password is required'),
+   
+})
+
 export const SignupInitialValue = {
     firstname : '',
     Lastname : '',
