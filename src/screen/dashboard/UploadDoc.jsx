@@ -8,12 +8,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import RNFetchBlob from 'rn-fetch-blob'
 import { AlertNotificationRoot, Dialog, ALERT_TYPE } from 'react-native-alert-notification'
 import { baseURL } from '../../constant/settings'
-
+import { setLanguage } from '../../redux/reducers/languageSlice'; 
+import strings from '../../helper/Language/LocalizedStrings';
+import { useSelector } from 'react-redux'
 const UploadDoc = () => {
   const [selectedDocument, setSelectedDocument] = useState(null)
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(false)
   const navigation = useNavigation()
+  const language = useSelector((state) => state.language.language);
   useEffect(() => {
     const checkLoginStatus = async () => {
       const userData = JSON.parse(await AsyncStorage.getItem('user'))
@@ -95,18 +98,18 @@ const UploadDoc = () => {
   return (
     <AlertNotificationRoot>
       <View style={styles.container}>
-        <CustomHeader back={true} left={true} title={'Upload File'} OnPress={() => navigation.goBack()} />
+        <CustomHeader back={true} left={true} title={strings.UPLOAD_FILE} OnPress={() => navigation.goBack()} />
         <View style={styles.box}>
           <TouchableOpacity style={styles.uploadButton} onPress={pickDocument}>
             <Image source={require('../../assets/upload.png')} tintColor={'#004181'} />
           </TouchableOpacity>
-          <Text style={styles.boldtext}>Drag and drop files, or Browse</Text>
-          <Text style={styles.normaltext}>Support zip and rar files</Text>
+          <Text style={styles.boldtext}>{strings.DRAG_DROP_FILES}</Text>
+          <Text style={styles.normaltext}>{strings.SUPPORT_ZIP_RAR}</Text>
           <TouchableOpacity onPress={uploadDocument} style={styles.uploadActionButton}>
           {loading ? (
             <ActivityIndicator size="small" color="#004181" />
           ) : (
-            <Text style={styles.buttonText}>Upload Doc</Text>
+            <Text style={styles.buttonText}>{strings.UPLOAD_DOC}</Text>
           )}
         </TouchableOpacity>
         </View>

@@ -20,25 +20,27 @@ import { timeAgo } from '../helper/functionHelper';
 import ModalComponent from './ModalComponent';
 
 
+import { setLanguage } from '../redux/reducers/languageSlice'; 
+import strings from '../helper/Language/LocalizedStrings';
 showItem = [{
   id: 1,
   Image: require('../assets/icon/image.png'),
-  text: 'Image'
+  text: strings.Image
 },
 {
   id: 2,
   Image: require('../assets/icon/file.png'),
-  text: 'file'
+  text:strings.File
 },
 {
   id: 3,
   Image: require('../assets/icon/video.png'),
-  text: 'Video'
+  text: strings.Video
 },
 {
   id: 4,
   Image: require('../assets/icon/folder.png'),
-  text: 'folder'
+  text: strings.Folder
 },
 ]
 
@@ -57,6 +59,7 @@ const Started = ({ active, handleLoader, loading, refresh,setRefresh }) => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [PreviewToken, setPreviewToken] = useState(false)
   //const user = useSelector((state) => state.auth.user);
+  const language = useSelector((state) => state.language.language);
   const deviceWidth = Dimensions.get('window').width;
   const [isModalVisible, setModalVisible] = useState(false);
   const handleModalClose = () => {

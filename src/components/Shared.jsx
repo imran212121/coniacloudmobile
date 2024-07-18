@@ -13,10 +13,36 @@ import { baseURL, fileColorCode } from '../constant/settings';
 import StorageStatus from './StorageStatus';
 import ShareFileModal from './model/Share';
 import Preview from './preview/Preview';
-
+import strings from '../helper/Language/LocalizedStrings';
 import ModalComponent from './ModalComponent';
 import { timeAgo } from '../helper/functionHelper';
 const Shared = ({ handleLoader, loading, refresh, setRefresh }) => {
+
+showItem = [{
+  id: 1,
+  Image: require('../assets/icon/image.png'),
+  text: strings.Image
+},
+{
+  id: 2,
+  Image: require('../assets/icon/file.png'),
+  text:strings.File
+},
+{
+  id: 3,
+  Image: require('../assets/icon/video.png'),
+  text: strings.Video
+},
+{
+  id: 4,
+  Image: require('../assets/icon/folder.png'),
+  text: strings.Folder
+},
+]
+
+
+
+const Shared = ({ active, handleLoader, loading, refresh }) => {
   const [driveData, setDriveData] = useState([]);
   const [token, setToken] = useState(null);
   const [page, setPage] = useState(1);
@@ -26,6 +52,8 @@ const Shared = ({ handleLoader, loading, refresh, setRefresh }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [user, setUser] = useState(false);
   const [viewType, setViewType] = useState('grid');
+  //const user = useSelector((state) => state.auth.user);
+  const language = useSelector((state) => state.language.language);
   const deviceWidth = Dimensions.get('window').width;
   const [PreviewToken, setPreviewToken] = useState(false)
   const [isModalVisible, setModalVisible] = useState(false);
@@ -270,7 +298,7 @@ const Shared = ({ handleLoader, loading, refresh, setRefresh }) => {
       )}
     </View>
   );
-};
+}}
 
 export default Shared;
 

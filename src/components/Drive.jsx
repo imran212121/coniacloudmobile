@@ -15,7 +15,11 @@ import Preview from './preview/Preview';
 
 import ModalComponent from './ModalComponent';
 import { timeAgo } from '../helper/functionHelper';
-const Drive = ({ handleLoader, loading, refresh, setRefresh }) => {
+import { setLanguage } from '../redux/reducers/languageSlice'; 
+import strings from '../helper/Language/LocalizedStrings';
+import { useSelector } from 'react-redux';
+const Drive = ({ handleLoader, loading, refresh }) => {
+  
   const [driveData, setDriveData] = useState([]);
   const [token, setToken] = useState(null);
   const [page, setPage] = useState(1);
@@ -41,6 +45,7 @@ const Drive = ({ handleLoader, loading, refresh, setRefresh }) => {
       console.log('error', error);
     }
   }
+  const language = useSelector((state) => state.language.language);
   const handleModalOpen = (item) => {
     setSelectedItem(item);
     setModalVisible(true);
@@ -70,7 +75,7 @@ const Drive = ({ handleLoader, loading, refresh, setRefresh }) => {
       if (!token) return;
       handleLoader(true);
       try {
-        const response = await axios.get(`${baseURL}/drive/file-entries?timestamp=${new Date().getTime()}`, {
+        const response = await axios.get(`${baseURL}/drive/file-entries?timestamp=}`, {
           headers: { Authorization: `Bearer ${token}` },
           params: {
             pageId: 0,
@@ -93,8 +98,8 @@ const Drive = ({ handleLoader, loading, refresh, setRefresh }) => {
       } catch (error) {
         handleLoader(false);
         if (error.response) {
-          console.log('Server responded with status:', error.response.status);
-          console.log('Error message from server:', error.response.data);
+          // console.log('Server responded with status:', error.response.status);
+          // console.log('Error message from server:', error.response.data);
         } else if (error.request) {
           console.log('No response received from server:', error.request);
         } else {
@@ -141,7 +146,6 @@ const Drive = ({ handleLoader, loading, refresh, setRefresh }) => {
     word: wordIcon,
     image: imageIcon
   };
-
   const renderGridItem = ({ item, index }) => {
     if (item.extension === 'jpg' || item.extension === 'jpeg' || item.extension === 'svg') {
       item.type = 'image';
@@ -191,7 +195,7 @@ const Drive = ({ handleLoader, loading, refresh, setRefresh }) => {
       >
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}>
-            <Image source={fileType[item.type]} style={[styles.fileIcon, { height: 40, width: 40 }]} />
+            <Image source={fileType[item.type] || fileIcon} style={[styles.fileIcon, { height: 40, width: 40 }]} />
             <View>
               <Text style={[styles.fileText, { marginTop: 0 }]}>
                 {item.name.length > 15 ? `${item.name.substring(0, 15)}...` : item.name}
@@ -206,7 +210,6 @@ const Drive = ({ handleLoader, loading, refresh, setRefresh }) => {
       </TouchableOpacity>
     );
   };
-
   return (
     <View style={{ marginTop: 2, flex: 1 }}>
       {loading ? (
@@ -237,7 +240,7 @@ const Drive = ({ handleLoader, loading, refresh, setRefresh }) => {
           {!selected ? (
             <>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: 18 }}>
-                <Text style={styles.heading}>Recently Edited</Text>
+                <Text style={styles.heading}>{strings.RECENTLY_EDITED}</Text>
                 <View style={{ flexDirection: "row", gap: 10 }}>
                   <TouchableOpacity onPress={() => setViewType('list')}>
                     <Image source={require('../assets/list.png')} style={[styles.rightImage, { tintColor: viewType === 'list' ? '#004181' : '#B3B4B6' }]} />

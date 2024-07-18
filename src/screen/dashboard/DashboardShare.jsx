@@ -6,7 +6,9 @@ import Started from '../../components/Started';
 import MyDrive from '../../components/MyDrive';
 import ModalView from '../../components/ModalView';
 import CustomHeader from '../../components/CustomHeader';
-import { useNavigation } from '@react-navigation/native';
+import { setLanguage } from '../../redux/reducers/languageSlice'; 
+import strings from '../../helper/Language/LocalizedStrings';
+import { useSelector } from 'react-redux';import { useNavigation } from '@react-navigation/native';
 import Shared from '../../components/Shared';
 
 const DashboardShare = () => {
@@ -16,6 +18,7 @@ const DashboardShare = () => {
   const [isError, setIsError] = useState(false);
   const [refresh, setRefresh] = useState(false);
   const navigation=useNavigation()
+  const language = useSelector((state) => state.language.language);
   useEffect(() => {
     ////console.log('rnder',active,message)
   }, [active, loading])
@@ -33,8 +36,7 @@ const DashboardShare = () => {
     <>
       <View style={{padding:15}}>
 
-        <CustomHeader back={true} left={true} right={true} title={'Share'} grid={true} 
-        OnPress={()=>navigation.goBack()}/>
+      <CustomHeader back={true} left={true} right={true} title={'Shared'} grid={true}/>
       </View>
       <View style={styles.mainContainer} showsVerticalScrollIndicator={false}>
         {/* <ModalView modalHandler ={modalHandler} active={active} isError={isError} message={message}/> */}

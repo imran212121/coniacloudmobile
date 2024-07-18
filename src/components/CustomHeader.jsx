@@ -1,11 +1,14 @@
 import { Image, StyleSheet, Text, View, Dimensions, TouchableOpacity } from 'react-native';
 import React from 'react';
 import { AppColor } from '../utils/AppColors';
-
+import { setLanguage } from '../redux/reducers/languageSlice'; 
+import strings from '../helper/Language/LocalizedStrings';
+import { useSelector } from 'react-redux';
 const Width = Dimensions.get('window').width;
 const Height = Dimensions.get('window').height;
 
 const CustomHeader = ({ title, left, right,back,OnPress,textcolor,bgColor,grid }) => {
+  const language = useSelector((state) => state.language.language);
   return (
     <View style={[styles.container,{backgroundColor:bgColor}]}>
       <View style={styles.leftContainer}>
