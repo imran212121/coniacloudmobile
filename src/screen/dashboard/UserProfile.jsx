@@ -113,7 +113,7 @@ const [token, setToken] = useState(null);
       <Text style={[styles.Heading, { lineHeight: 27, fontSize: 18, marginTop: 40 }]}>
       {spendStorage} GB of {totalStorage} GB used
       </Text>
-      <ProgressBar percentage={percentage}/>
+      <ProgressBar progress={percentage}/>
       <View style={{ marginTop: 30 }}>
         {/* <CustomButton buttonTitle={'Upgrade Storage Space'} /> */}
       </View>

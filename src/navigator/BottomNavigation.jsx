@@ -24,9 +24,9 @@ const BottomNavigation = () => {
         headerShown: false,
         tabBarStyle: {
           backgroundColor: '#fff',
-          height: 70,
+          height: 60,
           paddingBottom: 5,
-          paddingHorizontal:15
+          paddingHorizontal:10
         
         },
         tabBarShowLabel: false, 
@@ -84,8 +84,8 @@ const BottomNavigation = () => {
       <Tab.Screen name='My Drive' component={Dashboard} />
       <Tab.Screen name='MyFiles' component={DashboardMyfiles} />
       <Tab.Screen name='Shared' component={DashboardShare} />
-      <Tab.Screen name='Trash' component={Trashed} />
-      {/* <Tab.Screen name='Settings' component={DashboardTrash} /> */}
+      {/* <Tab.Screen name='Trash' component={Trashed} /> */}
+       <Tab.Screen name='Trash' component={DashboardTrash} /> 
       <Tab.Screen name='User' component={UserProfile} />
     </Tab.Navigator>
   );

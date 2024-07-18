@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, Image, ActivityIndicator, TouchableOpacity, Dimensions, TextInput, FlatList, ScrollView } from 'react-native';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
+import { useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import folderIcon from '../assets/icon/folder.png';
 import fileIcon from '../assets/icon/file.png';
@@ -42,7 +43,7 @@ showItem = [{
 
 
 
-const Shared = ({ active, handleLoader, loading, refresh }) => {
+
   const [driveData, setDriveData] = useState([]);
   const [token, setToken] = useState(null);
   const [page, setPage] = useState(1);
@@ -267,7 +268,7 @@ const Shared = ({ active, handleLoader, loading, refresh }) => {
           {!selected ? (
             <>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: 18 }}>
-                <Text style={styles.heading}>Recently Edited</Text>
+                <Text style={styles.heading}>Shared</Text>
                 <View style={{ flexDirection: "row", gap: 10 }}>
                   <TouchableOpacity onPress={() => setViewType('list')}>
                     <Image source={require('../assets/list.png')} style={[styles.rightImage, { tintColor: viewType === 'list' ? '#004181' : '#B3B4B6' }]} />
@@ -298,7 +299,7 @@ const Shared = ({ active, handleLoader, loading, refresh }) => {
       )}
     </View>
   );
-}}
+}
 
 export default Shared;
 
