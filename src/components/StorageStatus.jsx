@@ -6,8 +6,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppColor } from '../utils/AppColors';
 import Logo from '../assets/AppLogo.png';
 import { setLanguage } from '../redux/reducers/languageSlice'; 
+
 import strings from '../helper/Language/LocalizedStrings';
 import { useSelector } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
 const StorageStatus = ({ user,usertoken }) => {
   const radius = 70;
   const [spendStorage, setSpendStorage] = useState(0);
@@ -15,6 +17,7 @@ const StorageStatus = ({ user,usertoken }) => {
   const [totalStorage, setTotalStorage] = useState(100);
   const [percentage, setPercentage] = useState(0);
   const language = useSelector((state) => state.language.language);
+  const navigation = useNavigation();
   const [strokeDashoffset, setStrokeDashoffset] = useState(0);
   const circleCircumference = 2 * Math.PI * radius;
   useEffect(() => {
@@ -50,6 +53,10 @@ const StorageStatus = ({ user,usertoken }) => {
 
       } catch (error) {
         console.error('Error fetching storage data:', error);
+        if(error.status==403 || error.status==402)
+          {
+            navigation.navigate('Login');
+          }
         //fetchData();
       }
     };

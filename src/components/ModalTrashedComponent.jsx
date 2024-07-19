@@ -23,12 +23,7 @@ const ModalTrashedComponent = ({ isVisible, onClose, item, user, PreviewToken, s
     [onClose]
   );
 
-  const items = [
-    { id: 6, ImagePath: require('../assets/Modalicon/Link.png'), text: 'Copy link' },
-
-    { id: 9, ImagePath: require('../assets/Modalicon/fi_edit-2.png'), text: 'Rename' },
-
-  ];
+ 
   const sharePopup = () => {
     console.log('k');
     setShareModalVisible(true);
@@ -40,55 +35,17 @@ const ModalTrashedComponent = ({ isVisible, onClose, item, user, PreviewToken, s
     setRenameModalVisible(!isRenameModalVisible)
   };
 
-  const deleteFile = async () => {
+  const restoreFile = async () => {
     let data = {
       entryIds: [item?.id],
-      deleteForever: 0,
+     
 
     }
-    const res = await makeApiCall('/api/v1/file-entries/delete', user?.access_token, 'post', data);
+    const res = await makeApiCall('/api/v1/file-entries/restore', user?.access_token, 'post', data);
     setRefresh(!refresh);
     setModalVisible(!isVisible);
   }
-  const downloadAndOpenFile = () => {
-    try {
-      let downloadUrl = AppSettings.base_url + '/api/v1/file-entries/download/' + item?.hash;
-      console.log('downloadUrl', downloadUrl);
-      const url = downloadUrl + '?add-preview-token=' + PreviewToken;
-      const file_extension = item?.extension;
-      const file_name = item?.name;
-      let file_name_with_extension;
-      if (file_extension !== null) {
-        file_name_with_extension = file_name + '.' + file_extension;
-      } else {
-        file_name_with_extension = file_name + '.zip';
-      }
-
-      console.log(Platform.OS);
-      if (Platform.OS === 'android') {
-        ////console.log('sss');
-        getDownloadPermissionAndroid().then(granted => {
-          if (granted) {
-            console.log('sss');
-            downloadFile(url, file_name_with_extension);
-          } else {
-            downloadFile(url, file_name_with_extension);
-            console.log('sssaa');
-          }
-        });
-      } else {
-        downloadFile(url, file_name_with_extension).then(res => {
-          RNFetchBlob.ios.previewDocument(res.path());
-        });
-      }
-    } catch (error) {
-      console.log('error', error);
-    }
-
-
-
-
-  };
+ 
   return (
     <>
 
@@ -96,12 +53,16 @@ const ModalTrashedComponent = ({ isVisible, onClose, item, user, PreviewToken, s
       <BottomSheet
         ref={bottomSheetRef}
         index={isVisible ? 0 : -1}
-        snapPoints={['40%', '100%']}
+        snapPoints={['20%', '100%']}
         onChange={handleSheetChanges}
       >
         <BottomSheetView style={styles.contentContainer}>
-          <>
-            <TouchableOpacity style={styles.itemContainer} onPress={sharePopup}>
+          <><TouchableOpacity style={{ alignSelf: 'flex-end', right: 10, top: 10 }}
+            onPress={handleClosePress}>
+            <Image source={require('../assets/icons/close.png')}
+              style={{ height: 30, with: 30, resizeMode: 'contain', }} />
+          </TouchableOpacity>
+            <TouchableOpacity style={styles.itemContainer} onPress={restoreFile}>
               <Image source={require('../assets/icons/fi_download.png')} style={styles.image}
               />
               <Text>Restore</Text>

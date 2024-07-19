@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState ,useContext} from 'react';
 import { StyleSheet, Text, View, Image, ActivityIndicator, TouchableOpacity, Dimensions, TextInput, FlatList, ScrollView } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -8,6 +8,7 @@ import pdfIcon from '../assets/icons/pdf.png';
 import wordIcon from '../assets/icon/word.png';
 import imageIcon from '../assets/icon/image.png';
 import back from '../assets/icons/fi_arrow-left.png';
+import { ParentContext } from '../context/ParentContext';
 import { baseURL, fileColorCode } from '../constant/settings';
 import StorageStatus from './StorageStatus';
 import ShareFileModal from './model/Share';
@@ -79,7 +80,7 @@ const MyDrive = ({ handleLoader, loading, refresh, setRefresh }) => {
             workspaceId: 0,
             deletedOnly: false,
             starredOnly: false,
-            recentOnly: false,
+            recentOnly: true,
             sharedOnly: false,
             per_page: 100
           }

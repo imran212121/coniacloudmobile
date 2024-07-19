@@ -15,15 +15,15 @@ import Preview from './preview/Preview';
 
 import ModalComponent from './ModalComponent';
 import { timeAgo } from '../helper/functionHelper';
-import { setLanguage } from '../redux/reducers/languageSlice'; 
+import { setLanguage } from '../redux/reducers/languageSlice';
 import strings from '../helper/Language/LocalizedStrings';
 import { useSelector } from 'react-redux';
-const Drive = ({ handleLoader, loading, refresh ,setRefresh}) => {
-  
+const Drive = ({ handleLoader, loading, refresh, setRefresh,folderId,setFolderId }) => {
+
   const [driveData, setDriveData] = useState([]);
   const [token, setToken] = useState(null);
   const [page, setPage] = useState(1);
-  const [folderId, setFolderId] = useState(0);
+ 
   const [folder, setFolder] = useState([]);
   const [selected, setSelected] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -236,6 +236,9 @@ const Drive = ({ handleLoader, loading, refresh ,setRefresh}) => {
             <TouchableOpacity>
               <Image source={require('../assets/Filter.png')} style={styles.rightImage} />
             </TouchableOpacity>
+          </View>
+          <View style={[styles.headerBottom,{marginTop:10}]}>
+            <DriveHeader folder={folder} selected={selected} handleFolderNavigation={handleFolderNavigation} />
           </View>
           {!selected ? (
             <>

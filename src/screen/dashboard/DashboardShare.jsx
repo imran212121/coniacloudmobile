@@ -8,7 +8,8 @@ import ModalView from '../../components/ModalView';
 import CustomHeader from '../../components/CustomHeader';
 import { setLanguage } from '../../redux/reducers/languageSlice'; 
 import strings from '../../helper/Language/LocalizedStrings';
-import { useSelector } from 'react-redux';import { useNavigation } from '@react-navigation/native';
+import { useSelector } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
 import Shared from '../../components/Shared';
 
 const DashboardShare = () => {

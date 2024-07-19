@@ -12,6 +12,7 @@ const Dashboard = () => {
   const [message, setMessage] = useState('');
   const [isError, setIsError] = useState(false);
   const [refresh, setRefresh] = useState(false);
+  const [folderId, setFolderId] = useState(null);
   const navigation=useNavigation()
   useEffect(() => {
     ////console.log('rnder',active,message)
@@ -31,11 +32,11 @@ const Dashboard = () => {
   }
   return (
     <>
-      <Header handleRefresh={handleRefresh} refresh={refresh} loading={loading} handleLoader={handleLoader} modalHandler={modalHandler} active={active} onPress={()=>navigation.navigate('Notification')} />
+      <Header parentId={folderId} handleRefresh={handleRefresh} setRefresh={setRefresh} refresh={refresh} loading={loading} handleLoader={handleLoader} modalHandler={modalHandler} active={active} onPress={()=>navigation.navigate('Notification')} />
  <View style={styles.mainContainer} showsVerticalScrollIndicator={false}>
      
       {/* <ModalView modalHandler={modalHandler} active={active} isError={isError} message={message} /> */}
-      <Drive loading={loading} refresh={refresh} active={active} handleLoader={handleLoader} setRefresh={setRefresh} />
+      <Drive folderId={folderId} setFolderId={setFolderId} loading={loading} refresh={refresh} active={active} handleLoader={handleLoader} setRefresh={setRefresh} />
     </View>
     </>
    

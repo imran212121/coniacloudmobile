@@ -30,7 +30,7 @@ const Settings = () => {
   }
   return (
     <ScrollView style={styles.mainContainer}>
-       <Header loading={loading} handleLoader={handleLoader} modalHandler ={modalHandler} active={active}/>
+       {/* <Header loading={loading} handleLoader={handleLoader} modalHandler ={modalHandler} active={active}/> */}
        <ModalView modalHandler ={modalHandler} active={active} isError={isError} message={message}/>
        <SettingsScreen />
     </ScrollView>

@@ -41,7 +41,7 @@ const BottomNavigation = () => {
               label = strings.HOME;
               iconSize = 20;
               break;
-              case 'MyFiles':
+              case 'Recents':
               iconName = require('../assets/icons/AddDoc.png');
               label = strings.MyFiles;
               break;
@@ -82,7 +82,7 @@ const BottomNavigation = () => {
       })}
     >
       <Tab.Screen name='My Drive' component={Dashboard} />
-      <Tab.Screen name='MyFiles' component={DashboardMyfiles} />
+      <Tab.Screen name='Recents' component={DashboardMyfiles} />
       <Tab.Screen name='Shared' component={DashboardShare} />
       {/* <Tab.Screen name='Trash' component={Trashed} /> */}
        <Tab.Screen name='Trash' component={DashboardTrash} /> 

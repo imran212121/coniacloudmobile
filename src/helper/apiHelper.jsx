@@ -8,16 +8,17 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
 const apiH = axios.create({
   baseURL: AppSettings.base_url,
   timeout: 10000,
   responseType: 'text',
-  // required for s3 presigned url to work
   withCredentials: false,
   headers: {
     'Accept': 'text/plain',
   },
 });
+
 export const makeApiCall = async (endpoint, access_token, method = 'GET', data = null) => {
   try {
     const response = await api({
@@ -29,14 +30,18 @@ export const makeApiCall = async (endpoint, access_token, method = 'GET', data =
         'Authorization': `Bearer ${access_token}`,
       },
     });
-    ///console.log('response',response?.data);
     return response?.data;
   } catch (error) {
-    console.error('API Error2:', JSON.stringify(error.response.data.message));
-    throw JSON.parse(JSON.stringify(error.response.data));
+    console.error('API Error:', JSON.stringify(error.response.data.message));
+    console.error('API Status Code:', error.response.status);
+    throw { data: error.response.data, status: error.response.status };
+  } finally {
+    // This block will always execute, regardless of whether the request succeeded or failed
+    console.log('API call completed');
   }
 };
-export const makeApiCallWithHeader = async (endpoint,  method = 'GET', data = null) => {
+
+export const makeApiCallWithHeader = async (endpoint, method = 'GET', data = null) => {
   try {
     const response = await apiH({
       method,
@@ -44,15 +49,14 @@ export const makeApiCallWithHeader = async (endpoint,  method = 'GET', data = nu
       data,
       headers: {
         ...apiH.defaults.headers,
-        
       },
     });
-    ////console.log('response',response?.data);
     return response?.data;
   } catch (error) {
-    //console.error('API Error2:', error.response || error.request || error.message);
+    console.error('API Error:', error.response || error.request || error.message);
     throw error;
+  } finally {
+    // This block will always execute, regardless of whether the request succeeded or failed
+    console.log('API call with header completed');
   }
 };
-
-

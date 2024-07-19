@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, Dimensions } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import DocumentPicker from 'react-native-document-picker';
@@ -9,10 +9,16 @@ import IconBadge from 'react-native-icon-badge';
 import { setLanguage } from '../redux/reducers/languageSlice'; 
 import strings from '../helper/Language/LocalizedStrings';
 import { useSelector } from 'react-redux';
-export default function Header({ modalHandler, handleLoader, loading, handleRefresh, refresh, uploadIcon, notiIcon, settingsIcon,onPress }) {
+import CreateFolderModal from './model/CreateFolder';
+
+
+export default function Header({ modalHandler,setRefresh, handleLoader, loading, handleRefresh, refresh, uploadIcon, notiIcon, settingsIcon,onPress,parentId }) {
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [user, setUser] = useState(null);
+  const [isVisible, setIsvisible] = useState(false);
   const navigation = useNavigation();
+  const Width = Dimensions.get('window').width;
+  const [isModalVisible, setModalVisible] = useState(false);
   const language = useSelector((state) => state.language.language);
   useEffect(() => {
     const checkLoginStatus = async () => {
@@ -76,12 +82,16 @@ export default function Header({ modalHandler, handleLoader, loading, handleRefr
       console.error('Error uploading document:', error);
     }
   };
-
+  const toggleDisplay = ()=>{
+    setIsvisible(!isVisible);
+  }
   const settingScreen = () => {
     console.log('settings');
     navigation.navigate('Settings');
   };
-
+  const toggleModal = () => {
+    setModalVisible(!isModalVisible)
+  };
   return (
     <>
     
@@ -94,7 +104,7 @@ export default function Header({ modalHandler, handleLoader, loading, handleRefr
             </View>
           </View>
           <View style={{ flexDirection: 'row' }}>
-            <TouchableOpacity onPress={() => navigation.navigate('UploadDoc')}>
+            <TouchableOpacity onPress={() => toggleDisplay()}>
               <Image source={uploadIcon || require('../assets/upload.png')} style={styles.icon} />
             </TouchableOpacity>
             <TouchableOpacity onPress={onPress}>
@@ -110,7 +120,24 @@ export default function Header({ modalHandler, handleLoader, loading, handleRefr
             </TouchableOpacity> */}
           </View>
         </View>
-     
+     {isVisible && 
+     <View style={[styles.modelContainer,{left:Width-160}]}>
+           <View style={styles.modelList}>
+              <TouchableOpacity style={styles.textList} onPress={()=>{toggleModal()}}
+              ><Text>Create Folder</Text></TouchableOpacity>
+              <TouchableOpacity style={styles.textList} onPress={
+                ()=>{ navigation.navigate('UploadDoc');}}><Text>Upload File</Text></TouchableOpacity>
+           </View>
+     </View>}
+     <CreateFolderModal
+        isVisible={isModalVisible}
+        onClose={toggleModal}
+        setRefresh={setRefresh}
+        refresh={refresh}
+        user={user}
+        parentId={parentId}
+       
+      />
     </>
   );
 }
@@ -125,6 +152,25 @@ const styles = StyleSheet.create({
     // borderBottomColor: '#e6e6e6',
     // borderBottomWidth: 2,
     // backgroundColor: 'white',
+  },
+  modelContainer:{
+    width:140,
+    height:80,
+    top:0,
+   
+    display:'flex',
+    flexDirection:'column',
+    borderRadius:10,
+    backgroundColor:'#fff'
+  },
+  textList:{
+    borderBottomColor:"#F0F0F0",
+    borderBottomWidth:1,
+    color:'#000',
+    padding:10
+  },
+  modelList:{
+   margin:1
   },
   avatar: {
     width: 50,
