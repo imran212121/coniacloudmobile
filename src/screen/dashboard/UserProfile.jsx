@@ -7,29 +7,29 @@ import { AppColor } from '../../utils/AppColors';
 import ProgressBar from '../../components/ProgressBar';
 import { logout } from '../../redux/reducers/authSlice';
 import { makeApiCall } from '../../helper/apiHelper';
+import { setLanguage } from '../../redux/reducers/languageSlice'; 
+import strings from '../../helper/Language/LocalizedStrings';
+// import { useSelector } from 'react-redux';
 const Data = [
   {
-    id: 3,
+    id: 1,
     ImagePath: require('../../assets/icon/fi_user-check.png'),
-    text: "Account Information",
+    text: strings.ACCOUNT_INFORMATION,
     navigate: "Profile"
   },
   {
     id: 2,
     ImagePath: require('../../assets/icon/Lock.png'),
-    text: "Change Password",
+    text: strings.CHANGE_PASSWORD,
     navigate: "UpdatePassword"
   },
 
-  // {
-  //   id: 4,
-  //   ImagePath: require('../../assets/icon/Smallfolder.png'),
-  //   text: "Upgrade Plan"
-  // },
+ ,
   {
-    id: 5,
+    id: 3,
     ImagePath: require('../../assets/icon/smallFile.png'),
-    text: "Change Language"
+    text: strings.CHANGE_LANGUAGE,
+    navigate: "choselanguage"
   },
   // {
   //   id: 6,
@@ -48,6 +48,7 @@ const [token, setToken] = useState(null);
   
   const [totalStorage, setTotalStorage] = useState(100);
   const [percentage, setPercentage] = useState(0);
+  const language = useSelector((state) => state.language.language);
   useEffect(() => {
     const checkLoginStatus = async () => {
       const user = JSON.parse(await AsyncStorage.getItem('user'));
@@ -111,7 +112,7 @@ const [token, setToken] = useState(null);
         </View>
       </View>
       <Text style={[styles.Heading, { lineHeight: 27, fontSize: 18, marginTop: 40 }]}>
-      {spendStorage} GB of {totalStorage} GB used
+      {spendStorage} GB of {totalStorage} {strings.GB_USED}
       </Text>
       <ProgressBar progress={percentage}/>
       <View style={{ marginTop: 30 }}>
@@ -130,7 +131,7 @@ const [token, setToken] = useState(null);
      <TouchableOpacity onPress={logoutHandler} style={{marginTop:40,flexDirection:'row',alignItems:'center',gap:20}}>
                 <Image source={require('../../assets/icon/Logout.png')}
                 style={{height:30,width:30}}/>
-                <Text  style={[styles.headingText,{color:'#FF4E4E',marginTop:0}]}>Logout</Text>
+                <Text  style={[styles.headingText,{color:'#FF4E4E',marginTop:0}]}>{strings.LOGOUT}</Text>
               </TouchableOpacity>
     </View>
   );

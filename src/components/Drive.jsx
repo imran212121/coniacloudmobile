@@ -12,7 +12,7 @@ import { baseURL, fileColorCode } from '../constant/settings';
 import StorageStatus from './StorageStatus';
 import ShareFileModal from './model/Share';
 import Preview from './preview/Preview';
-
+import DriveHeader from './DriveHeader'
 import ModalComponent from './ModalComponent';
 import { timeAgo } from '../helper/functionHelper';
 import { setLanguage } from '../redux/reducers/languageSlice';
