@@ -38,7 +38,7 @@ const DashboardShare = () => {
     <>
       <View style={{padding:15}}>
 
-      <CustomHeader back={true} left={true} right={true} title={'Shared'} grid={true}/>
+      <CustomHeader back={true} left={true} right={true} title={strings.SHARED} grid={true}/>
       </View>
       <View style={styles.mainContainer} showsVerticalScrollIndicator={false}>
         {/* <ModalView modalHandler ={modalHandler} active={active} isError={isError} message={message}/> */}

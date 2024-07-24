@@ -59,7 +59,7 @@ const BottomNavigation = () => {
                 break;
                 case 'Trash':
                 iconName = require('../assets/icons/trash.png');
-                label = 'Trash';
+                label = strings.TRASH_FILE;
                 break;
             default:
               break;

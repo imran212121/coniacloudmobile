@@ -16,6 +16,9 @@ import Preview from './preview/Preview';
 import DriveHeader from './DriveHeader';
 import ModalComponent from './ModalComponent';
 import { timeAgo } from '../helper/functionHelper';
+import { setLanguage } from '../redux/reducers/languageSlice'; 
+import { useSelector } from 'react-redux';
+import strings from '../helper/Language/LocalizedStrings';
 const MyDrive = ({ handleLoader, loading, refresh, setRefresh }) => {
   const [driveData, setDriveData] = useState([]);
   const [token, setToken] = useState(null);
@@ -30,6 +33,7 @@ const MyDrive = ({ handleLoader, loading, refresh, setRefresh }) => {
   const [PreviewToken, setPreviewToken] = useState(false)
   const [isModalVisible, setModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const language = useSelector((state) => state.language.language);
   const [files, setFile] = useState(null);
   const fetchImageData = async (file_id) => {
     try {
@@ -241,7 +245,7 @@ const MyDrive = ({ handleLoader, loading, refresh, setRefresh }) => {
           {!selected ? (
             <>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: 18 }}>
-                <Text style={styles.heading}>Recently Edited</Text>
+                <Text style={styles.heading}>{strings.RECENTLY_EDITED}</Text>
                 <View style={{ flexDirection: "row", gap: 10 }}>
                   <TouchableOpacity onPress={() => setViewType('list')}>
                     <Image source={require('../assets/list.png')} style={[styles.rightImage, { tintColor: viewType === 'list' ? '#004181' : '#B3B4B6' }]} />

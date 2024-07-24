@@ -32,6 +32,7 @@ export default {
     SUPPORT_ZIP_RAR: "Support zip and rar files",
     UPLOAD_DOC: "Upload Doc",
     UPLOAD_FILE: "Upload file",
+    TRASH_FILE:'Trash files'
   };
   
  

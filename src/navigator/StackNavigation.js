@@ -25,26 +25,21 @@ const StackNavigation = () => {
     };
     checkLoginStatus();
   }, []);
-// console.log(token)
+  // console.log(token)
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName={isLoggedIn ? 'Home':'Splesh'}>
-      {/* <Stack.Navigator initialRouteName={ 'Test'}> */}
-      <Stack.Screen options={{headerShown:false}} name='Splesh' component={Splesh} />
-       
-          <Stack.Screen options={{ headerShown: false }} name='Home' component={BottomNavigation} />
-          <Stack.Screen options={{ headerShown: false }} name='Login' component={Login} />
-       
-
+      <Stack.Navigator initialRouteName={isLoggedIn ? 'Home' : 'Splesh'}>
+        {/* <Stack.Navigator initialRouteName={ 'Test'}> */}
+        <Stack.Screen options={{ headerShown: false }} name='Splesh' component={Splesh} />
+        <Stack.Screen options={{ headerShown: false }} name='Home' component={BottomNavigation} />
+        <Stack.Screen options={{ headerShown: false }} name='Login' component={Login} />
         <Stack.Screen options={{ headerShown: false }} name='Signup' component={Signup} />
-
         <Stack.Screen options={{ headerShown: false }} name='Settings' component={Settings} />
         <Stack.Screen options={{ headerShown: false }} name='Dashboard' component={BottomNavigation} />
         <Stack.Screen options={{ headerShown: false }} name='Profile' component={EditProfile} />
         <Stack.Screen options={{ headerShown: false }} name='UploadDoc' component={UploadDoc} />
         <Stack.Screen options={{ headerShown: false }} name='Notification' component={Notification} />
         <Stack.Screen options={{ headerShown: false }} name='UpdatePassword' component={UpdatePassword} />
-        {/* <Stack.Screen options={{ headerShown: false }} name='Test' component={Test} /> */}
         <Stack.Screen options={{ headerShown: false }} name='choselanguage' component={choselanguage} />
         {/* <Stack.Screen options={{ headerShown: false }} name='Test' component={Test} /> */}
       </Stack.Navigator>
