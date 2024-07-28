@@ -35,7 +35,7 @@ const DashboardMyfiles = () => {
     <>
       <View style={{padding:15}}>
 
-        <CustomHeader back={true} left={true} right={true} title={strings.MY_FILES} grid={true} 
+        <CustomHeader back={true} left={true} right={true} title={strings.RECENTLY_EDITED} grid={true} 
         OnPress={()=>navigation.goBack()}/>
       </View>
       <View style={styles.mainContainer} showsVerticalScrollIndicator={false}>

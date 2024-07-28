@@ -15,7 +15,7 @@ import close from '../../assets/icons/close.png'
 
 
 const ImagePreview = ({ files, user, closeFile,folderId,handleFolderNavigation }) => {
-    //console.log('files', files);
+    
     const [PreviewToken, setPreviewToken] = useState(false)
     let previewUrl = AppSettings.base_url + files.url;
     let downloadUrl = AppSettings.base_url + '/api/v1/file-entries/download/' + files.hash;
