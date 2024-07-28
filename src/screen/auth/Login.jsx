@@ -10,6 +10,7 @@ import { loginAsync } from '../../redux/reducers/authSlice';
 import Alertm from '../../components/alert/Alertm';
 import CustomHeader from '../../components/CustomHeader';
 import { AppColor } from '../../utils/AppColors';
+import strings from '../../helper/Language/LocalizedStrings';
 
 const Login = () => {
   const navigation = useNavigation();
@@ -33,9 +34,9 @@ const Login = () => {
 
   return (
     <View style={styles.loginMainContainer}>
-      <CustomHeader back={true} left={true} title={'Welcome back!'} onPress={() => navigation.goBack()} />
+      <CustomHeader back={true} left={true} title={strings.WELCOME} onPress={() => navigation.goBack()} />
       <View style={styles.logoContainer}>
-        <Text style={styles.text}>Let’s get to know each other, input personal details to begin</Text>
+        <Text style={styles.text}>{strings.LOGIN_STRING}</Text>
       </View>
       <View style={styles.inputContainer}>
         {error && <Alertm type={'error'} text={'Invalid username or password!'} />}
@@ -55,7 +56,7 @@ const Login = () => {
           }) => (
             <View style={{ marginTop: 60 }}>
               <InputBox
-                placeholder={'Enter email Address'}
+                placeholder={strings.EMAIL}
                 onChangeText={handleChange('email')}
                 onBlur={handleBlur('email')}
                 value={values.email}
@@ -65,7 +66,7 @@ const Login = () => {
               />
 
               <InputBox
-                placeholder={'Password'}
+                placeholder={strings.PASSWORD}
                 onChangeText={handleChange('password')}
                 onBlur={handleBlur('password')}
                 value={values.password}
@@ -75,17 +76,17 @@ const Login = () => {
                 secure={true}
                 icon={require('../../assets/Lock.png')}
               />
-              <Text style={styles.forget}>Forget Password?</Text>
-              <CustomButton buttonTitle={'Log in'} onPress={handleSubmit} disabled={!isValid || loading} />
+              {/* <Text style={styles.forget}>Forget Password?</Text> */}
+              <CustomButton buttonTitle={strings.LOGIN} onPress={handleSubmit} disabled={!isValid || loading} />
             </View>
           )}
         </Formik>
       </View>
       <View style={styles.signUpButton}>
-        <Text style={styles.text}>Don’t have an account? </Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+        {/* <Text style={styles.text}>{strings.NOTACCOUNT}Don’t have an account? </Text> */}
+        {/* <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
           <Text style={[styles.text, { color: AppColor.blue, fontSize: 16, marginTop: 5 }]}>Create a new account</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
       {loading && (
         <View style={styles.loadingOverlay}>

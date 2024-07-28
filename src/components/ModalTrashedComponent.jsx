@@ -7,6 +7,7 @@ import { downloadFile, getDownloadPermissionAndroid } from '../helper/downloadHe
 import RNFetchBlob from 'rn-fetch-blob';
 import { AppSettings } from '../utils/Settings';
 import { makeApiCall } from '../helper/apiHelper';
+import strings from '../helper/Language/LocalizedStrings';
 
 const ModalTrashedComponent = ({ isVisible, onClose, item, user, PreviewToken, setRefresh, refresh, setModalVisible }) => {
   const [isShareModalVisible, setShareModalVisible] = useState(false);
@@ -65,7 +66,7 @@ const ModalTrashedComponent = ({ isVisible, onClose, item, user, PreviewToken, s
             <TouchableOpacity style={styles.itemContainer} onPress={restoreFile}>
               <Image source={require('../assets/icons/fi_download.png')} style={styles.image}
               />
-              <Text>Restore</Text>
+              <Text>{strings.RESTORE}</Text>
             </TouchableOpacity>
                 </>
 

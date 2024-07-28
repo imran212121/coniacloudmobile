@@ -33,4 +33,5 @@ export default {
     SUPPORT_ZIP_RAR: "Unterstützt zip und rar Dateien",
     UPLOAD_DOC: "Dokument hochladen",
     UPLOAD_FILE: "Datei hochladen",
+    TRASH_FILE:'Papierkorb-Datei'
 };

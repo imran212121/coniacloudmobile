@@ -1,5 +1,6 @@
 import { View, TouchableOpacity,Image,StyleSheet,TextInput } from 'react-native'
 import React , {useEffect} from 'react'
+import strings from '../helper/Language/LocalizedStrings';
 
 const Search = ({serach,setsearch,setpageId,setpage}) => {
   return (
@@ -21,7 +22,7 @@ const Search = ({serach,setsearch,setpageId,setpage}) => {
                     setpage(0);
                     setsearch(null);
                 }
-            }} placeholder="Search" />
+            }} placeholder={strings.SEARCH} />
             <TouchableOpacity>
               <Image source={require('../assets/Filter.png')} style={styles.rightImage} />
             </TouchableOpacity>

@@ -13,6 +13,9 @@ import { baseURL, fileColorCode } from '../constant/settings';
 import StorageStatus from './StorageStatus';
 import ShareFileModal from './model/Share';
 import Preview from './preview/Preview';
+import { setLanguage } from '../redux/reducers/languageSlice'; 
+import strings from '../helper/Language/LocalizedStrings';
+import { useSelector } from 'react-redux';
 
 import ModalTrashedComponent from './ModalTrashedComponent';
 import { timeAgo } from '../helper/functionHelper';
@@ -239,7 +242,7 @@ const Trashed = ({ handleLoader, loading, refresh, setRefresh }) => {
           {!selected ? (
             <>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: 18 }}>
-                <Text style={styles.heading}>Trashed</Text>
+                <Text style={styles.heading}>{strings.TRASH_FILE}</Text>
                 <View style={{ flexDirection: "row", gap: 10 }}>
                   <TouchableOpacity onPress={() => setViewType('list')}>
                     <Image source={require('../assets/list.png')} style={[styles.rightImage, { tintColor: viewType === 'list' ? '#004181' : '#B3B4B6' }]} />

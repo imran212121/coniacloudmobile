@@ -15,12 +15,13 @@ import ShareFileModal from './model/Share';
 import Preview from './preview/Preview';
 import EmplyFolder from '../assets/notfound.png'
 
+import DriveHeader from './DriveHeader'
 import ModalComponent from './ModalComponent';
 import { timeAgo } from '../helper/functionHelper';
 import { setLanguage } from '../redux/reducers/languageSlice';
 import strings from '../helper/Language/LocalizedStrings';
 import { useSelector } from 'react-redux';
-import DriveHeader from './DriveHeader';
+// import DriveHeader from './DriveHeader';
 import Search from './Search';
 import Files from './Files';
 const Drive = ({ handleLoader, loading, refresh, setRefresh, folderId, setFolderId }) => {

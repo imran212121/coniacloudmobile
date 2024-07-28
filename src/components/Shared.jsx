@@ -316,7 +316,7 @@ showItem = [{
           {!selected ? (
             <>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: 18 }}>
-                <Text style={styles.heading}>Shared</Text>
+                <Text style={styles.heading}>{strings.SHARED}</Text>
                 <View style={{ flexDirection: "row", gap: 10 }}>
                   <TouchableOpacity onPress={() => setViewType('list')}>
                     <Image source={require('../assets/list.png')} style={[styles.rightImage, { tintColor: viewType === 'list' ? '#004181' : '#B3B4B6' }]} />

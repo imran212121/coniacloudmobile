@@ -7,6 +7,7 @@ import { downloadFile, getDownloadPermissionAndroid } from '../helper/downloadHe
 import RNFetchBlob from 'rn-fetch-blob';
 import { AppSettings } from '../utils/Settings';
 import { makeApiCall } from '../helper/apiHelper';
+import strings from '../helper/Language/LocalizedStrings';
 
 const ModalComponent = ({ isVisible, onClose, item, user, PreviewToken, setRefresh, refresh, setModalVisible }) => {
   const [isShareModalVisible, setShareModalVisible] = useState(false);
@@ -116,12 +117,12 @@ const ModalComponent = ({ isVisible, onClose, item, user, PreviewToken, setRefre
             <TouchableOpacity style={styles.itemContainer} onPress={sharePopup}>
               <Image source={require('../assets/icons/fi_download.png')} style={styles.image}
               />
-              <Text>Share</Text>
+              <Text>{strings.SHARE}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.itemContainer} onPress={() => { downloadAndOpenFile() }}>
               <Image source={require('../assets/icons/Vector.png')} style={styles.image}
               />
-              <Text>Download</Text>
+              <Text>{strings.DOWNLOAD}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.itemContainer} onPress={() => { toggleRenameModal() }}>
               <Image source={require('../assets/Modalicon/fi_edit-2.png')} style={styles.image}

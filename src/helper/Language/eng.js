@@ -1,4 +1,18 @@
 export default {
+  WELCOME:'Welcome back!',
+  NOTACCOUNT: "Don’t have an account?",
+  LOGIN_STRING: "Let’s get to know each other, input personal details to begin",
+  EMAIL:"Email",
+  PASSWORD:"Password",
+  LOGIN:"Login",
+  SHARE: 'Share',
+  DOWNLOAD: 'Download',
+  RENAME: 'Rename',
+  DELETE: 'Delete',
+  RESTORE: 'Restore',
+  SEARCH: 'Search',
+  CREATE_FOLDER: 'Create folder',
+  UPLOAD_FOLDER: 'Upload file',
     ADD_ACCOUNT: 'Add Account',
     CHANGE_PASSWORD: 'Change Password',
     ACCOUNT_INFORMATION: 'Account Information',
@@ -32,6 +46,7 @@ export default {
     SUPPORT_ZIP_RAR: "Support zip and rar files",
     UPLOAD_DOC: "Upload Doc",
     UPLOAD_FILE: "Upload file",
+    TRASH_FILE:'Trash files'
   };
   
  

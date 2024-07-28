@@ -12,8 +12,8 @@ const Splesh = () => {
             const userData=await AsyncStorage.getItem('user')
             console.log('----->',userData)
             if (userData) {
-              navigation.navigate('Dashboard', { userData });
-              // navigation.navigate('Login');
+              // navigation.navigate('Dashboard', { userData });
+              navigation.navigate('Login');
             } else {
             
               navigation.navigate('Login');
