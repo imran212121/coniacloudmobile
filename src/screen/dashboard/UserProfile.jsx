@@ -57,6 +57,7 @@ const UserProfile = () => {
 
   const logoutHandler = () => {
     dispatch(logout());
+    navigation.navigate('Login');
   };
 
   const Data = [
@@ -82,7 +83,7 @@ const UserProfile = () => {
 
   return (
     <View style={styles.container}>
-      <CustomHeader back={true} left={true} right={true} />
+      <CustomHeader back={true} left={true}  title={strings.User} />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 25 }}>
         <View style={styles.profileImageContainer}>
           <Image source={{ uri: user?.avatar }} style={styles.avatar} />

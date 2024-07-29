@@ -33,5 +33,7 @@ export default {
     SUPPORT_ZIP_RAR: "Zip ve rar dosyalarını destekler",
     UPLOAD_DOC: "Belge Yükle",
     UPLOAD_FILE: "Dosya Yükle",
-    TRASH_FILE:'Çöp Dosyası'
+    TRASH_FILE:'Çöp Dosyası',
+    ACCOUNT_DETAILS :"Şifre Güncelle",
+    UPDATE_PASSWORD:"Passwort aktualisieren",
 };

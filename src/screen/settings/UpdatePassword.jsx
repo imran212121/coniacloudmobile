@@ -12,6 +12,10 @@ import { AlertNotificationRoot, Dialog, ALERT_TYPE } from 'react-native-alert-no
 import CustomHeader from '../../components/CustomHeader';
 import { makeApiCall } from '../../helper/apiHelper';
 
+
+import { setLanguage } from '../../redux/reducers/languageSlice'; 
+import strings from '../../helper/Language/LocalizedStrings';
+
 const UpdatePassword = () => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
@@ -25,7 +29,7 @@ const UpdatePassword = () => {
   const error = useSelector((state) => state.auth.error);
   const { user } = useSelector((state) => state.auth);
   const [err , setErr] = useState('')
-
+  const language = useSelector((state) => state.language.language);
   useEffect(() => {
     if (!user) {
       navigation.navigate('Login');
@@ -100,7 +104,7 @@ const UpdatePassword = () => {
       <ScrollView style={styles.container}>
         <CustomHeader back={true} OnPress={()=>{
           navigation.navigate('User')
-        }} left={true} right={true} title={"Update Password"} />
+        }} left={true}  title={strings.UPDATE_PASSWORD} />
         <View style={styles.inputContainer}>
           <Formik
             enableReinitialize
@@ -146,7 +150,7 @@ const UpdatePassword = () => {
                   errors={err.new_password_confirmation}
                 />
                 
-                <CustomButton buttonTitle={'Update'} onPress={handleUpdate} />
+                <CustomButton buttonTitle={strings.UPDATE_PASSWORD} onPress={handleUpdate} />
               </View>
             )}
           </Formik>

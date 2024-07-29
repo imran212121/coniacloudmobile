@@ -8,7 +8,7 @@ const DriveHeader = ({ folder, handleFolderNavigation }) => {
   const { height, width } = Dimensions.get('window');
   const [selectedValue, setSelectedValue] = useState('');
   const size = 60;
-  console.log('******folder********',folder);
+  // console.log('******folder********',folder);
   return (
     <>
     <View style={{ display: 'flex', flexWrap: 'wrap', flexDirection: 'row' }}>

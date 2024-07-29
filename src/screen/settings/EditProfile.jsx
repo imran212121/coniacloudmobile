@@ -13,8 +13,14 @@ import CustomHeader from '../../components/CustomHeader';
 import { makeApiCall } from '../../helper/apiHelper';
 import { updateUserAsync } from '../../redux/reducers/authSlice';
 
+
+import { setLanguage } from '../../redux/reducers/languageSlice'; 
+import strings from '../../helper/Language/LocalizedStrings';
+
+
 const EditProfile = () => {
   const navigation = useNavigation();
+  const language = useSelector((state) => state.language.language);
   const dispatch = useDispatch();
   const [profileInitialValue, setProfileInitialValue] = useState({
     first_name: '',
@@ -133,7 +139,7 @@ const EditProfile = () => {
       <ScrollView style={styles.container}>
         <CustomHeader back={true} OnPress={()=>{
           navigation.navigate('User')
-        }} left={true} right={true} title={"Account Details"} />
+        }} left={true} title={strings.ACCOUNT_DETAILS} />
         <View style={styles.inputContainer}>
           <Formik
             enableReinitialize
