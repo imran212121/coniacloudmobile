@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,useCallback } from 'react';
 import { StyleSheet, Text, View, Image, ActivityIndicator, TouchableOpacity, Dimensions, TextInput, FlatList, ScrollView } from 'react-native';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
+import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import folderIcon from '../assets/icon/folder.png';
 import fileIcon from '../assets/icon/file.png';
@@ -17,6 +18,7 @@ import Preview from './preview/Preview';
 import strings from '../helper/Language/LocalizedStrings';
 import ModalComponent from './ModalComponent';
 import { timeAgo } from '../helper/functionHelper';
+import DriveHeader from './DriveHeader';
 const Shared = ({ handleLoader, loading, refresh, setRefresh }) => {
 
 showItem = [{
@@ -47,6 +49,7 @@ showItem = [{
   const [driveData, setDriveData] = useState([]);
   const [token, setToken] = useState(null);
   const [page, setPage] = useState(1);
+  const [pageId,setPageId] = useState('share');
   const [folderId, setFolderId] = useState(0);
   const [folder, setFolder] = useState([]);
   const [selected, setSelected] = useState(false);
@@ -84,7 +87,45 @@ showItem = [{
     setModalVisible(false);
     setSelectedItem(null);
   };
+  
+    useEffect(() => {
+      // Refresh the screen or fetch data here
+      console.log('Home555555 Screen is focused',folderId);
+      const fetchFolderFiles = async () => {
+        if (!token) return;
+        handleLoader(true);
+        try {
+          const response = await axios.get(`${baseURL}/drive/file-entries?timestamp=${new Date().getTime()}&&pageId=${pageId}&folderId=${folderId}&workspaceId=0&orderBy=updated_at&orderDir=desc&page=1&sharedOnly=true`, {
+            headers: { Authorization: `Bearer ${token}` },
+            
+          });
+          handleLoader(false);
+          const { data } = response;
+          if (data.folder && !folder.some(f => f.id === data.folder.id)) {
+            setFolder(prev => [...prev, { id: data.folder.id, name: data.folder.name }]);
+          }
+          setDriveData(data.data);
+          console.log('*******Data********',data?.data);
+        } catch (error) {
+          handleLoader(false);
+          if (error.response) {
+            // console.log('Server responded with status:', error.response.status);
+            // console.log('Error message from server:', error.response.data);
+          } else if (error.request) {
+            console.log('No response received from server:', error.request);
+          } else {
+            console.log('Error setting up the request:', error.message);
+          }
+          console.error('Failed to fetch folder files:', error);
+        }
+      };
+      fetchFolderFiles();
 
+      return () => {
+        // Cleanup if necessary when the screen is unfocused
+        console.log('Home Screen is unfocused');
+      };
+    }, [token, folderId, page, refresh]);
   useEffect(() => {
     const checkLoginStatus = async () => {
       const users = JSON.parse(await AsyncStorage.getItem('user'));
@@ -96,52 +137,56 @@ showItem = [{
     checkLoginStatus();
   }, []);
 
-  useEffect(() => {
-    const fetchFolderFiles = async () => {
-      if (!token) return;
-      handleLoader(true);
-      try {
-        const response = await axios.get(`${baseURL}/drive/file-entries?timestamp=${new Date().getTime()}`, {
-          headers: { Authorization: `Bearer ${token}` },
-          params: {
-            pageId: 0,
-            folderId,
-            page,
-            workspaceId: 0,
-            deletedOnly: false,
-            starredOnly: false,
-            recentOnly: false,
-            sharedOnly: true,
-            per_page: 100
-          }
-        });
-        handleLoader(false);
-        const { data } = response;
-        if (data.folder && !folder.some(f => f.id === data.folder.id)) {
-          setFolder(prev => [...prev, { id: data.folder.id, name: data.folder.name }]);
-        }
-        setDriveData(data.data);
-      } catch (error) {
-        handleLoader(false);
-        if (error.response) {
-          console.log('Server responded with status:', error.response.status);
-          console.log('Error message from server:', error.response.data);
-        } else if (error.request) {
-          console.log('No response received from server:', error.request);
-        } else {
-          console.log('Error setting up the request:', error.message);
-        }
-        console.error('Failed to fetch folder files:', error);
-      }
-    };
-    fetchFolderFiles();
-  }, [token, folderId, page, refresh]);
+  // useEffect(() => {
+  //   const fetchFolderFiles = async () => {
+  //     if (!token) return;
+  //     handleLoader(true);
+  //     try {
+  //       const response = await axios.get(`${baseURL}/drive/file-entries?timestamp=${new Date().getTime()}`, {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //         params: {
+  //           pageId: 0,
+  //           folderId,
+  //           page,
+  //           workspaceId: 0,
+  //           deletedOnly: false,
+  //           starredOnly: false,
+  //           recentOnly: false,
+  //           sharedOnly: true,
+  //           per_page: 100
+  //         }
+  //       });
+  //       handleLoader(false);
+  //       const { data } = response;
+  //       if (data.folder && !folder.some(f => f.id === data.folder.id)) {
+  //         setFolder(prev => [...prev, { id: data.folder.id, name: data.folder.name }]);
+  //       }
+  //       setDriveData(data.data);
+  //     } catch (error) {
+  //       handleLoader(false);
+  //       if (error.response) {
+  //         console.log('Server responded with status:', error.response.status);
+  //         console.log('Error message from server:', error.response.data);
+  //       } else if (error.request) {
+  //         console.log('No response received from server:', error.request);
+  //       } else {
+  //         console.log('Error setting up the request:', error.message);
+  //       }
+  //       console.error('Failed to fetch folder files:', error);
+  //     }
+  //   };
+  //   fetchFolderFiles();
+  // }, [token, folderId, page, refresh]);
 
   const handleFile = (files) => {
     if (files.type === 'folder') {
-      setFolderId(files.id);
+      console.log('folderId',folderId);
+      console.log('files.id',files.id);
+      setFolderId(files.hash);
+     // setPage(files.hash);
       setSelected(false);
       setSelectedFile(null);
+      setRefresh(!refresh);
     } else {
       setSelected(true);
       setSelectedFile(files);
@@ -265,6 +310,9 @@ showItem = [{
               <Image source={require('../assets/Filter.png')} style={styles.rightImage} />
             </TouchableOpacity>
           </View>
+          <View style={[styles.headerBottom, { marginTop: 10 }]}>
+            <DriveHeader folder={folder} selected={selected} handleFolderNavigation={handleFolderNavigation} />
+          </View>
           {!selected ? (
             <>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: 18 }}>
@@ -308,6 +356,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     flex: 1
+  }, headerBottom: {
+    height: 50,
+    backgroundColor: '#FFF',
+    borderBottomWidth: 1,
+    borderBlockColor: '#e5e7eb'
   },
   StatusContainer: {
     alignItems: 'center',

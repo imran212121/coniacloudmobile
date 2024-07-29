@@ -1,29 +1,35 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { StyleSheet, Text, View, Image, ActivityIndicator, TouchableOpacity, Dimensions, TextInput, FlatList, ScrollView } from 'react-native';
-import axios from 'axios';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import folderIcon from '../assets/icon/folder.png';
 import fileIcon from '../assets/icon/file.png';
 import pdfIcon from '../assets/icons/pdf.png';
 import wordIcon from '../assets/icon/word.png';
 import imageIcon from '../assets/icon/image.png';
 import back from '../assets/icons/fi_arrow-left.png';
-import { baseURL, fileColorCode } from '../constant/settings';
+import {fileColorCode } from '../constant/settings';
 import StorageStatus from './StorageStatus';
 import ShareFileModal from './model/Share';
 import Preview from './preview/Preview';
+import EmplyFolder from '../assets/notfound.png'
+
 import DriveHeader from './DriveHeader'
 import ModalComponent from './ModalComponent';
 import { timeAgo } from '../helper/functionHelper';
 import { setLanguage } from '../redux/reducers/languageSlice';
 import strings from '../helper/Language/LocalizedStrings';
 import { useSelector } from 'react-redux';
-const Drive = ({ handleLoader, loading, refresh, setRefresh,folderId,setFolderId }) => {
+// import DriveHeader from './DriveHeader';
+import Search from './Search';
+import Files from './Files';
+const Drive = ({ handleLoader, loading, refresh, setRefresh, folderId, setFolderId }) => {
 
-  const [driveData, setDriveData] = useState([]);
   const [token, setToken] = useState(null);
   const [page, setPage] = useState(1);
- 
+  const [pageId, setPageId] = useState(0);
+  const [search,setSearch] = useState('');
   const [folder, setFolder] = useState([]);
   const [selected, setSelected] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -37,10 +43,7 @@ const Drive = ({ handleLoader, loading, refresh, setRefresh,folderId,setFolderId
   const fetchImageData = async (file_id) => {
     try {
       const token = await makeApiCall('/api/v1/file-entries/' + file_id + '/add-preview-token', user?.access_token, 'post');
-      console.log('token', token?.preview_token);
       setPreviewToken(token?.preview_token);
-      //console.log(previewUrl + '?preview_token=' + PreviewToken);
-
     } catch (error) {
       console.log('error', error);
     }
@@ -70,52 +73,16 @@ const Drive = ({ handleLoader, loading, refresh, setRefresh,folderId,setFolderId
     checkLoginStatus();
   }, []);
 
-  useEffect(() => {
-    const fetchFolderFiles = async () => {
-      if (!token) return;
-      handleLoader(true);
-      try {
-        const response = await axios.get(`${baseURL}/drive/file-entries?timestamp=}`, {
-          headers: { Authorization: `Bearer ${token}` },
-          params: {
-            pageId: 0,
-            folderId,
-            page,
-            workspaceId: 0,
-            deletedOnly: false,
-            starredOnly: false,
-            recentOnly: false,
-            sharedOnly: false,
-            per_page: 100
-          }
-        });
-        handleLoader(false);
-        const { data } = response;
-        if (data.folder && !folder.some(f => f.id === data.folder.id)) {
-          setFolder(prev => [...prev, { id: data.folder.id, name: data.folder.name }]);
-        }
-        setDriveData(data.data);
-      } catch (error) {
-        handleLoader(false);
-        if (error.response) {
-          // console.log('Server responded with status:', error.response.status);
-          // console.log('Error message from server:', error.response.data);
-        } else if (error.request) {
-          console.log('No response received from server:', error.request);
-        } else {
-          console.log('Error setting up the request:', error.message);
-        }
-        console.error('Failed to fetch folder files:', error);
-      }
-    };
-    fetchFolderFiles();
-  }, [token, folderId, page, refresh]);
-
+ 
   const handleFile = (files) => {
     if (files.type === 'folder') {
       setFolderId(files.id);
       setSelected(false);
       setSelectedFile(null);
+      setPage(1);
+      setPageId(0);
+      setRefresh(!refresh);
+      setSearch(null)
     } else {
       setSelected(true);
       setSelectedFile(files);
@@ -212,7 +179,7 @@ const Drive = ({ handleLoader, loading, refresh, setRefresh,folderId,setFolderId
   };
   return (
     <View style={{ marginTop: 2, flex: 1 }}>
-      {loading ? (
+      {0 ? (
         <View style={styles.loader}>
           <ActivityIndicator size="large" color="#004181" />
         </View>
@@ -229,21 +196,15 @@ const Drive = ({ handleLoader, loading, refresh, setRefresh,folderId,setFolderId
             <StorageStatus user={user} usertoken={token} />
           </View>
           <View style={styles.inputContainer}>
-            <TouchableOpacity>
-              <Image source={require('../assets/Search.png')} style={styles.leftImage} />
-            </TouchableOpacity>
-            <TextInput style={styles.input} placeholder="Search" />
-            <TouchableOpacity>
-              <Image source={require('../assets/Filter.png')} style={styles.rightImage} />
-            </TouchableOpacity>
+            <Search search={search} setsearch={setSearch} setpageId={setPageId} setpage={setPage}/>
           </View>
-          <View style={[styles.headerBottom,{marginTop:10}]}>
+          <View style={[styles.headerBottom, { marginTop: 10 }]}>
             <DriveHeader folder={folder} selected={selected} handleFolderNavigation={handleFolderNavigation} />
           </View>
           {!selected ? (
             <>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: 18 }}>
-                <Text style={styles.heading}>{strings.RECENTLY_EDITED}</Text>
+                <Text style={styles.heading}>{strings.HOME}</Text>
                 <View style={{ flexDirection: "row", gap: 10 }}>
                   <TouchableOpacity onPress={() => setViewType('list')}>
                     <Image source={require('../assets/list.png')} style={[styles.rightImage, { tintColor: viewType === 'list' ? '#004181' : '#B3B4B6' }]} />
@@ -253,15 +214,21 @@ const Drive = ({ handleLoader, loading, refresh, setRefresh,folderId,setFolderId
                   </TouchableOpacity>
                 </View>
               </View>
-              <ScrollView showsVerticalScrollIndicator={false}>
-                <FlatList
-                  key={viewType}
-                  data={driveData}
-                  renderItem={viewType === 'grid' ? renderGridItem : renderListItem}
-                  keyExtractor={(item, index) => index.toString()}
-                  numColumns={viewType === 'grid' ? 2 : 1}
-                />
-              </ScrollView>
+              <Files 
+                setFolder={setFolder} 
+                folder={folder} 
+                refresh={refresh} 
+                page={page} 
+                folderId={folderId} 
+                pageId={pageId} 
+                search={search} 
+                token={token} 
+                handleLoader={handleLoader}  
+                viewType={viewType} 
+                renderGridItem={renderGridItem} 
+                renderListItem={renderListItem} 
+                EmplyFolder={EmplyFolder}
+              /> 
             </>
           ) : (
             <View style={styles.previewContainer}>
@@ -290,6 +257,11 @@ const styles = StyleSheet.create({
   },
   backContainer: {
     alignItems: 'flex-start',
+  }, headerBottom: {
+    height: 50,
+    backgroundColor: '#FFF',
+    borderBottomWidth: 1,
+    borderBlockColor: '#e5e7eb'
   },
   previewContainer: {
     width: 'auto',

@@ -5,15 +5,27 @@ import { Picker } from '@react-native-picker/picker';
 
 
 const DriveHeader = ({ folder, handleFolderNavigation }) => {
+
   const { height, width } = Dimensions.get('window');
   const [selectedValue, setSelectedValue] = useState('');
   const size = 60;
   // console.log('******folder********',folder);
+
+  const uniqueFolder = folder.filter((item, index, self) =>
+    index === self.findIndex((t) => (
+        t.id === item.id
+    ))
+);
+
+console.log(uniqueFolder);
+
+ 
+// >>>>>>> 28320c07a059f2a47b07c1000985ffeb888ecf53
   return (
     <>
     <View style={{ display: 'flex', flexWrap: 'wrap', flexDirection: 'row' }}>
-      {folder.map((fold, index) => {
-        const isLast = folder.length === index + 1;
+      {uniqueFolder.map((fold, index) => {
+        const isLast = uniqueFolder.length === index + 1;
         if (index < 3 || isLast) {
           return (
             <View key={index} style={{}}>

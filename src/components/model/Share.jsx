@@ -24,7 +24,7 @@ const ShareFileModal = ({ isVisible, onClose, file,user }) => {
       setError('');
       setLoading(true);
     try {
-        console.log('file',file,user?.access_token);
+       
       //await Share.open(options);
       const share = await makeApiCall('/api/v1/file-entries/' + file.id + '/share', user?.access_token, 'post',{emails:[email],permissions :["edit","download"]});
         console.log('share', share.data);
@@ -44,7 +44,7 @@ const ShareFileModal = ({ isVisible, onClose, file,user }) => {
       setLoading(false);
     }
   };
-console.log('file',file);
+
   return (
     <Modal isVisible={isVisible} onBackdropPress={onClose}>
       <View style={styles.modalContent}>

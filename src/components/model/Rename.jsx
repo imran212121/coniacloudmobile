@@ -28,7 +28,7 @@ const RenameModal = ({ isVisible, onClose, file,user,setRefresh,refresh }) => {
       setError('');
       setLoading(true);
     try {
-        console.log('file',file,user?.access_token);
+      
       //await Share.open(options);
       const share = await makeApiCall('/api/v1/file-entries/' + file.id + '?_method=PUT', user?.access_token, 'post',{initialName:initialName,name :name});
         console.log('share', share.data);
@@ -49,7 +49,7 @@ const RenameModal = ({ isVisible, onClose, file,user,setRefresh,refresh }) => {
       setLoading(false);
     }
   };
-console.log('file',file);
+
   return (
     <Modal isVisible={isVisible} onBackdropPress={onClose}>
       <View style={styles.modalContent}>

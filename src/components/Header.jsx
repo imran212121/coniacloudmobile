@@ -124,9 +124,9 @@ export default function Header({ modalHandler,setRefresh, handleLoader, loading,
      <View style={[styles.modelContainer,{left:Width-160}]}>
            <View style={styles.modelList}>
               <TouchableOpacity style={styles.textList} onPress={()=>{toggleModal()}}
-              ><Text>Create Folder</Text></TouchableOpacity>
+              ><Text>{strings.CREATE_FOLDER}</Text></TouchableOpacity>
               <TouchableOpacity style={styles.textList} onPress={
-                ()=>{ navigation.navigate('UploadDoc');}}><Text>Upload File</Text></TouchableOpacity>
+                ()=>{ navigation.navigate('UploadDoc');}}><Text>{strings.UPLOAD_FILE}</Text></TouchableOpacity>
            </View>
      </View>}
      <CreateFolderModal

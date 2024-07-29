@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import CustomHeader from '../../components/CustomHeader';
 import { AppColor } from '../../utils/AppColors';
+import { useFocusEffect } from '@react-navigation/native';
 import ProgressBar from '../../components/ProgressBar';
 import { logout } from '../../redux/reducers/authSlice';
 import { makeApiCall } from '../../helper/apiHelper';
@@ -43,12 +44,17 @@ const UserProfile = () => {
         setPercentage(per);
       } catch (error) {
         console.error('Error fetching storage data:', error);
+        if(error.status==403 || error.status==402)
+          {
+            navigation.navigate('Login');
+          }
+        //fetchData();
       }
     };
-
-    if (user?.access_token !== undefined) {
+    //if(user?.access_token!==undefined){
       fetchData();
-    }
+    //}
+  
   }, [percentage, spendStorage, user?.access_token, language]);
 
   const MBtoGB = (mb) => {
