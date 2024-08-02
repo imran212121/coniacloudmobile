@@ -1,6 +1,5 @@
-import React, { useCallback, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Button } from 'react-native';
-import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Modal, Alert, Platform } from 'react-native';
 import ShareFileModal from './model/Share';
 import RenameModal from './model/Rename';
 import { downloadFile, getDownloadPermissionAndroid } from '../helper/downloadHelper';
@@ -8,144 +7,125 @@ import RNFetchBlob from 'rn-fetch-blob';
 import { AppSettings } from '../utils/Settings';
 import { makeApiCall } from '../helper/apiHelper';
 import strings from '../helper/Language/LocalizedStrings';
+import { PermissionsAndroid, } from 'react-native';
 
 const ModalComponent = ({ isVisible, onClose, item, user, PreviewToken, setRefresh, refresh, setModalVisible }) => {
   const [isShareModalVisible, setShareModalVisible] = useState(false);
   const [isRenameModalVisible, setRenameModalVisible] = useState(false);
-  const bottomSheetRef = useRef(null);
-  const handleClosePress = () => bottomSheetRef.current.close()
-  const handleSheetChanges = useCallback(
-    (index) => {
-      console.log('handleSheetChanges', index);
-      if (index === -1) {
-        onClose();
-      }
-    },
-    [onClose]
-  );
 
-  const items = [
-    { id: 1, ImagePath: require('../assets/icon/fi_user-plus.png'), text: 'Share', actionEvent: sharePopup },
-
-    // { id: 3, ImagePath: require('../assets/icons/Vector.png'), text: 'Add to Starred' },
-
-    { id: 5, ImagePath: require('../assets/icons/fi_download.png'), text: 'Download' },
-    { id: 6, ImagePath: require('../assets/Modalicon/Link.png'), text: 'Copy link' },
-
-    { id: 9, ImagePath: require('../assets/Modalicon/fi_edit-2.png'), text: 'Rename' },
-
-  ];
   const sharePopup = () => {
-    console.log('k');
     setShareModalVisible(true);
-  }
-  const toggleModal = () => {
+  };
+
+  const toggleShareModal = () => {
     setShareModalVisible(!isShareModalVisible);
   };
+
   const toggleRenameModal = () => {
-    setRenameModalVisible(!isRenameModalVisible)
+    setRenameModalVisible(!isRenameModalVisible);
   };
 
   const deleteFile = async () => {
-    let data = {
-      entryIds: [item?.id],
-      deleteForever: 0,
-
-    }
-    const res = await makeApiCall('/api/v1/file-entries/delete', user?.access_token, 'post', data);
-    setRefresh(!refresh);
-    setModalVisible(!isVisible);
-  }
-  const downloadAndOpenFile = () => {
     try {
-      let downloadUrl = AppSettings.base_url + '/api/v1/file-entries/download/' + item?.hash;
-      console.log('downloadUrl', downloadUrl);
-      const url = downloadUrl + '?add-preview-token=' + PreviewToken;
-      const file_extension = item?.extension;
-      const file_name = item?.name;
-      let file_name_with_extension;
-      if (file_extension !== null) {
-        file_name_with_extension = file_name + '.' + file_extension;
-      } else {
-        file_name_with_extension = file_name + '.zip';
-      }
-
-      console.log(Platform.OS);
-      if (Platform.OS === 'android') {
-        ////console.log('sss');
-        getDownloadPermissionAndroid().then(granted => {
-          if (granted) {
-            console.log('sss');
-            downloadFile(url, file_name_with_extension);
-          } else {
-            downloadFile(url, file_name_with_extension);
-            console.log('sssaa');
-          }
-        });
-      } else {
-        downloadFile(url, file_name_with_extension).then(res => {
-          RNFetchBlob.ios.previewDocument(res.path());
-        });
-      }
+      let data = {
+        entryIds: [item?.id],
+        deleteForever: 0,
+      };
+      await makeApiCall('/api/v1/file-entries/delete', user?.access_token, 'post', data);
+      setRefresh(!refresh);
+      setModalVisible(!isVisible);
+      Alert.alert('Success', 'File deleted successfully!');
     } catch (error) {
-      console.log('error', error);
+      console.error('Error deleting file:', error);
+      Alert.alert('Error', 'Error deleting file.');
     }
-
-
-
-
   };
+
+  const downloadAndOpenFile = async () => {
+    const downloadUrl = `${AppSettings.base_url}/api/v1/file-entries/download/${item?.hash}?add-preview-token=${PreviewToken}`;
+    const filename = item?.name || 'downloaded_file';
+    const fileExt = item?.extension || 'file';
+    const { dirs } = RNFetchBlob.fs;
+    const path = `${dirs.DownloadDir}/${filename}.${fileExt}`;
+
+    try {
+      if (Platform.OS === 'android') {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+          {
+            title: 'Storage Permission Required',
+            message: 'App needs access to your storage to download files',
+          }
+        );
+        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+          Alert.alert('Storage Permission Not Granted');
+          return;
+        }
+      }
+
+      RNFetchBlob.config({
+        fileCache: true,
+        appendExt: fileExt,
+        path,
+      })
+        .fetch('GET', downloadUrl)
+        .then(res => {
+          console.log('File saved to:', res.path());
+          saveAndShare(res.path());
+        })
+        .catch(error => {
+          console.error('Error downloading file:', error);
+          Alert.alert('Error downloading file.');
+        });
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('An error occurred.');
+    }
+  };
+
   return (
     <>
-
-
-      <BottomSheet
-        ref={bottomSheetRef}
-        index={isVisible ? 0 : -1}
-        snapPoints={['40%', '100%']}
-        onChange={handleSheetChanges}
+      <Modal
+        transparent
+        visible={isVisible}
+        animationType="slide"
+        onRequestClose={onClose}
       >
-        <BottomSheetView style={styles.contentContainer}>
-          <TouchableOpacity style={{ alignSelf: 'flex-end', right: 10, top: 10 }}
-            onPress={handleClosePress}>
-            <Image source={require('../assets/icons/close.png')}
-              style={{ height: 30, with: 30, resizeMode: 'contain', }} />
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+          <View style={styles.header}>
+          <Text style={styles.modalTitle}>File Options</Text>
+          <TouchableOpacity onPress={onClose}>
+            <Image
+              source={require('../assets/icons/close.png')}
+              style={styles.closeIcon}
+            />
           </TouchableOpacity>
-          {/* <Button title="Close Sheet" onPress={handleClosePress} /> */}
-
-          <>
+        </View>
             <TouchableOpacity style={styles.itemContainer} onPress={sharePopup}>
-              <Image source={require('../assets/icons/fi_download.png')} style={styles.image}
-              />
+              <Image source={require('../assets/icons/share.png')} style={styles.image} />
               <Text>{strings.SHARE}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.itemContainer} onPress={() => { downloadAndOpenFile() }}>
-              <Image source={require('../assets/icons/Vector.png')} style={styles.image}
-              />
+            <TouchableOpacity style={styles.itemContainer} onPress={downloadAndOpenFile}>
+              <Image source={require('../assets/icons/fi_download.png')} style={styles.image} />
               <Text>{strings.DOWNLOAD}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.itemContainer} onPress={() => { toggleRenameModal() }}>
-              <Image source={require('../assets/Modalicon/fi_edit-2.png')} style={styles.image}
-              />
+            <TouchableOpacity style={styles.itemContainer} onPress={toggleRenameModal}>
+              <Image source={require('../assets/Modalicon/fi_edit-2.png')} style={styles.image} />
               <Text>Rename</Text>
             </TouchableOpacity>
-
-            <TouchableOpacity style={styles.itemContainer} onPress={() => { deleteFile() }}>
-              <Image source={require('../assets/Modalicon/fi_trash-2.png')} style={styles.image}
-              />
+            <TouchableOpacity style={styles.itemContainer} onPress={deleteFile}>
+              <Image source={require('../assets/Modalicon/fi_trash-2.png')} style={styles.image} />
               <Text>Delete</Text>
             </TouchableOpacity>
-          </>
-
-
-
-        </BottomSheetView>
-      </BottomSheet>
+          </View>
+        </View>
+      </Modal>
       <ShareFileModal
         isVisible={isShareModalVisible}
-        onClose={toggleModal}
+        onClose={toggleShareModal}
         user={user}
-        file={item} // Replace with your actual file path
+        file={item}
       />
       <RenameModal
         isVisible={isRenameModalVisible}
@@ -153,28 +133,55 @@ const ModalComponent = ({ isVisible, onClose, item, user, PreviewToken, setRefre
         setRefresh={setRefresh}
         refresh={refresh}
         user={user}
-        file={item} // Replace with your actual file path
+        file={item}
       />
     </>
   );
 };
 
 const styles = StyleSheet.create({
-  contentContainer: {
+  modalContainer: {
     flex: 1,
-    padding: 15,
-    paddingBottom: 10
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    paddingBottom: 40,
   },
   itemContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 15,
-    paddingVertical: 7,
+    paddingVertical: 10,
   },
   image: {
     height: 25,
     width: 25,
     resizeMode: 'contain',
+    marginRight: 15,
+  },
+  closeButton: {
+    alignSelf: 'flex-end',
+    marginBottom: 20,
+  },
+  closeIcon: {
+    height: 30,
+    width: 30,
+    resizeMode: 'contain',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
 

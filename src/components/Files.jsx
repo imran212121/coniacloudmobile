@@ -8,10 +8,10 @@ const Files = ({folder,refresh,folderId,page,pageId,search,token,handleLoader,se
  
     useFocusEffect(useCallback(() => {
           // Refresh the screen or fetch data here
-          console.log('Home2222 Screen is focused',token,'imran');
-          console.log('search',search);
-          console.log('page',page);
-          console.log('pageId',pageId);
+          // console.log('Home2222 Screen is focused',token,'imran');
+          // console.log('search',search);
+          // console.log('page',page);
+          // console.log('pageId',pageId);
           const fetchFolderFiles = async () => {
             if (!token) return;
             handleLoader(true);
