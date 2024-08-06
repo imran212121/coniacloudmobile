@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigation } from '@react-navigation/native';
+import { CommonActions, useNavigation } from '@react-navigation/native';
 import CustomHeader from '../../components/CustomHeader';
 import { AppColor } from '../../utils/AppColors';
 import { useFocusEffect } from '@react-navigation/native';
@@ -46,7 +46,7 @@ const UserProfile = () => {
         console.error('Error fetching storage data:', error);
         if(error.status==403 || error.status==402)
           {
-            navigation.navigate('Login');
+             navigation.navigate('Login');
           }
         //fetchData();
       }
@@ -63,8 +63,14 @@ const UserProfile = () => {
 
   const logoutHandler = () => {
     dispatch(logout());
-    navigation.navigate('Login');
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: 'Login' }],
+      })
+    );
   };
+  
 
   const Data = [
     {

@@ -15,6 +15,7 @@ import UpdatePassword from '../screen/settings/UpdatePassword';
 import choselanguage from '../components/preview/choselanguage';
 import Test from '../../Test'
 import Test1 from '../../Test1';
+import FullSizeFileViewer from '../components/model/FullSizeFileViewer';
 const Stack = createNativeStackNavigator();
 const StackNavigation = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(null);
@@ -41,6 +42,7 @@ const StackNavigation = () => {
         <Stack.Screen options={{ headerShown: false }} name='Notification' component={Notification} />
         <Stack.Screen options={{ headerShown: false }} name='UpdatePassword' component={UpdatePassword} />
         <Stack.Screen options={{ headerShown: false }} name='choselanguage' component={choselanguage} />
+        <Stack.Screen options={{ headerShown: false }} name='FullSizeFileViewer' component={FullSizeFileViewer} />
         <Stack.Screen options={{ headerShown: false }} name='Test' component={Test} />
         <Stack.Screen options={{ headerShown: false }} name='Test1' component={Test1} />
       </Stack.Navigator>

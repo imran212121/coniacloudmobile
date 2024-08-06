@@ -1,9 +1,9 @@
-import { StyleSheet, Text, View,ScrollView,FlatList,Image} from 'react-native'
+import { StyleSheet, Text, View,ScrollView,FlatList,Image,ActivityIndicator} from 'react-native'
 import React , { useEffect, useState, useCallback } from 'react'
 import axios from 'axios';
 import { baseURL } from '../constant/settings';
 import { useFocusEffect } from '@react-navigation/native';
-const Files = ({folder,refresh,folderId,page,pageId,search,token,handleLoader,setFolder,viewType,renderGridItem,renderListItem,EmplyFolder}) => {
+const Files = ({folder,refresh,folderId,page,pageId,search,token,handleLoader,setFolder,viewType,renderGridItem,renderListItem,EmplyFolder,loading}) => {
     const [driveData,setDriveData] = useState([]);
  
     useFocusEffect(useCallback(() => {
@@ -14,6 +14,7 @@ const Files = ({folder,refresh,folderId,page,pageId,search,token,handleLoader,se
           // console.log('pageId',pageId);
           const fetchFolderFiles = async () => {
             if (!token) return;
+            // handleLoader(true);
             handleLoader(true);
             try {
               const response = await axios.get(`${baseURL}/drive/file-entries?timestamp=${new Date().getTime()}`, {
@@ -68,7 +69,11 @@ const Files = ({folder,refresh,folderId,page,pageId,search,token,handleLoader,se
 
   return (
     <ScrollView showsVerticalScrollIndicator={false}>
-    {driveData && driveData.length > 0 ?
+    {loading ? (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#004181" />
+      </View>
+    ) : driveData && driveData.length > 0 ? (
       <FlatList
         key={viewType}
         data={driveData}
@@ -76,15 +81,15 @@ const Files = ({folder,refresh,folderId,page,pageId,search,token,handleLoader,se
         keyExtractor={(item, index) => index.toString()}
         numColumns={viewType === 'grid' ? 2 : 1}
       />
-      :
-      <View style={{ display: 'flex', flexDirection: 'column', alignContent: 'center', alignItems: 'center', width: '100%', backgroundColor: '#FFF' }}>
-        <Image source={EmplyFolder} style={{ alignItems: 'center' }} />
-        <Text style={{ fontSize: 12 }}>Use upload button for file uploading</Text>
+    ) : (
+      <View style={styles.emptyContainer}>
+        <Image source={EmplyFolder} style={styles.emptyImage} />
+        <Text style={styles.emptyText}>Use upload button for file uploading</Text>
       </View>
-    }
+    )}
   </ScrollView>
-  )
-}
+);
+};
 
 export default Files
 

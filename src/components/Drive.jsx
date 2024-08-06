@@ -228,6 +228,7 @@ const Drive = ({ handleLoader, loading, refresh, setRefresh, folderId, setFolder
                 renderGridItem={renderGridItem} 
                 renderListItem={renderListItem} 
                 EmplyFolder={EmplyFolder}
+                loading={loading}
               /> 
             </>
           ) : (

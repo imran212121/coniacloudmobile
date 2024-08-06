@@ -4,7 +4,8 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Ensure this import is present
 import { baseURL } from './src/constant/settings';
 import CustomModal from './src/components/model/CustomModal ';
-
+import FullSizeFileViewer from './src/components/model/FullSizeFileViewer';
+import { useNavigation } from '@react-navigation/native';
 const Test1 = ({ route }) => {
   const { pageId, folderId, page, search } = route.params;
   const [fetchedDocuments, setFetchedDocuments] = useState([]);
@@ -13,6 +14,21 @@ const Test1 = ({ route }) => {
   const [token, setToken] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
+  const [isFullSizeVisible, setIsFullSizeVisible] = useState(false);
+  const [selectedFileUri, setSelectedFileUri] = useState(null);
+  const [selectedFileType, setSelectedFileType] = useState(null);
+const navigation=useNavigation()
+  const openFullSizeFile = (fileUri, fileType) => {
+    setSelectedFileUri(fileUri);
+    setSelectedFileType(fileType);
+    setIsFullSizeVisible(true);
+  };
+
+  const closeFullSizeFile = () => {
+    setIsFullSizeVisible(false);
+    setSelectedFileUri(null);
+    setSelectedFileType(null);
+  };
 
   const openModal = (document) => {
     setSelectedDocument(document);
@@ -111,10 +127,10 @@ const Test1 = ({ route }) => {
       <FlatList
         data={fetchedDocuments}
         renderItem={({ item }) => (
-          <View style={styles.item}>
+          <TouchableOpacity style={styles.item} onPress={()=>navigation.navigate('FullSizeFileViewer',item)}>
         
             <Image
-               source={require('./src/assets/150.jpg')} // Adjust URL if necessary
+               source={require('./src/assets/150.jpg')} 
                style={styles.image}
              />
           
@@ -124,11 +140,11 @@ const Test1 = ({ route }) => {
               <TouchableOpacity  onPress={() => openModal(item)}>
 
               <Image
-               source={require('./src/assets/MoreOption.png')} // Adjust URL if necessary
+               source={require('./src/assets/MoreOption.png')} 
                style={[{alignSelf:'flex-end',height:25,width:25,alignSelf:'center'}]}
              />
               </TouchableOpacity>
-          </View>
+          </TouchableOpacity>
         )}
         keyExtractor={(item) => item.id.toString()}
         showsVerticalScrollIndicator={false}
@@ -138,6 +154,15 @@ const Test1 = ({ route }) => {
           visible={isModalVisible}
           onClose={closeModal}
           document={selectedDocument}
+        />
+      )}
+
+{selectedFileUri && (
+        <FullSizeFileViewer
+          visible={isFullSizeVisible}
+          fileUri={selectedFileUri}
+          fileType={selectedFileType}
+          onClose={closeFullSizeFile}
         />
       )}
     </View>
