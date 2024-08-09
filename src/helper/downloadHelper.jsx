@@ -1,61 +1,63 @@
 import RNFetchBlob from 'rn-fetch-blob';
 import { Platform, PermissionsAndroid } from 'react-native';
 
-/// grant permission in android
+// Grant permission in Android
 export const getDownloadPermissionAndroid = async () => {
   try {
+    const hasPermission = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE);
+    console.log('Has storage permission:', hasPermission);
     const granted = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
       {
         title: 'File Download Permission',
-        message: 'Your permission is required to save Files to your device',
+        message: 'Your permission is required to save files to your device',
         buttonNegative: 'Cancel',
         buttonPositive: 'OK',
       },
     );
-    if (granted === PermissionsAndroid.RESULTS.GRANTED) return true;
+    return granted === PermissionsAndroid.RESULTS.GRANTED;
   } catch (err) {
-    //console.log('err', err);
+    console.log('Error requesting storage permission', err);
+    return false;
   }
 };
 
 export const downloadFile = async (url, filename) => {
-  // Get the app's cache directory
   const { config, fs } = RNFetchBlob;
+  
   const cacheDir = fs.dirs.DownloadDir;
+  const fileExtension = filename.split('.').pop();
+  const filePath = `${cacheDir}/${filename}`;
 
-  // Generate a unique filename for the downloaded image
-
-  const imagePath = `${cacheDir}/${filename}`;
+  console.log('filePath:', filePath);
+  console.log('fileExtension:', fileExtension);
 
   try {
-    // Download the file and save it to the cache directory
     const configOptions = Platform.select({
       ios: {
         fileCache: true,
-        path: imagePath,
-        appendExt: filename.split('.').pop(),
+        path: filePath,
+        appendExt: fileExtension,
       },
       android: {
         fileCache: true,
-        path: imagePath,
-        appendExt: filename.split('.').pop(),
+        path: filePath,
+        appendExt: fileExtension,
         addAndroidDownloads: {
-          // Related to the Android only
           useDownloadManager: true,
           notification: true,
-          path: imagePath,
+          path: filePath,
           description: 'File',
         },
       },
     });
 
     const response = await RNFetchBlob.config(configOptions).fetch('GET', url);
-   // //console.log(response)
-    // Return the path to the downloaded file
-    return response;
+
+    console.log('File downloaded to:', response.path());
+    return response.path();
   } catch (error) {
-    console.error(error);
+    console.error('Download file error:', error);
     return null;
   }
 };

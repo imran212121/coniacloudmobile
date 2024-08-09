@@ -64,10 +64,11 @@ showItem = [{
   const [selectedItem, setSelectedItem] = useState(null);
   const [files, setFile] = useState(null);
   const navigation = useNavigation();
+  const workspaces = useSelector((state) => state.workspace.workspace);
   const fetchImageData = async (file_id) => {
     try {
       const token = await makeApiCall('/api/v1/file-entries/' + file_id + '/add-preview-token', user?.access_token, 'post');
-      console.log('token', token?.preview_token);
+     
       setPreviewToken(token?.preview_token);
       //console.log(previewUrl + '?preview_token=' + PreviewToken);
 
@@ -95,7 +96,7 @@ showItem = [{
         if (!token) return;
         handleLoader(true);
         try {
-          const response = await axios.get(`${baseURL}/drive/file-entries?timestamp=${new Date().getTime()}&&pageId=${pageId}&folderId=${folderId}&workspaceId=0&orderBy=updated_at&orderDir=desc&page=1&sharedOnly=true`, {
+          const response = await axios.get(`${baseURL}/drive/file-entries?timestamp=${new Date().getTime()}&&pageId=${pageId}&folderId=${folderId}&workspaceId=${workspaces}&orderBy=updated_at&orderDir=desc&page=1&sharedOnly=true`, {
             headers: { Authorization: `Bearer ${token}` },
             
           });
@@ -105,7 +106,7 @@ showItem = [{
             setFolder(prev => [...prev, { id: data.folder.id, name: data.folder.name }]);
           }
           setDriveData(data.data);
-          console.log('*******Data********',data?.data);
+         // console.log('*******Data********',data?.data);
         } catch (error) {
           handleLoader(false);
           if (error.response) {

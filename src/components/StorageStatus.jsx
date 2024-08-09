@@ -53,7 +53,7 @@ const StorageStatus = ({ user,usertoken }) => {
 
       } catch (error) {
         console.error('Error fetching storage data:', error);
-        if(error.status==403 || error.status==402)
+        if(error?.status===403 || error?.status===402)
           {
             navigation.navigate('Login');
           }

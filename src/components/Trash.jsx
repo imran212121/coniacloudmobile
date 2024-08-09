@@ -35,6 +35,7 @@ const Trashed = ({ handleLoader, loading, refresh, setRefresh }) => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [files, setFile] = useState(null);
   const navigation = useNavigation();
+  const workspaces = useSelector((state) => state.workspace.workspace);
   const fetchImageData = async (file_id) => {
     try {
       const token = await makeApiCall('/api/v1/file-entries/' + file_id + '/add-preview-token', user?.access_token, 'post');
@@ -81,7 +82,7 @@ const Trashed = ({ handleLoader, loading, refresh, setRefresh }) => {
             pageId: 0,
             folderId,
             page,
-            workspaceId: 0,
+            workspaceId: workspaces,
             deletedOnly: true,
             starredOnly: false,
             recentOnly: false,

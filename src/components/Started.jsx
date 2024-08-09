@@ -62,6 +62,7 @@ const Started = ({ active, handleLoader, loading, refresh,setRefresh }) => {
   const language = useSelector((state) => state.language.language);
   const deviceWidth = Dimensions.get('window').width;
   const [isModalVisible, setModalVisible] = useState(false);
+  const workspaces = useSelector((state) => state.workspace.workspace);
   const handleModalClose = () => {
 setModalVisible(false);
 setSelectedItem(null);
@@ -173,7 +174,7 @@ const fetchImageData = async (file_id) => {
             pageId: 0,
             folderId,
             page,
-            workspaceId: 0,
+            workspaceId: workspaces,
             deletedOnly: false,
             starredOnly: false,
             recentOnly: false,

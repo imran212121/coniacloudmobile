@@ -1,135 +1,134 @@
-import { StyleSheet, Text, View, Image, TouchableOpacity, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, Dimensions, TouchableWithoutFeedback } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import DocumentPicker from 'react-native-document-picker';
-import RNFetchBlob from 'rn-fetch-blob';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { baseURL } from '../constant/settings';
-import IconBadge from 'react-native-icon-badge';
-import { setLanguage } from '../redux/reducers/languageSlice'; 
+import { updateWorkspaceAsync } from '../redux/reducers/workspaceSlice';
 import strings from '../helper/Language/LocalizedStrings';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import CreateFolderModal from './model/CreateFolder';
 
-
-export default function Header({ modalHandler,setRefresh, handleLoader, loading, handleRefresh, refresh, uploadIcon, notiIcon, settingsIcon,onPress,parentId }) {
+export default function Header({ modalHandler, setRefresh, handleLoader, loading, handleRefresh, refresh, uploadIcon, notiIcon, settingsIcon, onPress, parentId }) {
   const [selectedDocument, setSelectedDocument] = useState(null);
-  const [user, setUser] = useState(null);
+  const [workspace, setWorkspace] = useState(null);
   const [isVisible, setIsvisible] = useState(false);
+  const [isVisibleWorkspace, setIsvisibleWorkspace] = useState(false);
   const navigation = useNavigation();
   const Width = Dimensions.get('window').width;
   const [isModalVisible, setModalVisible] = useState(false);
-  const language = useSelector((state) => state.language.language);
+  const user = useSelector((state) => state.auth.user);
+  const workspaces = useSelector((state) => state.workspace.workspace);
   useEffect(() => {
-    const checkLoginStatus = async () => {
-      const userData = JSON.parse(await AsyncStorage.getItem('user'));
-      if (userData && userData.access_token) {
-        setUser(userData);
-      }
-    };
-    checkLoginStatus();
-  }, []);
-
-  const pickDocument = async () => {
-    try {
-      const res = await DocumentPicker.pick({
-        type: [DocumentPicker.types.allFiles],
-      });
-      setSelectedDocument(res);
-      handleLoader(true);
-      setTimeout(() => {
-        uploadDocument();
-      }, 1000);
-    } catch (err) {
-      if (DocumentPicker.isCancel(err)) {
-        console.log('User cancelled document picker');
-      } else {
-        console.error('Error picking document:', err);
-      }
+    console.log('*****Render****', workspaces);
+   if(!user?.display_name)
+    {
+      navigation.navigate('Login');
     }
-  };
+    setRefresh(!refresh);
+  }, [workspaces,user])
 
-  const uploadDocument = async () => {
-    if (!selectedDocument) {
-      handleLoader(false);
-      console.log('No document selected');
-      return;
-    }
-    try {
-      const fileUri = selectedDocument[0].uri;
-      const uploadUrl = `${baseURL}/uploads`;
-      const token = user?.access_token;
 
-      const response = await RNFetchBlob.fetch('POST', uploadUrl, {
-        Authorization: 'Bearer ' + token,
-        'Content-Type': 'multipart/form-data',
-      }, [
-        { name: 'file', filename: selectedDocument[0].name, data: RNFetchBlob.wrap(fileUri) },
-        { name: 'workspaceId', data: '0' },
-        { name: 'parentId', data: 'null' },
-        { name: 'isSQL', data: 'false' },
-        { name: 'relativePath', data: '' },
-        { name: 'disk', data: 'uploads' },
-      ]);
+  const dispatch = useDispatch();
 
-      console.log('Upload successful:', response.data);
-      modalHandler(true, 'Upload successful', false);
-      handleLoader(false);
-      handleRefresh(!refresh);
-    } catch (error) {
-      modalHandler(true, 'Error uploading document', true);
-      handleLoader(false);
-      console.error('Error uploading document:', error);
-    }
-  };
-  const toggleDisplay = ()=>{
+  const toggleDisplay = () => {
+
+    setIsvisibleWorkspace(false)
+
     setIsvisible(!isVisible);
+    console.log(isVisible, isVisibleWorkspace);
   }
-  const settingScreen = () => {
-    console.log('settings');
-    navigation.navigate('Settings');
-  };
+
+  const toggleDisplayWork = () => {
+
+    setIsvisible(false);
+
+    setIsvisibleWorkspace(!isVisibleWorkspace);
+  }
+
   const toggleModal = () => {
     setModalVisible(!isModalVisible)
   };
+
   return (
     <>
-    
-        <View style={styles.headerContainer}>
-          <View style={{ flexDirection: 'row' }}>
-            <Image source={{ uri: user?.avatar }} style={styles.avatar} />
-            <View style={styles.userInfo}>
-              <Text style={styles.welcomeText}>{strings.WELCOME_BACK}</Text>
-              <Text style={styles.userName}>{user?.display_name}</Text>
-            </View>
-          </View>
-          <View style={{ flexDirection: 'row' }}>
-            <TouchableOpacity onPress={() => toggleDisplay()}>
-              <Image source={uploadIcon || require('../assets/upload.png')} style={styles.icon} />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={onPress}>
-              <Image source={notiIcon || require('../assets/noti.png')} style={styles.icon} />
-            
-            </TouchableOpacity>
-          {!notiIcon ? 
-          <View style={{height:10,width:10,backgroundColor:'red',position:'absolute',right:0,bottom:15,borderRadius:10}}>
-            </View>:null}
-            {/* Uncomment this if you want to include the settings button */}
-            {/* <TouchableOpacity onPress={settingScreen}>
-              <Image source={settingsIcon || require('../assets/settings.png')} style={styles.icon} />
-            </TouchableOpacity> */}
+
+      <View style={styles.headerContainer} >
+        <View style={{ flexDirection: 'row' }}>
+          <Image source={{ uri: user?.avatar }} style={styles.avatar} />
+          <View style={styles.userInfo}>
+            <Text style={styles.welcomeText}>{strings.WELCOME_BACK}</Text>
+            <Text style={styles.userName}>{user?.display_name}</Text>
           </View>
         </View>
-     {isVisible && 
-     <View style={[styles.modelContainer,{left:Width-160}]}>
-           <View style={styles.modelList}>
-              <TouchableOpacity style={styles.textList} onPress={()=>{toggleModal()}}
-              ><Text>{strings.CREATE_FOLDER}</Text></TouchableOpacity>
-              <TouchableOpacity style={styles.textList} onPress={
-                ()=>{ navigation.navigate('UploadDoc');}}><Text>{strings.UPLOAD_FILE}</Text></TouchableOpacity>
-           </View>
-     </View>}
-     <CreateFolderModal
+        <View style={{ flexDirection: 'row' }}>
+          <TouchableOpacity onPress={() => toggleDisplayWork()}>
+            <Image source={uploadIcon || require('../assets/arrangement.png')} style={styles.icon} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => toggleDisplay()}>
+            <Image source={uploadIcon || require('../assets/upload.png')} style={styles.icon} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={onPress}>
+            <Image source={notiIcon || require('../assets/noti.png')} style={styles.icon} />
+
+          </TouchableOpacity>
+          {!notiIcon ?
+            <View style={{ height: 10, width: 10, backgroundColor: 'red', position: 'absolute', right: 0, bottom: 15, borderRadius: 10 }}>
+            </View> : null}
+          {/* Uncomment this if you want to include the settings button */}
+          {/* <TouchableOpacity onPress={settingScreen}>
+              <Image source={settingsIcon || require('../assets/settings.png')} style={styles.icon} />
+            </TouchableOpacity> */}
+        </View>
+      </View>
+      {isVisible &&
+
+        <View style={[styles.modelContainer, { left: Width - 160 }]}>
+          <View style={styles.modelList}>
+            <TouchableOpacity style={styles.textList} onPress={() => { toggleModal() }}
+            ><Text>{strings.CREATE_FOLDER}</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.textList} onPress={
+              () => { navigation.navigate('UploadDoc'); }}><Text>{strings.UPLOAD_FILE}</Text></TouchableOpacity>
+          </View>
+        </View>
+
+      }
+
+      {isVisibleWorkspace &&
+        <View style={[styles.modelContainer1, { left: Width - 160 }]}>
+          <View style={styles.modelList}>
+            <TouchableOpacity style={styles.textList} onPress={() => { dispatch(updateWorkspaceAsync(0)) }}
+            >
+              {workspaces === 0 ?
+                <Text style={styles.select} key={0}>Private</Text>
+                :
+                <Text >Private</Text>
+              }
+            </TouchableOpacity>
+            {user?.workspace?.map((item, index) => (
+              <>
+                {item.id === workspaces
+                  ?
+                  <TouchableOpacity key={index} style={styles.textListSelect} onPress={() => { dispatch(updateWorkspaceAsync(item.id));  }}
+                  ><Text style={styles.select}>{item?.name}sss</Text>
+                  </TouchableOpacity>
+                  :
+                  <TouchableOpacity key={index} style={styles.textList} onPress={() => { dispatch(updateWorkspaceAsync(item.id))}}
+                  ><Text>{item?.name}</Text>
+                  </TouchableOpacity>
+                }
+
+              </>
+            ))}
+          </View>
+        </View>}
+      <CreateFolderModal
+        isVisible={isModalVisible}
+        onClose={toggleModal}
+        setRefresh={setRefresh}
+        refresh={refresh}
+        user={user}
+        parentId={parentId}
+
+      />
+      {/* <WorkspaceModal
         isVisible={isModalVisible}
         onClose={toggleModal}
         setRefresh={setRefresh}
@@ -137,7 +136,7 @@ export default function Header({ modalHandler,setRefresh, handleLoader, loading,
         user={user}
         parentId={parentId}
        
-      />
+      /> */}
     </>
   );
 }
@@ -153,24 +152,45 @@ const styles = StyleSheet.create({
     // borderBottomWidth: 2,
     // backgroundColor: 'white',
   },
-  modelContainer:{
-    width:140,
-    height:80,
-    top:0,
-   
-    display:'flex',
-    flexDirection:'column',
-    borderRadius:10,
-    backgroundColor:'#fff'
+  select: {
+    fontWeight: '700'
   },
-  textList:{
-    borderBottomColor:"#F0F0F0",
-    borderBottomWidth:1,
-    color:'#000',
-    padding:10
+  modelContainer: {
+    width: 140,
+    height: 80,
+    top: 0,
+
+    display: 'flex',
+    flexDirection: 'column',
+    borderRadius: 10,
+    backgroundColor: '#fff'
   },
-  modelList:{
-   margin:1
+  modelContainer1: {
+    width: 140,
+    height: 'auto',
+    minHeight: 100,
+    top: 0,
+
+    display: 'flex',
+    flexDirection: 'column',
+    borderRadius: 10,
+    backgroundColor: '#fff'
+  },
+  textListSelect: {
+    borderBottomColor: "#F0F0F0",
+    borderBottomWidth: 1,
+    color: '#000',
+    fontWeight: '700',
+    padding: 10
+  },
+  textList: {
+    borderBottomColor: "#F0F0F0",
+    borderBottomWidth: 1,
+    color: '#000',
+    padding: 10
+  },
+  modelList: {
+    margin: 1
   },
   avatar: {
     width: 50,

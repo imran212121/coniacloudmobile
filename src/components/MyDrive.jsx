@@ -36,11 +36,11 @@ const MyDrive = ({ handleLoader, loading, refresh, setRefresh }) => {
   const language = useSelector((state) => state.language.language);
   const [files, setFile] = useState(null);
   const [search, setSearch] = useState('');
-
+  const workspaces = useSelector((state) => state.workspace.workspace);
   const fetchImageData = async (file_id) => {
     try {
       const token = await makeApiCall('/api/v1/file-entries/' + file_id + '/add-preview-token', user?.access_token, 'post');
-      console.log('token', token?.preview_token);
+     
       setPreviewToken(token?.preview_token);
     } catch (error) {
       console.log('error', error);
@@ -74,6 +74,7 @@ const MyDrive = ({ handleLoader, loading, refresh, setRefresh }) => {
     useCallback(() => {
       console.log('MyDrive Screen is focused');
       const fetchFolderFiles = async () => {
+        console.log('token',token);
         if (!token) return;
         handleLoader(true);
         try {
@@ -84,7 +85,7 @@ const MyDrive = ({ handleLoader, loading, refresh, setRefresh }) => {
               folderId,
               page,
               query: search,
-              workspaceId: 0,
+              workspaceId: workspaces,
               deletedOnly: false,
               starredOnly: false,
               recentOnly: true,
@@ -102,6 +103,10 @@ const MyDrive = ({ handleLoader, loading, refresh, setRefresh }) => {
           handleLoader(false);
           if (error.response) {
             console.log('Server responded with status:', error.response.status);
+            if(error.response.status==403)
+              {
+                navigation.navigate('Login');
+              }
             console.log('Error message from server:', error.response.data);
           } else if (error.request) {
             console.log('No response received from server:', error.request);

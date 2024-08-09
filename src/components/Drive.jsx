@@ -71,7 +71,8 @@ const Drive = ({ handleLoader, loading, refresh, setRefresh, folderId, setFolder
       }
     };
     checkLoginStatus();
-  }, []);
+    console.log('%%%%%%%%%%%%%%%%%%%5555');
+  }, [token]);
 
  
   const handleFile = (files) => {

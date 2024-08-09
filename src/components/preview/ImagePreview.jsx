@@ -12,6 +12,8 @@ import share from '../../assets/icons/fi_user-plus.png'
 import download from '../../assets/icons/fi_download.png'
 import trash from '../../assets/icons/fi_trash-2.png'
 import close from '../../assets/icons/close.png'
+import { useSelector } from 'react-redux';
+import { ScrollView } from 'react-native-gesture-handler';
 
 
 const ImagePreview = ({ files, user, closeFile,folderId,handleFolderNavigation }) => {
@@ -21,13 +23,13 @@ const ImagePreview = ({ files, user, closeFile,folderId,handleFolderNavigation }
     let downloadUrl = AppSettings.base_url + '/api/v1/file-entries/download/' + files.hash;
     const deviceWidth = Dimensions.get('window').width;
     const deviceHeight = Dimensions.get('window').height;
-
-  
+    //const users = useSelector((state)=>state.auth)
+    const  users  = useSelector((state) => state.auth.user);
 
     useEffect(() => {
         const fetchImageData = async () => {
             try {
-                const token = await makeApiCall('/api/v1/file-entries/' + files.id + '/add-preview-token', user?.access_token, 'post');
+                const token = await makeApiCall('/api/v1/file-entries/' + files.id + '/add-preview-token', users?.access_token, 'post');
                 
                 console.log('token', token?.preview_token);
                 setPreviewToken(token?.preview_token);
@@ -42,31 +44,45 @@ const ImagePreview = ({ files, user, closeFile,folderId,handleFolderNavigation }
 
         }, 200)
 
-    }, [])
+    }, [users])
     //console.log('deviceWidth', deviceWidth);
 
-    const downloadAndOpenFile = () => {
+    const downloadAndOpenFile = async() => {
         const url = downloadUrl + '?add-preview-token=' + PreviewToken;
         const file_extension = files?.extension;
         const file_name = files?.name;
         const file_name_with_extension = file_name + '.' + file_extension;
         //console.log(Platform.OS);
         if (Platform.OS === 'android') {
-            //console.log('sss');
-            getDownloadPermissionAndroid().then(granted => {
-                if (granted) {
-                    //console.log('sss');
-                    downloadFile(url, file_name_with_extension);
-                } else {
-                    downloadFile(url, file_name_with_extension);
-                    //console.log('sssaa');
-                }
-            });
-        } else {
-            downloadFile(url, file_name_with_extension).then(res => {
-                RNFetchBlob.ios.previewDocument(res.path());
-            });
-        }
+            const hasPermission = await getDownloadPermissionAndroid();
+            if (!hasPermission) {
+              Alert.alert('Permission denied', 'You need to grant storage permission to download files.');
+              return;
+            }
+          }
+          const filePath = await downloadFile(fileUrl, fileName);
+          if (filePath) {
+            Alert.alert('Download complete', `File downloaded to ${filePath}`);
+          } else {
+            Alert.alert('Download failed', 'There was an error downloading the file.');
+          }
+        
+        // if (Platform.OS === 'android') {
+        //     //console.log('sss');
+        //     getDownloadPermissionAndroid().then(granted => {
+        //         if (granted) {
+        //             //console.log('sss');
+        //             downloadFile(url, file_name_with_extension);
+        //         } else {
+        //             downloadFile(url, file_name_with_extension);
+        //             //console.log('sssaa');
+        //         }
+        //     });
+        // } else {
+        //     downloadFile(url, file_name_with_extension).then(res => {
+        //         RNFetchBlob.ios.previewDocument(res.path());
+        //     });
+        // }
 
 
 
@@ -74,7 +90,7 @@ const ImagePreview = ({ files, user, closeFile,folderId,handleFolderNavigation }
 
 
     return (
-        <View>
+        <ScrollView>
             <View style={styles.container}>
                 <View style={styles.header}>
 
@@ -107,11 +123,11 @@ const ImagePreview = ({ files, user, closeFile,folderId,handleFolderNavigation }
             <View style={styles.imgcontainer}>
                 <View style={{ justifyContent: 'center', flex: 1 }}>
                     {PreviewToken ?
-                        <Image source={{ uri: previewUrl + '?preview_token=' + PreviewToken }} style={{ width: deviceWidth, height: deviceHeight }} />
+                        <Image source={{ uri: previewUrl + '?preview_token=' + PreviewToken }} style={{ width: deviceWidth-50, height: deviceHeight-50 }} />
                         : <Text>Loading.....</Text>}
                 </View>
             </View>
-        </View>
+        </ScrollView>
     )
 }
 
@@ -124,14 +140,14 @@ const styles = StyleSheet.create({
 
     },
     imgcontainer: {
-        width: 'auto',
-        height: 'auto',
+        margin:20,
         display: 'flex',
-        flexDirection: 'row'
+        flexDirection: 'row',
+        alignItems:'center'
     },
     img: {
-        width: 100,
-        height: 100
+        minWidth: 50,
+        minHeight: 100
 
     },
     header: {
