@@ -57,10 +57,10 @@ const ImagePreview = ({ files, user, closeFile,folderId,handleFolderNavigation }
             const hasPermission = await getDownloadPermissionAndroid();
             if (!hasPermission) {
               Alert.alert('Permission denied', 'You need to grant storage permission to download files.');
-              return;
+             //a return;
             }
           }
-          const filePath = await downloadFile(fileUrl, fileName);
+          const filePath = await downloadFile(url, file_name);
           if (filePath) {
             Alert.alert('Download complete', `File downloaded to ${filePath}`);
           } else {

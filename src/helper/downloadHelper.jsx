@@ -31,6 +31,7 @@ export const downloadFile = async (url, filename) => {
 
   console.log('filePath:', filePath);
   console.log('fileExtension:', fileExtension);
+  console.log('cacheDir:', cacheDir);
 
   try {
     const configOptions = Platform.select({
