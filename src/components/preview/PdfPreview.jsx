@@ -8,6 +8,7 @@ import download from '../../assets/icons/fi_download.png';
 import trash from '../../assets/icons/fi_trash-2.png';
 import RNFetchBlob from 'rn-fetch-blob';
 import { downloadFile, getDownloadPermissionAndroid } from '../../helper/downloadHelper';
+import { useSelector } from 'react-redux';
 
 const PdfPreview = ({ files, user, closeFile, folderId, handleFolderNavigation }) => {
     const [PreviewToken, setPreviewToken] = useState(false);
@@ -16,11 +17,11 @@ const PdfPreview = ({ files, user, closeFile, folderId, handleFolderNavigation }
     let downloadUrl = AppSettings.base_url + '/api/v1/file-entries/download/' + files.hash;
     const deviceWidth = Dimensions.get('window').width;
     const deviceHeight = Dimensions.get('window').height;
-
+    const users = useSelector((state)=>state.auth.user);
     useEffect(() => {
         const fetchImageData = async () => {
             try {
-                const token = await makeApiCall('/api/v1/file-entries/' + files.id + '/add-preview-token', user?.access_token, 'post');
+                const token = await makeApiCall('/api/v1/file-entries/' + files.id + '/add-preview-token', users?.access_token, 'post');
                 setPreviewToken(token?.preview_token);
                 setPdfSource({ uri: previewUrl + '?preview_token=' + PreviewToken });
                 console.log('previewUrl', previewUrl + '?preview_token=' + PreviewToken);
@@ -31,7 +32,7 @@ const PdfPreview = ({ files, user, closeFile, folderId, handleFolderNavigation }
         setTimeout(() => {
             fetchImageData();
         }, 200);
-    }, []);
+    }, [users]);
 
     const downloadAndOpenFile = () => {
         const url = downloadUrl + '?add-preview-token=' + PreviewToken;

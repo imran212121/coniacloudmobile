@@ -42,7 +42,8 @@ const ModalComponent = ({ isVisible, onClose, item, user, PreviewToken, setRefre
   };
 
   const downloadAndOpenFile = async () => {
-    const downloadUrl = `${AppSettings.base_url}/api/v1/file-entries/download/${item?.hash}?add-preview-token=${PreviewToken}`;
+    // const downloadUrl = `${AppSettings.base_url}/api/v1/file-entries/download/${item?.hash}?add-preview-token=${PreviewToken}`;
+    const downloadUrl='https://dummyjson.com/image/200x100'
     const filename = item?.name || 'downloaded_file';
     const fileExt = item?.extension || 'file';
     const { dirs } = RNFetchBlob.fs;
@@ -59,13 +60,13 @@ const ModalComponent = ({ isVisible, onClose, item, user, PreviewToken, setRefre
         );
         if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
           Alert.alert('Storage Permission Not Granted');
-          return;
+          //return;
         }
       }
 
       RNFetchBlob.config({
         fileCache: true,
-        appendExt: fileExt,
+        appendExt: 'jpg',
         path,
       })
         .fetch('GET', downloadUrl)

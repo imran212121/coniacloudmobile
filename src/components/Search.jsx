@@ -9,7 +9,7 @@ const Search = ({serach,setsearch,setpageId,setpage}) => {
               <Image source={require('../assets/Search.png')} style={styles.leftImage} />
             </TouchableOpacity>
             <TextInput style={styles.input} value={serach} onChangeText={(e)=>{
-              console.log(e);
+              // console.log(e);
               //
               if(e?.length)
                 {
@@ -17,7 +17,7 @@ const Search = ({serach,setsearch,setpageId,setpage}) => {
                     setpageId('search');
                     setpage(1)
                 }else{
-                    console.log('******');
+                    // console.log('******');
                     setpageId(0);
                     setpage(0);
                     setsearch(null);
