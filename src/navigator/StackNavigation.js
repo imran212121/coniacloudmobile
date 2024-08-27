@@ -16,6 +16,7 @@ import choselanguage from '../components/preview/choselanguage';
 import Test from '../../Test'
 import Test1 from '../../Test1';
 import FullSizeFileViewer from '../components/model/FullSizeFileViewer';
+import FileSystem from '../screen/dashboard/FileSystem';
 const Stack = createNativeStackNavigator();
 const StackNavigation = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(null);
@@ -30,7 +31,7 @@ const StackNavigation = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName={isLoggedIn ? 'Home' : 'Splesh'}>
-        {/* <Stack.Navigator initialRouteName={ 'Test'}> */}
+        {/* <Stack.Navigator initialRouteName={ 'FileSystem'}> */}
         <Stack.Screen options={{ headerShown: false }} name='Splesh' component={Splesh} />
         <Stack.Screen options={{ headerShown: false }} name='Home' component={BottomNavigation} />
         <Stack.Screen options={{ headerShown: false }} name='Login' component={Login} />
@@ -45,6 +46,7 @@ const StackNavigation = () => {
         <Stack.Screen options={{ headerShown: false }} name='FullSizeFileViewer' component={FullSizeFileViewer} />
         <Stack.Screen options={{ headerShown: false }} name='Test' component={Test} />
         <Stack.Screen options={{ headerShown: false }} name='Test1' component={Test1} />
+        <Stack.Screen options={{ headerShown: false }} name='FileSystem' component={FileSystem} />
       </Stack.Navigator>
     </NavigationContainer>
   )
