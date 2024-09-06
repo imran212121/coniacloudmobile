@@ -91,7 +91,7 @@ showItem = [{
   
     useEffect(() => {
       // Refresh the screen or fetch data here
-      console.log('Home555555 Screen is focused',folderId);
+      // console.log('Home555555 Screen is focused',folderId);
       const fetchFolderFiles = async () => {
         if (!token) return;
         handleLoader(true);
@@ -106,7 +106,6 @@ showItem = [{
             setFolder(prev => [...prev, { id: data.folder.id, name: data.folder.name }]);
           }
           setDriveData(data.data);
-         // console.log('*******Data********',data?.data);
         } catch (error) {
           handleLoader(false);
           if (error.response) {
@@ -123,7 +122,6 @@ showItem = [{
       fetchFolderFiles();
 
       return () => {
-        // Cleanup if necessary when the screen is unfocused
         console.log('Home Screen is unfocused');
       };
     }, [token, folderId, page, refresh]);

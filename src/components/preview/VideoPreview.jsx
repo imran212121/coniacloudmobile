@@ -26,6 +26,7 @@ const VideoPreview = ({ files, user, closeFile, folderId, handleFolderNavigation
             try {
                 const token = await makeApiCall('/api/v1/file-entries/' + files.id + '/add-preview-token', user?.access_token, 'post',{});
                 setPreviewToken(token?.preview_token);
+                console.log('first==============>',token)
                 setIsLoading(false);
             } catch (error) {
                 console.error('Error fetching video preview token:', error);

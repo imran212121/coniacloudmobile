@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Image, Dimensions, TouchableOpacity, Platform, PermissionsAndroid } from 'react-native';
+import { StyleSheet, Text, View, Image, Dimensions, TouchableOpacity, Platform } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { AppSettings } from '../../utils/Settings';
 import { makeApiCall } from '../../helper/apiHelper';
@@ -9,22 +9,24 @@ import trash from '../../assets/icons/fi_trash-2.png';
 import RNFetchBlob from 'rn-fetch-blob';
 import { downloadFile, getDownloadPermissionAndroid } from '../../helper/downloadHelper';
 import { useSelector } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
 
 const PdfPreview = ({ files, user, closeFile, folderId, handleFolderNavigation }) => {
     const [PreviewToken, setPreviewToken] = useState(false);
     const [pdfSource, setPdfSource] = useState({ uri: 'http:google.com' });
     let previewUrl = AppSettings.base_url + files.url;
-    let downloadUrl = AppSettings.base_url + '/api/v1/file-entries/download/' + files.hash;
+    const downloadUrl = AppSettings.base_url + '/api/v1/file-entries/download/' + files.hash;
     const deviceWidth = Dimensions.get('window').width;
     const deviceHeight = Dimensions.get('window').height;
-    const users = useSelector((state)=>state.auth.user);
+    const users = useSelector((state) => state.auth.user);
+    const navigation = useNavigation();
+
     useEffect(() => {
         const fetchImageData = async () => {
             try {
                 const token = await makeApiCall('/api/v1/file-entries/' + files.id + '/add-preview-token', users?.access_token, 'post');
                 setPreviewToken(token?.preview_token);
                 setPdfSource({ uri: previewUrl + '?preview_token=' + PreviewToken });
-                console.log('previewUrl', previewUrl + '?preview_token=' + PreviewToken);
             } catch (error) {
                 console.log('error', error);
             }
@@ -55,6 +57,12 @@ const PdfPreview = ({ files, user, closeFile, folderId, handleFolderNavigation }
         }
     };
 
+    const openPdfView = () => {
+        navigation.navigate('PdfView', {
+            pdfUri: previewUrl + '?preview_token=' + PreviewToken,
+        });
+    };
+
     return (
         <View>
             <View style={styles.container}>
@@ -80,20 +88,9 @@ const PdfPreview = ({ files, user, closeFile, folderId, handleFolderNavigation }
             <View style={styles.imgcontainer}>
                 <View style={{ justifyContent: 'center', flex: 1 }}>
                     {PreviewToken ? (
-                        <Pdf
-                            trustAllCerts={false}
-                            source={{ uri: previewUrl + '?preview_token=' + PreviewToken }}
-                            onLoadComplete={(numberOfPages, filePath) => {
-                                console.log(`Number of pages: ${numberOfPages}`);
-                            }}
-                            onPageChanged={(page, numberOfPages) => {
-                                console.log(`Current page: ${page}`);
-                            }}
-                            onError={(error) => {
-                                console.log(error);
-                            }}
-                            style={styles.pdf}
-                        />
+                        <TouchableOpacity onPress={openPdfView} style={styles.pdfPreviewButton}>
+                            <Text style={styles.pdfPreviewText}>Open PDF</Text>
+                        </TouchableOpacity>
                     ) : (
                         <Text>Loading.....</Text>
                     )}
@@ -102,8 +99,6 @@ const PdfPreview = ({ files, user, closeFile, folderId, handleFolderNavigation }
         </View>
     );
 }
-
-export default PdfPreview;
 
 const styles = StyleSheet.create({
     container: {
@@ -115,10 +110,6 @@ const styles = StyleSheet.create({
         height: 'auto',
         display: 'flex',
         flexDirection: 'row',
-    },
-    img: {
-        width: 100,
-        height: 100,
     },
     header: {
         backgroundColor: '#fff',
@@ -133,9 +124,22 @@ const styles = StyleSheet.create({
         marginLeft: 10,
         paddingVertical: 12,
     },
+    pdfPreviewButton: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 10,
+        backgroundColor: '#007bff',
+        borderRadius: 5,
+    },
+    pdfPreviewText: {
+        color: '#fff',
+        fontSize: 16,
+    },
     pdf: {
         flex: 1,
         width: Dimensions.get('window').width,
         height: Dimensions.get('window').height,
     },
 });
+
+export default PdfPreview;

@@ -4,19 +4,15 @@ import axios from 'axios';
 import { baseURL } from '../constant/settings';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 const Files = ({folder,refresh,folderId,page,pageId,search,token,handleLoader,setFolder,viewType,renderGridItem,renderListItem,EmplyFolder,loading}) => {
     const [driveData,setDriveData] = useState([]);
     const workspaces = useSelector((state) => state.workspace.workspace);
     const user = useSelector((state) => state.auth.user);
     useEffect(() => {
-          // Refresh the screen or fetch data here
-          // console.log('Home2222 Screen is focused',token,'imran');
-          // console.log('search',search);
-          // console.log('page',page);
-          // console.log('pageId',pageId);
+        
           const fetchFolderFiles = async () => {
             if (!user?.access_token) return;
-            // handleLoader(true);
             handleLoader(true);
             try {
               const response = await axios.get(`${baseURL}/drive/file-entries?timestamp=${new Date().getTime()}`, {
@@ -36,7 +32,7 @@ const Files = ({folder,refresh,folderId,page,pageId,search,token,handleLoader,se
               });
               handleLoader(false);
               const { data } = response;
-              
+              // console.log('jamshed',data)
               if (data?.folder) {
                 if (!folder.some(f => f.id === data.folder.id)) {
                   setFolder(prev => [...prev, { id: data.folder.id, name: data.folder.name }]);
@@ -48,8 +44,6 @@ const Files = ({folder,refresh,folderId,page,pageId,search,token,handleLoader,se
             } catch (error) {
               handleLoader(false);
               if (error.response) {
-                // console.log('Server responded with status:', error.response.status);
-                // console.log('Error message from server:', error.response.data);
               } else if (error.request) {
                 console.log('No response received from server:', error.request);
               } else {
@@ -76,6 +70,8 @@ const Files = ({folder,refresh,folderId,page,pageId,search,token,handleLoader,se
         <ActivityIndicator size="large" color="#004181" />
       </View>
     ) : driveData && driveData.length > 0 ? (
+      <>
+  
       <FlatList
         key={viewType}
         data={driveData}
@@ -83,6 +79,8 @@ const Files = ({folder,refresh,folderId,page,pageId,search,token,handleLoader,se
         keyExtractor={(item, index) => index.toString()}
         numColumns={viewType === 'grid' ? 2 : 1}
       />
+      
+        </>  
     ) : (
       <View style={styles.emptyContainer}>
         <Image source={EmplyFolder} style={styles.emptyImage} />
@@ -219,5 +217,21 @@ const styles = StyleSheet.create({
     color: '#071625',
     lineHeight: 27,
     fontWeight: '600'
-  }
+  },
+    btn: {
+    position: 'absolute',
+    right: 20,
+    bottom: 40,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#007AFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  text: {
+    color: '#fff',
+    fontSize: 36,
+    lineHeight: 36,
+  },
 });

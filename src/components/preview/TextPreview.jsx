@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Dimensions, TouchableOpacity, Platform } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, TouchableOpacity, Platform,Image } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { AppSettings } from '../../utils/Settings';
 import { makeApiCallWithHeader, makeApiCall } from '../../helper/apiHelper';

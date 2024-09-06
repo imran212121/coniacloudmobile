@@ -72,7 +72,6 @@ const MyDrive = ({ handleLoader, loading, refresh, setRefresh }) => {
 
   useFocusEffect(
     useCallback(() => {
-      console.log('MyDrive Screen is focused');
       const fetchFolderFiles = async () => {
         console.log('token',token);
         if (!token) return;

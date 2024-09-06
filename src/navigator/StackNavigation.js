@@ -17,6 +17,8 @@ import Test from '../../Test'
 import Test1 from '../../Test1';
 import FullSizeFileViewer from '../components/model/FullSizeFileViewer';
 import FileSystem from '../screen/dashboard/FileSystem';
+import PdfView from '../components/preview/PdfView';
+import ImageViewer from '../components/preview/ImageViewer';
 const Stack = createNativeStackNavigator();
 const StackNavigation = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(null);
@@ -47,6 +49,8 @@ const StackNavigation = () => {
         <Stack.Screen options={{ headerShown: false }} name='Test' component={Test} />
         <Stack.Screen options={{ headerShown: false }} name='Test1' component={Test1} />
         <Stack.Screen options={{ headerShown: false }} name='FileSystem' component={FileSystem} />
+        <Stack.Screen options={{ headerShown: false }} name='PdfView' component={PdfView} />
+        <Stack.Screen options={{ headerShown: false }} name='ImageViewer' component={ImageViewer} />
       </Stack.Navigator>
     </NavigationContainer>
   )

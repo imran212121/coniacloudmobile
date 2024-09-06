@@ -1,16 +1,20 @@
-import { StyleSheet, Text, View, Image, TouchableOpacity, Dimensions, TouchableWithoutFeedback } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, Dimensions, TouchableWithoutFeedback, Button } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { updateWorkspaceAsync } from '../redux/reducers/workspaceSlice';
 import strings from '../helper/Language/LocalizedStrings';
 import { useDispatch, useSelector } from 'react-redux';
 import CreateFolderModal from './model/CreateFolder';
-
+import Modal from 'react-native-modal';
 export default function Header({ modalHandler, setRefresh, handleLoader, loading, handleRefresh, refresh, uploadIcon, notiIcon, settingsIcon, onPress, parentId }) {
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [workspace, setWorkspace] = useState(null);
   const [isVisible, setIsvisible] = useState(false);
   const [isVisibleWorkspace, setIsvisibleWorkspace] = useState(false);
+  const [UploadModalVisible, setUploadModalVisible] = useState(false)
+  const hadleModal = () => {
+    setUploadModalVisible(!UploadModalVisible)
+  }
   const navigation = useNavigation();
   const Width = Dimensions.get('window').width;
   const [isModalVisible, setModalVisible] = useState(false);
@@ -18,12 +22,11 @@ export default function Header({ modalHandler, setRefresh, handleLoader, loading
   const workspaces = useSelector((state) => state.workspace.workspace);
   useEffect(() => {
     console.log('*****Render****', workspaces);
-   if(!user?.display_name)
-    {
+    if (!user?.display_name) {
       navigation.navigate('Login');
     }
     setRefresh(!refresh);
-  }, [workspaces,user])
+  }, [workspaces, user])
 
 
   const dispatch = useDispatch();
@@ -46,6 +49,10 @@ export default function Header({ modalHandler, setRefresh, handleLoader, loading
   const toggleModal = () => {
     setModalVisible(!isModalVisible)
   };
+  const handleUpload=()=>{
+     navigation.navigate('UploadDoc')
+     setUploadModalVisible(!UploadModalVisible)
+  }
 
   return (
     <>
@@ -62,22 +69,53 @@ export default function Header({ modalHandler, setRefresh, handleLoader, loading
           <TouchableOpacity onPress={() => toggleDisplayWork()}>
             <Image source={uploadIcon || require('../assets/arrangement.png')} style={styles.icon} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => toggleDisplay()}>
+          <TouchableOpacity onPress={() => hadleModal()}>
             <Image source={uploadIcon || require('../assets/upload.png')} style={styles.icon} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={onPress}>
+          {/* <TouchableOpacity onPress={() => hadleModal()}>
             <Image source={notiIcon || require('../assets/noti.png')} style={styles.icon} />
 
-          </TouchableOpacity>
-          {!notiIcon ?
+          </TouchableOpacity> */}
+          {/* {!notiIcon ?
             <View style={{ height: 10, width: 10, backgroundColor: 'red', position: 'absolute', right: 0, bottom: 15, borderRadius: 10 }}>
-            </View> : null}
+            </View> : null} */}
           {/* Uncomment this if you want to include the settings button */}
           {/* <TouchableOpacity onPress={settingScreen}>
               <Image source={settingsIcon || require('../assets/settings.png')} style={styles.icon} />
             </TouchableOpacity> */}
         </View>
       </View>
+
+
+
+
+      <Modal isVisible={UploadModalVisible}
+        onBackdropPress={hadleModal}
+        style={{ margin: 0, justifyContent: 'flex-end' }}
+      >
+        <View style={styles.modalcontainer}>
+          <TouchableOpacity
+            style={styles.modalItem}
+            onPress={() => {
+              toggleModal();
+              // toggleFolderModal(); 
+
+              () => { navigation.navigate('UploadDoc') }
+
+            }}>
+            <Image source={require('../assets/icon/Smallfolder.png')} style={{ height: 30, width: 30 }} />
+            <Text >Create Folder</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.modalItem}
+            //  onPress={uploadFile}
+            onPress={
+              handleUpload}
+          >
+            <Image source={require('../assets/icons8-upload-52.png')} style={{ height: 30, width: 30 }} />
+            <Text>Upload File</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
       {isVisible &&
 
         <View style={[styles.modelContainer, { left: Width - 160 }]}>
@@ -106,11 +144,11 @@ export default function Header({ modalHandler, setRefresh, handleLoader, loading
               <>
                 {item.id === workspaces
                   ?
-                  <TouchableOpacity key={index} style={styles.textListSelect} onPress={() => { dispatch(updateWorkspaceAsync(item.id));  }}
-                  ><Text style={styles.select}>{item?.name}sss</Text>
+                  <TouchableOpacity key={index} style={styles.textListSelect} onPress={() => { dispatch(updateWorkspaceAsync(item.id)); }}
+                  ><Text style={styles.select}>{item?.name}</Text>
                   </TouchableOpacity>
                   :
-                  <TouchableOpacity key={index} style={styles.textList} onPress={() => { dispatch(updateWorkspaceAsync(item.id))}}
+                  <TouchableOpacity key={index} style={styles.textList} onPress={() => { dispatch(updateWorkspaceAsync(item.id)) }}
                   ><Text>{item?.name}</Text>
                   </TouchableOpacity>
                 }
@@ -220,8 +258,22 @@ const styles = StyleSheet.create({
     height: 24,
   },
   icon: {
-    width: 26,
+    width: 28,
     height: 26,
-    marginLeft: 15,
+    marginLeft: 18,
+  },
+  modalItem: {
+    flexDirection: 'row',
+    gap: 30,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  modalcontainer: {
+    width: '100%',
+    backgroundColor: '#ffffff',
+    height: '20%',
+    padding: 20,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
   },
 });

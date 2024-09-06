@@ -6,10 +6,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import folderIcon from '../assets/icon/folder.png';
 import fileIcon from '../assets/icon/file.png';
 import pdfIcon from '../assets/icons/pdf.png';
+import play from '../assets/icons/pdf.png';
+import video from '../assets/icon/video.png'
 import wordIcon from '../assets/icon/word.png';
 import imageIcon from '../assets/icon/image.png';
 import back from '../assets/icons/fi_arrow-left.png';
-import {fileColorCode } from '../constant/settings';
+import {baseURL, fileColorCode } from '../constant/settings';
 import StorageStatus from './StorageStatus';
 import ShareFileModal from './model/Share';
 import Preview from './preview/Preview';
@@ -24,6 +26,8 @@ import { useSelector } from 'react-redux';
 // import DriveHeader from './DriveHeader';
 import Search from './Search';
 import Files from './Files';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import axios from 'axios';
 const Drive = ({ handleLoader, loading, refresh, setRefresh, folderId, setFolderId }) => {
 
   const [token, setToken] = useState(null);
@@ -40,6 +44,8 @@ const Drive = ({ handleLoader, loading, refresh, setRefresh, folderId, setFolder
   const [isModalVisible, setModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [files, setFile] = useState(null);
+  const [nestedFolders, setNestedFolders] = useState([]);
+  const navigation=useNavigation()
   const fetchImageData = async (file_id) => {
     try {
       const token = await makeApiCall('/api/v1/file-entries/' + file_id + '/add-preview-token', user?.access_token, 'post');
@@ -48,6 +54,56 @@ const Drive = ({ handleLoader, loading, refresh, setRefresh, folderId, setFolder
       console.log('error', error);
     }
   }
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchFolderFiles = async () => {
+        console.log('token',token);
+        if (!token) return;
+        handleLoader(true);
+        try {
+          const response = await axios.get(`${baseURL}/drive/file-entries?timestamp=${new Date().getTime()}`, {
+            headers: { Authorization: `Bearer ${token}` },
+            params: {
+              pageId: folderId,
+              page,
+              query: search,
+              workspaceId: workspaces,
+              deletedOnly: false,
+              starredOnly: false,
+              recentOnly: true,
+              sharedOnly: false,
+              per_page: 100
+            }
+          });
+          handleLoader(false);
+          const { data } = response;
+          if (data.folder && !folder.some(f => f.id === data.folder.id)) {
+            setFolder(prev => [...prev, { id: data.folder.id, name: data.folder.name }]);
+          }
+          setDriveData(data.data);
+        } catch (error) {
+          handleLoader(false);
+          if (error.response) {
+            console.log('Server responded with status:', error.response.status);
+            if(error.response.status==403)
+              {
+                navigation.navigate('Login');
+              }
+            console.log('Error message from server:', error.response.data);
+          } else if (error.request) {
+            console.log('No response received from server:', error.request);
+          } else {
+            console.log('Error setting up the request:', error.message);
+          }
+          console.error('Failed to fetch folder files:', error);
+        }
+      };
+      fetchFolderFiles();
+    }, [token, folderId, page, refresh, search])
+  );
+
+
   const language = useSelector((state) => state.language.language);
   const handleModalOpen = (item) => {
     setSelectedItem(item);
@@ -71,12 +127,14 @@ const Drive = ({ handleLoader, loading, refresh, setRefresh, folderId, setFolder
       }
     };
     checkLoginStatus();
-    // console.log('%%%%%%%%%%%%%%%%%%%5555');
   }, [token]);
 
  
   const handleFile = (files) => {
+    console.log('first',files)
+    
     if (files.type === 'folder') {
+      setNestedFolders([...nestedFolders, folderId]);
       setFolderId(files.id);
       setSelected(false);
       setSelectedFile(null);
@@ -84,7 +142,8 @@ const Drive = ({ handleLoader, loading, refresh, setRefresh, folderId, setFolder
       setPageId(0);
       setRefresh(!refresh);
       setSearch(null)
-    } else {
+   
+    }  else {
       setSelected(true);
       setSelectedFile(files);
     }
@@ -105,6 +164,17 @@ const Drive = ({ handleLoader, loading, refresh, setRefresh, folderId, setFolder
     setFolder(folderArray);
   };
 
+  const navigateToFolder = (item) => {
+    if (item.handleFile()) {
+      setCurrentPath(`${currentPath}/${item.name}`);
+    } else if (item.name.endsWith('.pdf')) {
+      navigation.navigate('PdfView', { filePath: `${currentPath}/${item.name}` });
+    } else if (item.name.match(/\.(jpg|jpeg|png|gif)$/)) {
+      navigation.navigate('ImageViewer', { filePath: `${currentPath}/${item.name}` });
+    }
+  };
+
+
   const closeFile = () => setSelected(false);
 
   const fileType = {
@@ -112,74 +182,122 @@ const Drive = ({ handleLoader, loading, refresh, setRefresh, folderId, setFolder
     file: fileIcon,
     pdf: pdfIcon,
     word: wordIcon,
-    image: imageIcon
+    image: imageIcon,
+    jpg: imageIcon,
+    jpeg: imageIcon,
+    png: imageIcon,
+    gif: imageIcon,
+    svg: imageIcon,
+    audio: play,
+    video:video
   };
-  const renderGridItem = ({ item, index }) => {
-    if (item.extension === 'jpg' || item.extension === 'jpeg' || item.extension === 'svg') {
-      item.type = 'image';
-    }
-    return (
-      <TouchableOpacity
-        key={index}
-        style={[
-          styles.fileData,
-          {
-            width: deviceWidth * 0.42,
-            backgroundColor: fileColorCode[Math.floor(Math.random() * 4)],
-            flexDirection: 'column',
-          },
-        ]}
+const renderGridItem = ({ item, index }) => {
+  let fileTypeKey = 'file';
+  if (item.type === 'folder') {
+    fileTypeKey = 'folder';
+  } else if (item.extension === 'jpg' || item.extension === 'jpeg' || item.extension === 'png' || item.extension === 'gif' || item.extension === 'svg') {
+    fileTypeKey = 'image';
+  } else if (item.extension === 'pdf') {
+    fileTypeKey = 'pdf';
+  } else if (item.extension === 'doc' || item.extension === 'docx') {
+    fileTypeKey = 'word';
+  } else if (item.extension === 'xls' || item.extension === 'xlsx') {
+    fileTypeKey = 'xls';
+  } else if (item.extension === 'ppt' || item.extension === 'pptx') {
+    fileTypeKey = 'ppt';
+  }
+    else if (item.extension ==='mp4'|| item.extension ==='avi'||item.extension === 'mkv'|| item.extension ==='mov'||item.extension === 'wmv') {
+      fileTypeKey = 'video';
+    } else if (['mp3', 'wav', 'aac', 'flac'].includes(item.extension)) {
+      fileTypeKey = 'audio';
+  } else if (item.extension === 'txt') {
+    fileTypeKey = 'file';
+  }
 
-      >
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <TouchableOpacity onPress={() => handleFile(item)}>
-            <Image source={fileType[item.type]} style={styles.fileIcon} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleModalOpen(item)}>
-            <Image source={require('../assets/MoreOption.png')} style={[styles.moreicon]} />
-          </TouchableOpacity>
+  return (
+    <TouchableOpacity
+      key={index}
+      style={[
+        styles.fileData,
+        {
+          width: deviceWidth * 0.42,
+          backgroundColor: fileColorCode[Math.floor(Math.random() * 4)],
+          flexDirection: 'column',
+        },
+      ]}
+      onPress={() => handleFile(item)}
+    >
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+        <View>
+          <Image source={fileType[fileTypeKey]} style={styles.fileIcon} />
         </View>
-        <Text style={styles.fileText}>{item.name.length > 15 ? `${item.name.substring(0, 15)}...` : item.name}</Text>
-        <Text style={styles.filetxtnormal}>{timeAgo(item.created_at)}</Text>
-      </TouchableOpacity>
-    );
-  };
+        <TouchableOpacity onPress={() => handleModalOpen(item)}>
+          <Image source={require('../assets/MoreOption.png')} style={[styles.moreicon]} />
+        </TouchableOpacity>
+      </View>
+      <Text style={styles.fileText}>{item.name.length > 15 ? `${item.name.substring(0, 15)}...` : item.name}</Text>
+      <Text style={styles.filetxtnormal}>{timeAgo(item.created_at)}</Text>
+    </TouchableOpacity>
+  );
+};
 
-  const renderListItem = ({ item, index }) => {
-    if (item.extension === 'jpg' || item.extension === 'jpeg' || item.extension === 'svg') {
-      item.type = 'image';
-    }
-    return (
-      <TouchableOpacity
-        key={index}
-        style={[
-          styles.fileData,
-          {
-            backgroundColor: fileColorCode[Math.floor(Math.random() * 4)],
-            height: 90
-          },
-        ]}
-        onPress={() => handleFile(item)}
-      >
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}>
-            <Image source={fileType[item.type] || fileIcon} style={[styles.fileIcon, { height: 40, width: 40 }]} />
-            <View>
-              <Text style={[styles.fileText, { marginTop: 0 }]}>
-                {item.name.length > 15 ? `${item.name.substring(0, 15)}...` : item.name}
-              </Text>
-              <Text style={styles.filetxtnormal}>{timeAgo(item.created_at)}</Text>
-            </View>
+const renderListItem = ({ item, index }) => {
+  let fileTypeKey = 'file';
+  if (item.type === 'folder') {
+    fileTypeKey = 'folder';
+  } else if (item.extension === 'jpg' || item.extension === 'jpeg' || item.extension === 'png' || item.extension === 'gif' || item.extension === 'svg') {
+    fileTypeKey = 'image';
+  } else if (item.extension === 'pdf') {
+    fileTypeKey = 'pdf';
+  } else if (item.extension === 'doc' || item.extension === 'docx') {
+    fileTypeKey = 'word';
+  } else if (item.extension === 'xls' || item.extension === 'xlsx') {
+    fileTypeKey = 'xls';
+  } else if (item.extension === 'ppt' || item.extension === 'pptx') {
+    fileTypeKey = 'ppt';
+  }
+    else if (item.extension ==='mp4'|| item.extension ==='avi'||item.extension === 'mkv'|| item.extension ==='mov'||item.extension === 'wmv') {
+      fileTypeKey = 'video';
+    } else if (['mp3', 'wav', 'aac', 'flac'].includes(item.extension)) {
+      fileTypeKey = 'audio';
+  } else if (item.extension === 'txt') {
+    fileTypeKey = 'file';
+  }
+
+  return (
+    <TouchableOpacity
+      key={index}
+      style={[
+        styles.fileData,
+        {
+          backgroundColor: fileColorCode[Math.floor(Math.random() * 4)],
+          height: 90,
+        },
+      ]}
+      onPress={() => handleFile(item)}
+    >
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}>
+          <Image source={fileType[fileTypeKey]} style={[styles.fileIcon, { height: 40, width: 40 }]} />
+          <View>
+            <Text style={[styles.fileText, { marginTop: 0 }]}>
+              {item.name.length > 15 ? `${item.name.substring(0, 15)}...` : item.name}
+            </Text>
+            <Text style={styles.filetxtnormal}>{timeAgo(item.created_at)}</Text>
           </View>
-          <TouchableOpacity onPress={() => handleModalOpen(item)}>
-            <Image source={require('../assets/MoreOption.png')} style={[styles.moreicon, { height: 30, width: 20 }]} />
-          </TouchableOpacity>
         </View>
-      </TouchableOpacity>
-    );
-  };
+        <TouchableOpacity onPress={() => handleModalOpen(item)}>
+          <Image source={require('../assets/MoreOption.png')} style={[styles.moreicon, { height: 30, width: 20 }]} />
+        </TouchableOpacity>
+      </View>
+    </TouchableOpacity>
+  );
+};
   return (
     <View style={{ marginTop: 2, flex: 1 }}>
+
+
+      
       {0 ? (
         <View style={styles.loader}>
           <ActivityIndicator size="large" color="#004181" />
@@ -234,7 +352,13 @@ const Drive = ({ handleLoader, loading, refresh, setRefresh, folderId, setFolder
             </>
           ) : (
             <View style={styles.previewContainer}>
-              <Preview selectedFile={selectedFile} handleFolderNavigation={handleFolderNavigation} closeFile={closeFile} user={user} />
+          <Preview
+    selectedFile={selectedFile}
+    handleFolderNavigation={handleFolderNavigation}
+    closeFile={closeFile}
+    user={user}
+    navigation={navigation} // Pass the navigation prop
+/>
             </View>
           )}
           <ModalComponent setModalVisible={setModalVisible} refresh={refresh} setRefresh={setRefresh} isVisible={isModalVisible} onClose={handleModalClose} item={files} user={user} PreviewToken={PreviewToken} />

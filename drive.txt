@@ -7,12 +7,15 @@ import DocumentPicker from 'react-native-document-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { baseURL } from '../../constant/settings';
 import axios from 'axios';
+import { useSelector } from 'react-redux';
+import { makeApiCall } from '../../helper/apiHelper';
 const FileSystem = ({ navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [folderModalVisible, setFolderModalVisible] = useState(false);
   const [currentPath, setCurrentPath] = useState(RNFS.DocumentDirectoryPath);
   const [contents, setContents] = useState([]);
   const [newFolderName, setNewFolderName] = useState('');
+  const workspaces = useSelector((state) => state.workspace.workspace);
 const [user,setUser]=useState('')
   const toggleModal = () => {
     setModalVisible(!modalVisible);
@@ -30,6 +33,86 @@ const [user,setUser]=useState('')
     };
     checkLoginStatus();
   }, []);
+
+  const fetchImageData = async (file_id) => {
+    try {
+      const token = await makeApiCall('/api/v1/file-entries/' + file_id + '/add-preview-token', user?.access_token, 'post');
+     
+      setPreviewToken(token?.preview_token);
+      console.log(previewUrl + '?preview_token=' + PreviewToken);
+
+    } catch (error) {
+      console.log('error', error);
+    }
+  }
+  useEffect(()=>{
+fetchImageData()
+  },[])
+
+
+  useEffect(() => {
+    const fetchFolderFiles = async () => {
+      if (!user?.access_token) return;
+  
+      handleLoader(true);  // Show loader while fetching data
+      try {
+        const response = await axios.get(`${baseURL}/drive/file-entries`, {
+          headers: { Authorization: `Bearer ${user.access_token}` },
+          params: {
+            pageId,
+            folderId,
+            page,
+            query: search,
+            workspaceId: workspaces,
+            deletedOnly: false,
+            starredOnly: false,
+            recentOnly: false,
+            sharedOnly: false,
+            per_page: 100,
+            timestamp: new Date().getTime(),  // Cache busting by adding timestamp
+          },
+        });
+  
+        const { data } = response;
+        handleLoader(false);  // Hide loader after fetching data
+  
+        // Update folder state
+        if (data?.folder) {
+          setFolder(prevFolders => {
+            if (!prevFolders.some(f => f.id === data.folder.id)) {
+              return [...prevFolders, { id: data.folder.id, name: data.folder.name }];
+            }
+            return prevFolders;
+          });
+        } else {
+          setFolder([{ id: 0, name: "All Files" }]);  
+        }
+  
+        setDriveData(data.data);  
+      } catch (error) {
+        handleLoader(false);  
+  
+        if (error.response) {
+          console.error('Server responded with an error:', error.response.status, error.response.data);
+        } else if (error.request) {
+          console.error('No response received from the server:', error.request);
+        } else {
+          console.error('Error setting up the request:', error.message);
+        }
+  
+     
+        console.error('Failed to fetch folder files:', error);
+      }
+    };
+  
+    fetchFolderFiles(); 
+  
+    
+  }, [user,]); 
+  
+
+
+
   const requestStoragePermission = async () => {
     try {
       const granted = await PermissionsAndroid.request(
@@ -83,8 +166,7 @@ const [user,setUser]=useState('')
   };
 
   const navigateToFolder = (item) => {
-    console.log('item----',item)
-    if (item.isDirectory()) {
+    if (item.isDirectory()) {  
       setCurrentPath(`${currentPath}/${item.name}`);
     } else if (item.name.endsWith('.pdf')) {
       navigation.navigate('PdfView', { filePath: `${currentPath}/${item.name}` });
@@ -133,14 +215,11 @@ const [user,setUser]=useState('')
         },
       });
   
-      console.log('-------->Response:', response.data);
+      console.log('-------->Response:',response.data);
   
       if (response.data.status === 'success') {
         Alert.alert('Success', 'File uploaded successfully!');
-  
-        // Retrieve file entries of the current folder
-        await getAllContents();
-  
+        getAllContents();
       } else {
         throw new Error('Upload failed');
       }
@@ -154,33 +233,6 @@ const [user,setUser]=useState('')
     }
   };
   
-  const getAllData= async () => {
-    try {
-      const response = await axios.get(`${baseURL}/drive/file-entries`, {
-        params: {
-          folderId: currentFolderId, 
-          workspaceId: 0, 
-          orderBy: 'updated_at',
-          orderDir: 'desc',
-          timestamp: new Date().getTime(),
-        },
-        headers: {
-          'Authorization': `Bearer ${user?.access_token}`,
-        },
-      });
-  
-      const folderContents = response.data.data; // Adjust based on your actual response structure
-      setContents(folderContents);
-  
-    } catch (error) {
-      console.error('Error retrieving folder contents:', error);
-    }
-  };
-useEffect(()=>{
-  getAllData()
-},[])  
-  
-  
   useEffect(() => {
     requestStoragePermission();
   }, []);
@@ -189,7 +241,7 @@ useEffect(()=>{
     getAllContents();
   }, [currentPath]);
 
-  const renderItem = ({ item }) => (
+  const renderItemList = ({ item }) => (
     <TouchableOpacity onPress={() => navigateToFolder(item)}>
       <View style={styles.item}>
         <Text>{item.isDirectory() ? '📁' : '📄'} {item.name}</Text>
@@ -208,7 +260,7 @@ useEffect(()=>{
 
       <FlatList
         data={contents}
-        renderItem={renderItem}
+        renderItem={renderItemList}
         keyExtractor={(item) => item.path}
       />
 
@@ -232,7 +284,7 @@ useEffect(()=>{
             <Text>Create Folder</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.modalItem} onPress={uploadFile}>
-            <Image source={require('../../assets/icon/spreadsheet.png')} style={{ height: 30, width: 30 }} />
+            <Image source={require('../../assets/icons8-upload-52.png')} style={{ height: 30, width: 30 }} />
             <Text>Upload File</Text>
           </TouchableOpacity>
         </View>
