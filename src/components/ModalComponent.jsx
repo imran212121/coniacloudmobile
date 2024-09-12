@@ -40,46 +40,49 @@ const ModalComponent = ({ isVisible, onClose, item, user, PreviewToken, setRefre
       Alert.alert('Error', 'Error deleting file.');
     }
   };
-
   const downloadAndOpenFile = async () => {
     const downloadUrl = `${AppSettings.base_url}/api/v1/file-entries/download/${item?.hash}?add-preview-token=${PreviewToken}`;
-    // const downloadUrl='https://dummyjson.com/image/200x100'
     const filename = item?.name || 'downloaded_file';
     const fileExt = item?.extension || 'file';
     const { dirs } = RNFetchBlob.fs;
     const path = `${dirs.DownloadDir}/${filename}.${fileExt}`;
-
+  
     try {
       if (Platform.OS === 'android') {
-        const granted = await PermissionsAndroid.request(
+        const permission = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
           {
             title: 'Storage Permission Required',
             message: 'App needs access to your storage to download files',
           }
         );
-        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+        if (permission !== PermissionsAndroid.RESULTS.GRANTED) {
           Alert.alert('Storage Permission Not Granted');
-          //return;
+          return;
         }
       }
-
+  
       RNFetchBlob.config({
         fileCache: true,
-        appendExt: 'jpg',
         path,
+        addAndroidDownloads: {
+          useDownloadManager: true,
+          notification: true,
+          path,
+          description: 'File downloaded by the app',
+        },
       })
         .fetch('GET', downloadUrl)
         .then(res => {
           console.log('File saved to:', res.path());
-          saveAndShare(res.path());
+          Alert.alert('Download Complete', 'File has been downloaded successfully.');
         })
         .catch(error => {
           console.error('Error downloading file:', error);
-          Alert.alert('Error downloading file.');
+          Alert.alert('Error', 'Error occurred while downloading the file.');
         });
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error during file download:', error);
       Alert.alert('An error occurred.');
     }
   };

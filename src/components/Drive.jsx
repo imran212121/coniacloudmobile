@@ -22,13 +22,14 @@ import ModalComponent from './ModalComponent';
 import { timeAgo } from '../helper/functionHelper';
 import { setLanguage } from '../redux/reducers/languageSlice';
 import strings from '../helper/Language/LocalizedStrings';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 // import DriveHeader from './DriveHeader';
 import Search from './Search';
 import Files from './Files';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import axios from 'axios';
-const Drive = ({ handleLoader, loading, refresh, setRefresh, folderId, setFolderId }) => {
+import Header from './Header';
+const Drive = ({ handleLoader, loading, refresh, setRefresh, folderId, setFolderId ,handleFolderPath}) => {
 
   const [token, setToken] = useState(null);
   const [page, setPage] = useState(1);
@@ -45,7 +46,13 @@ const Drive = ({ handleLoader, loading, refresh, setRefresh, folderId, setFolder
   const [selectedItem, setSelectedItem] = useState(null);
   const [files, setFile] = useState(null);
   const [nestedFolders, setNestedFolders] = useState([]);
-  const navigation=useNavigation()
+  const dispatch = useDispatch();
+  const navigation = useNavigation();
+  //  const folderPath = useSelector((state) => state.folder.foder); 
+  //  console.log('Jamshed---',folderPath)// Assuming you have folderPath in your Redux state
+  // const currentFolderId = useSelector((state) => state.folder.currentFolderId);
+  console.log('first---',folder)
+  handleFolderPath(folder)
   const fetchImageData = async (file_id) => {
     try {
       const token = await makeApiCall('/api/v1/file-entries/' + file_id + '/add-preview-token', user?.access_token, 'post');
@@ -131,7 +138,7 @@ const Drive = ({ handleLoader, loading, refresh, setRefresh, folderId, setFolder
 
  
   const handleFile = (files) => {
-    console.log('first',files)
+    // console.log('first',files)
     
     if (files.type === 'folder') {
       setNestedFolders([...nestedFolders, folderId]);
@@ -150,6 +157,7 @@ const Drive = ({ handleLoader, loading, refresh, setRefresh, folderId, setFolder
   };
 
   const handleFolderNavigation = (folderId) => {
+    // console.log('first',folderId)
     setSelected(false);
     setFolderId(folderId);
     let folderArray = [];
@@ -164,15 +172,15 @@ const Drive = ({ handleLoader, loading, refresh, setRefresh, folderId, setFolder
     setFolder(folderArray);
   };
 
-  const navigateToFolder = (item) => {
-    if (item.handleFile()) {
-      setCurrentPath(`${currentPath}/${item.name}`);
-    } else if (item.name.endsWith('.pdf')) {
-      navigation.navigate('PdfView', { filePath: `${currentPath}/${item.name}` });
-    } else if (item.name.match(/\.(jpg|jpeg|png|gif)$/)) {
-      navigation.navigate('ImageViewer', { filePath: `${currentPath}/${item.name}` });
-    }
-  };
+  // const navigateToFolder = (item) => {
+  //   if (item.handleFile()) {
+  //     setCurrentPath(`${currentPath}/${item.name}`);
+  //   } else if (item.name.endsWith('.pdf')) {
+  //     navigation.navigate('PdfView', { filePath: `${currentPath}/${item.name}` });
+  //   } else if (item.name.match(/\.(jpg|jpeg|png|gif)$/)) {
+  //     navigation.navigate('ImageViewer', { filePath: `${currentPath}/${item.name}` });
+  //   }
+  // };
 
 
   const closeFile = () => setSelected(false);
@@ -362,7 +370,7 @@ const renderListItem = ({ item, index }) => {
             </View>
           )}
           <ModalComponent setModalVisible={setModalVisible} refresh={refresh} setRefresh={setRefresh} isVisible={isModalVisible} onClose={handleModalClose} item={files} user={user} PreviewToken={PreviewToken} />
-
+         
         </>
       )}
     </View>

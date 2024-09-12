@@ -26,7 +26,7 @@ const ModalTrashedComponent = ({ isVisible, onClose, item, user, PreviewToken, s
 
  
   const sharePopup = () => {
-    console.log('k');
+    // console.log('k');
     setShareModalVisible(true);
   }
   const toggleModal = () => {

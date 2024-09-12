@@ -1,29 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TextInput, ActivityIndicator, StyleSheet, TouchableOpacity } from 'react-native';
 import Modal from 'react-native-modal';
-import { AlertNotificationRoot, Dialog, ALERT_TYPE } from 'react-native-alert-notification'
-
+import { AlertNotificationRoot, Dialog, ALERT_TYPE } from 'react-native-alert-notification';
 import { makeApiCall } from '../../helper/apiHelper';
 
-
-const CreateFolderModal = ({ isVisible, onClose, user, setRefresh, refresh,parentId }) => {
+const CreateFolderModal = ({ isVisible, onClose, user, setRefresh, refresh, parentId, onFolderPathReceived }) => {
 
     const [name, setName] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
     const createFolder = async () => {
-        if (name == "") {
+        if (name === "") {
             setError('Please enter folder name');
             return;
         }
         setError('');
         setLoading(true);
-        try {
 
-            await makeApiCall('/api/v1/folders', user?.access_token, 'post', { parentId: parentId, name: name });
+        try {
+            const response = await makeApiCall('/api/v1/folders', user?.access_token, 'post', { parentId: parentId, name: name });
             setLoading(false);
-            setRefresh(!refresh)
+            setRefresh(!refresh);
             onClose();
             setTimeout(() => {
                 Dialog.show({
@@ -31,47 +29,45 @@ const CreateFolderModal = ({ isVisible, onClose, user, setRefresh, refresh,paren
                     title: 'Success',
                     textBody: 'Folder is successfully created!',
                     button: 'close',
-                })
-            }, 1000)
+                });
+            }, 1000);
 
         } catch (error) {
-            console.log('Error sharing file:', error);
+            console.log('Error creating folder:', error);
             setLoading(false);
+
             setTimeout(() => {
                 Dialog.show({
                     type: ALERT_TYPE.DANGER,
                     title: 'Warning',
-                    textBody: "There are something issue.",
+                    textBody: "There is some issue.",
                     button: 'close',
-                })
-            }, 1000)
+                });
+            }, 1000);
         }
     };
 
     return (
-        
-            <Modal isVisible={isVisible} onBackdropPress={onClose}>
-                <AlertNotificationRoot>
+        <Modal isVisible={isVisible} onBackdropPress={onClose}>
+            <AlertNotificationRoot>
                 <View style={styles.modalContent}>
-                    <Text style={styles.title}>CreateFolder</Text>
+                    <Text style={styles.title}>Create Folder</Text>
                     <TextInput
                         style={styles.input}
-                        placeholder={name}
+                        placeholder="Enter folder name"
                         value={name}
                         onChangeText={(text) => {
                             setName(text);
                             if (error) setError('');
                         }}
-
                     />
                     {error ? <Text style={styles.errorText}>{error}</Text> : null}
                     <TouchableOpacity style={styles.button} onPress={createFolder} disabled={loading}>
                         {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Create</Text>}
                     </TouchableOpacity>
                 </View>
-                </AlertNotificationRoot>
-            </Modal>
-        
+            </AlertNotificationRoot>
+        </Modal>
     );
 };
 
@@ -105,6 +101,9 @@ const styles = StyleSheet.create({
     buttonText: {
         color: 'white',
         fontSize: 16,
+    },
+    errorText: {
+        color: 'red',
     },
 });
 

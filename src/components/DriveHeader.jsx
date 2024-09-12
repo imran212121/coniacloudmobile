@@ -17,10 +17,9 @@ const DriveHeader = ({ folder, handleFolderNavigation }) => {
     ))
 );
 
-console.log(uniqueFolder);
+console.log('=========',uniqueFolder);
 
  
-// >>>>>>> 28320c07a059f2a47b07c1000985ffeb888ecf53//
   return (
     <>
     <View style={{ display: 'flex', flexWrap: 'wrap', flexDirection: 'row' }}>

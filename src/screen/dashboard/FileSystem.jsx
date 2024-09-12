@@ -1,107 +1,190 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, FlatList, Alert, Image, TextInput } from 'react-native';
-import RNFS from 'react-native-fs';
-import { PermissionsAndroid } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, FlatList, Alert, Image, TextInput, ActivityIndicator, PermissionsAndroid } from 'react-native';
 import Modal from 'react-native-modal';
 import DocumentPicker from 'react-native-document-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { baseURL } from '../../constant/settings';
 import axios from 'axios';
+import { useFocusEffect } from '@react-navigation/native';
+
 const FileSystem = ({ navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [folderModalVisible, setFolderModalVisible] = useState(false);
-  const [currentPath, setCurrentPath] = useState(RNFS.DocumentDirectoryPath);
-  const [contents, setContents] = useState([]);
+  const [driveData, setDriveData] = useState([]);
+  const [folder, setFolder] = useState([{ id: 0, name: "All Files" }]);
+  const [folderId, setFolderId] = useState(0);
   const [newFolderName, setNewFolderName] = useState('');
-const [user,setUser]=useState('')
-  const toggleModal = () => {
-    setModalVisible(!modalVisible);
-  };
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState('');
+  const [workspaces, setWorkspaces] = useState(0);
+  const [pageId, setPageId] = useState(null);
+  const [refresh, setRefresh] = useState(false);
 
-  const toggleFolderModal = () => {
-    setFolderModalVisible(!folderModalVisible);
-  };
+  const toggleModal = () => setModalVisible(!modalVisible);
+  const toggleFolderModal = () => setFolderModalVisible(!folderModalVisible);
 
+  const handleLoader = (value) => setIsLoading(value);
 
   useEffect(() => {
     const checkLoginStatus = async () => {
-      const users = JSON.parse(await AsyncStorage.getItem('user'));
-        setUser(users);
+      try {
+        const userData = JSON.parse(await AsyncStorage.getItem('user'));
+        setUser(userData);
+      } catch (error) {
+        console.error('Error checking login status:', error);
+        Alert.alert('Error', 'Failed to retrieve user data. Please log in again.');
+      }
     };
     checkLoginStatus();
   }, []);
+
   const requestStoragePermission = async () => {
     try {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-        {
-          title: 'File System App Storage Permission',
-          message: 'File System App needs access to your storage to manage files and folders.',
-          buttonNeutral: 'Ask Me Later',
-          buttonNegative: 'Cancel',
-          buttonPositive: 'OK',
-        },
-      );
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        console.log('Storage permission granted');
-        getAllContents();
-      } else {
-        console.log('Storage permission denied');
-      }
+        const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+            {
+                title: 'File System App Storage Permission',
+                message: 'File System App needs access to your storage to manage files and folders.',
+                buttonNeutral: 'Ask Me Later',
+                buttonNegative: 'Cancel',
+                buttonPositive: 'OK',
+            },
+        );
+
+        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+            console.log('Storage permission granted');
+        } else {
+            console.log('Storage permission denied');
+            Alert.alert('Permission Denied', 'Storage permission is required to manage files and folders.');
+        }
     } catch (err) {
-      console.warn(err);
+        console.warn(err);
     }
-  };
+};
 
-  const getAllContents = () => {
-    RNFS.readDir(currentPath)
-      .then((result) => {
-        setContents(result);
-      })
-      .catch((err) => {
-        console.log(err.message, err.code);
-      });
-  };
+  useEffect(() => {
+    requestStoragePermission();
+  }, []);
 
-  const createFolder = () => {
-    if (newFolderName.trim() === '') {
+// Handle errors more effectively and log response
+const fetchFolderFiles = useCallback(async () => {
+  if (!user?.access_token) return;
+  
+  handleLoader(true);
+  try {
+    const response = await axios.get(`${baseURL}/drive/file-entries`, {
+      headers: { Authorization: `Bearer ${user?.access_token}` },
+      params: {
+        pageId: pageId,
+        folderId,
+        page,
+        query: search,
+        workspaceId: workspaces,
+        deletedOnly: false,
+        starredOnly: false,
+        recentOnly: false,
+        sharedOnly: false,
+        per_page: 100
+      }
+    });
+    handleLoader(false);
+    const { data } = response;
+
+    // Ensure folder structure is managed correctly
+    if (data?.folder) {
+      if (!folder.some(f => f.id === data.folder.id)) {
+        setFolder((prev) => [...prev, { id: data.folder.id, name: data.folder.name }]);
+      }
+    } else {
+      setFolder([{ id: 0, name: "All Files" }]);
+    }
+
+    setDriveData(data.data);
+  } catch (error) {
+    handleLoader(false);
+
+    // Enhanced error handling
+    if (error.response) {
+      console.log('Server Error:', error.response.data);
+      Alert.alert('Error', `Failed to fetch files: ${error.response.data.message || 'Unknown error'}`);
+    } else if (error.request) {
+      console.log('No response from server:', error.request);
+      Alert.alert('Network Error', 'Unable to connect to the server.');
+    } else {
+      console.log('Request error:', error.message);
+      Alert.alert('Error', `Unexpected error: ${error.message}`);
+    }
+  }
+}, [user, folderId, page, pageId, search, workspaces]);
+
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchFolderFiles();
+      return () => {
+       
+        console.log('FileSystem Screen is unfocused');
+      };
+    }, [fetchFolderFiles])
+  );
+
+  const createFolder = async () => {
+    if (newFolderName.trim() === "") {
       Alert.alert('Error', 'Please enter a folder name');
       return;
     }
+  
+    try {
+      const response = await axios.post(`${baseURL}/drive/folders`, { name: newFolderName, parent_id: folderId }, { headers: { Authorization: `Bearer ${user?.access_token}` } });
 
-    const newFolderPath = `${currentPath}/${newFolderName}`;
-    RNFS.mkdir(newFolderPath)
-      .then(() => {
-        toggleFolderModal();
-        setNewFolderName('');
-        getAllContents();
-      })
-      .catch((err) => {
-        console.log(err.message);
-        Alert.alert('Error', 'Failed to create folder');
-      });
+       
+  
+      if (response.data?.status === 'success') {
+        const newFolder = response.data.folder;
+        setDriveData((prevContents) => [...prevContents, newFolder]); // Add new folder to the current view
+        toggleFolderModal(); // Close the folder modal
+        setNewFolderName(''); // Reset the folder name input
+        Alert.alert('Success', 'Folder created successfully!');
+        fetchFolderFiles(); // Refresh folder contents
+      } else {
+        throw new Error('Folder creation failed');
+      }
+    } catch (error) {
+      console.error('Error creating folder:', error);
+      Alert.alert('Error', `Failed to create folder: ${error.message}`);
+    }
   };
+  
 
   const navigateToFolder = (item) => {
-    console.log('item----',item)
-    if (item.isDirectory()) {
-      setCurrentPath(`${currentPath}/${item.name}`);
-    } else if (item.name.endsWith('.pdf')) {
-      navigation.navigate('PdfView', { filePath: `${currentPath}/${item.name}` });
-    } else if (item.name.match(/\.(jpg|jpeg|png|gif)$/)) {
-      navigation.navigate('ImageViewer', { filePath: `${currentPath}/${item.name}` });
+    if (item.type === 'folder') {
+      setFolderId(item.id);
+      setFolder(prev => [...prev, {id: item.id, hash: item.hash, name: item.name, extension: item.extension}]);
+      fetchFolderFiles();
+    } else if (item.type === 'file') {
+      // Handle file navigation based on file type
+      if (item.mime_type === 'application/pdf') {
+        navigation.navigate('PdfView', { filePath: item.url });
+      } else if (item.mime_type.startsWith('image/')) {
+        navigation.navigate('ImageViewer', { filePath: item.url });
+      } else {
+        Alert.alert('File', `File name: ${item.name}\nType: ${item.mime_type}`);
+      }
     }
   };
 
   const goBack = () => {
-    const parentPath = currentPath.substring(0, currentPath.lastIndexOf('/'));
-    if (parentPath.length >= RNFS.DocumentDirectoryPath.length) {
-      setCurrentPath(parentPath);
+    if (folder.length > 1) {
+      const newFolder = folder.slice(0, -1);
+      setFolder(newFolder);
+      setFolderId(newFolder[newFolder.length - 1].id);
+      fetchFolderFiles();
     }
   };
 
   const uploadFile = async () => {
-    console.log('=======', user);
     try {
       const res = await DocumentPicker.pick({
         type: [DocumentPicker.types.allFiles],
@@ -109,7 +192,9 @@ const [user,setUser]=useState('')
   
       const fileUri = res[0].uri;
       const fileName = res[0].name;
-      const uploadUrl = `${baseURL}/uploads`;
+      const fileType = res[0].type;
+      
+      const uploadUrl = `${baseURL}/drive/upload/${folderId}`;
       const token = user?.access_token;
   
       if (!token) {
@@ -117,32 +202,32 @@ const [user,setUser]=useState('')
         return;
       }
   
+      // For Android, prepend "file://" if needed
+      const formattedFileUri = Platform.OS === 'android' ? `file://${fileUri}` : fileUri;
+  
       const formData = new FormData();
       formData.append('file', {
-        uri: fileUri,
-        type: res[0].type,
+        uri: formattedFileUri,
+        type: fileType, // This is important for the backend to identify the file type
         name: fileName,
       });
   
-      console.log('FormData:', formData);
-  
-      const response = await axios.post(uploadUrl, formData, {
+      const response = await fetch(uploadUrl, {
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
+          // Do NOT set 'Content-Type' manually when sending FormData
         },
+        body: formData,
       });
   
-      console.log('-------->Response:', response.data);
+      const responseData = await response.json(); // Expect JSON response from server
   
-      if (response.data.status === 'success') {
+      if (response.ok) {
         Alert.alert('Success', 'File uploaded successfully!');
-  
-        // Retrieve file entries of the current folder
-        await getAllContents();
-  
+        fetchFolderFiles(); // Refresh folder contents after upload
       } else {
-        throw new Error('Upload failed');
+        throw new Error(responseData.message || 'Upload failed');
       }
     } catch (error) {
       if (DocumentPicker.isCancel(error)) {
@@ -154,45 +239,16 @@ const [user,setUser]=useState('')
     }
   };
   
-  const getAllData= async () => {
-    try {
-      const response = await axios.get(`${baseURL}/drive/file-entries`, {
-        params: {
-          folderId: currentFolderId, 
-          workspaceId: 0, 
-          orderBy: 'updated_at',
-          orderDir: 'desc',
-          timestamp: new Date().getTime(),
-        },
-        headers: {
-          'Authorization': `Bearer ${user?.access_token}`,
-        },
-      });
   
-      const folderContents = response.data.data; // Adjust based on your actual response structure
-      setContents(folderContents);
-  
-    } catch (error) {
-      console.error('Error retrieving folder contents:', error);
-    }
-  };
-useEffect(()=>{
-  getAllData()
-},[])  
-  
-  
-  useEffect(() => {
-    requestStoragePermission();
-  }, []);
-
-  useEffect(() => {
-    getAllContents();
-  }, [currentPath]);
 
   const renderItem = ({ item }) => (
     <TouchableOpacity onPress={() => navigateToFolder(item)}>
       <View style={styles.item}>
-        <Text>{item.isDirectory() ? '📁' : '📄'} {item.name}</Text>
+        <Image 
+          source={item.type === 'folder' ? require('../../assets/icon/Smallfolder.png') : require('../../assets/icon/file.png')} 
+          style={styles.itemIcon} 
+        />
+        <Text>{item.name}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -200,39 +256,39 @@ useEffect(()=>{
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={goBack}>
-          <Text style={styles.backButton}>← Back</Text>
+        <TouchableOpacity onPress={goBack} disabled={folder.length <= 1}>
+          <Text style={[styles.backButton, folder.length <= 1 && styles.disabledText]}>← Back</Text>
         </TouchableOpacity>
-        <Text style={styles.currentPath}>{currentPath}</Text>
+        <Text style={styles.currentPath}>{folder[folder.length - 1].name}</Text>
       </View>
 
-      <FlatList
-        data={contents}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.path}
-      />
+      {isLoading ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : (
+        <FlatList
+          data={driveData}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id.toString()}
+          ListEmptyComponent={<Text style={styles.emptyText}>This folder is empty</Text>}
+        />
+      )}
 
-      <TouchableOpacity style={styles.btn} onPress={toggleModal}>
+      <TouchableOpacity style={styles.btn} onPress={()=>navigation.navigate('UploadDoc')}>
         <Text style={styles.text}>+</Text>
       </TouchableOpacity>
       
       <Modal
         isVisible={modalVisible}
         onBackdropPress={toggleModal}
-        style={{ margin: 0, justifyContent: 'flex-end' }}
+        style={styles.bottomModal}
       >
-        <View style={styles.modalcontainer}>
-          <TouchableOpacity 
-            style={styles.modalItem} 
-            onPress={() => {
-              toggleModal(); 
-              toggleFolderModal(); 
-            }}>
-            <Image source={require('../../assets/icon/Smallfolder.png')} style={{ height: 30, width: 30 }} />
+        <View style={styles.modalContainer}>
+          <TouchableOpacity style={styles.modalItem} onPress={() => { toggleModal(); toggleFolderModal(); }}>
+            <Image source={require('../../assets/icon/Smallfolder.png')} style={styles.modalIcon} />
             <Text>Create Folder</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.modalItem} onPress={uploadFile}>
-            <Image source={require('../../assets/icon/spreadsheet.png')} style={{ height: 30, width: 30 }} />
+          <TouchableOpacity style={styles.modalItem} onPress={() => { toggleModal(); uploadFile(); }}>
+            <Image source={require('../../assets/icon/spreadsheet.png')} style={styles.modalIcon} />
             <Text>Upload File</Text>
           </TouchableOpacity>
         </View>
@@ -241,19 +297,16 @@ useEffect(()=>{
       <Modal
         isVisible={folderModalVisible}
         onBackdropPress={toggleFolderModal}
-        style={{ margin: 0, justifyContent: 'center', alignItems: 'center' }}
+        style={styles.centerModal}
       >
-        <View style={styles.modalContainer}>
+        <View style={styles.folderModalContainer}>
           <TextInput
             placeholder="Enter Folder Name"
             style={styles.input}
             value={newFolderName}
             onChangeText={setNewFolderName}
           />
-          <TouchableOpacity
-            style={styles.createButton}
-            onPress={createFolder}
-          >
+          <TouchableOpacity style={styles.createButton} onPress={createFolder}>
             <Text style={styles.createButtonText}>Create Folder</Text>
           </TouchableOpacity>
         </View>
@@ -276,14 +329,24 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginRight: 10,
   },
+  disabledText: {
+    color: '#ccc',
+  },
   currentPath: {
     fontSize: 14,
     color: 'gray',
   },
   item: {
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
+  },
+  itemIcon: {
+    width: 24,
+    height: 24,
+    marginRight: 10,
   },
   btn: {
     position: 'absolute',
@@ -300,18 +363,37 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 30,
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+  bottomModal: {
+    margin: 0,
+    justifyContent: 'flex-end',
+  },
+  centerModal: {
+    margin: 0,
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalContainer: {
     backgroundColor: '#fff',
+    padding: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+  folderModalContainer: {
+    backgroundColor: '#fff',
     width: '90%',
     padding: 20,
     borderRadius: 10,
     alignItems: 'center',
+  },
+  modalItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  modalIcon: {
+    width: 30,
+    height: 30,
+    marginRight: 20,
   },
   input: {
     width: '100%',
@@ -333,19 +415,10 @@ const styles = StyleSheet.create({
   createButtonText: {
     color: '#fff',
   },
-  modalItem: {
-    flexDirection: 'row',
-    gap: 30,
-    alignItems: 'center',
+  emptyText: {
+    textAlign: 'center',
     marginTop: 20,
-  },
-  modalcontainer: {
-    width: '100%',
-    backgroundColor: '#ffffff',
-    height: '30%',
-    padding: 20,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
+    color: 'gray',
   },
 });
 

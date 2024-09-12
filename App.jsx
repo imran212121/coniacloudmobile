@@ -1,4 +1,4 @@
-import 'react-native-gesture-handler';
+
 import React from 'react';
 import {
   SafeAreaView,
@@ -22,18 +22,7 @@ function App() {
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
-  // const changelanguage= useDispatch();
-  // useEffect(() => {
-  //   const loadLanguage = async () => {
-  //     const savedLanguage = await AsyncStorage.getItem('language');
-  //     if (savedLanguage) {
-  //       store.dispatch(setLanguage(savedLanguage)); // Dispatch action to set language
-  //       // strings.setLanguage(savedLanguage); // Assuming strings is imported properly
-  //     }
-  //   };
-
-  //   loadLanguage();
-  // }, []);
+  
 
   return (
    

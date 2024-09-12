@@ -1,64 +1,71 @@
-import { Image, StyleSheet, Text, TouchableOpacity, View, Button, ActivityIndicator } from 'react-native'
-import React, { useState, useEffect } from 'react'
-import { AppColor } from '../../utils/AppColors'
-import CustomHeader from '../../components/CustomHeader'
-import { useNavigation } from '@react-navigation/native'
-import DocumentPicker from 'react-native-document-picker'
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import RNFetchBlob from 'rn-fetch-blob'
-import { AlertNotificationRoot, Dialog, ALERT_TYPE } from 'react-native-alert-notification'
-import { baseURL } from '../../constant/settings'
-import { setLanguage } from '../../redux/reducers/languageSlice'; 
+import { Image, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { AppColor } from '../../utils/AppColors';
+import CustomHeader from '../../components/CustomHeader';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import DocumentPicker from 'react-native-document-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import RNFetchBlob from 'rn-fetch-blob';
+import { AlertNotificationRoot, Dialog, ALERT_TYPE } from 'react-native-alert-notification';
+import { baseURL } from '../../constant/settings';
+import { useSelector } from 'react-redux';
 import strings from '../../helper/Language/LocalizedStrings';
-import { useSelector } from 'react-redux'
+
 const UploadDoc = () => {
-  const [selectedDocument, setSelectedDocument] = useState(null)
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const navigation = useNavigation()
+  const route = useRoute();
+  const { folderPath } = route.params || {}; // Get folderPath from route params
+  console.log('Jamshed______', pathFolder);
+
+
+  
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const navigation = useNavigation();
   const language = useSelector((state) => state.language.language);
+
   useEffect(() => {
     const checkLoginStatus = async () => {
-      const userData = JSON.parse(await AsyncStorage.getItem('user'))
+      const userData = JSON.parse(await AsyncStorage.getItem('user'));
       if (userData && userData.access_token) {
-        setUser(userData)
+        setUser(userData);
       }
-    }
-    checkLoginStatus()
-  }, [])
+    };
+    checkLoginStatus();
+  }, []);
 
   const pickDocument = async () => {
     try {
       const res = await DocumentPicker.pick({
         type: [DocumentPicker.types.allFiles],
-      })
-      setSelectedDocument(res)
+      });
+      setSelectedDocument(res);
     } catch (err) {
       if (DocumentPicker.isCancel(err)) {
-        console.log('User cancelled document picker')
+        console.log('User cancelled document picker');
       } else {
-        console.error('Error picking document:', err)
+        console.error('Error picking document:', err);
       }
     }
-  }
+  };
 
   const uploadDocument = async () => {
     if (!selectedDocument) {
-      console.log('No document selected')
+      console.log('No document selected');
       Dialog.show({
         type: ALERT_TYPE.WARNING,
         title: 'Warning',
         textBody: 'No document selected',
         button: 'close',
-      })
-      return
+      });
+      return;
     }
-    setLoading(true)
+    setLoading(true);
     try {
-      const fileUri = selectedDocument[0].uri
-      const uploadUrl = baseURL+'/uploads';
-      const token = user?.access_token
-      
+      const fileUri = selectedDocument[0].uri;
+      const uploadUrl = baseURL + '/uploads';
+      const token = user?.access_token;
+
       const response = await RNFetchBlob.fetch('POST', uploadUrl, {
         Authorization: 'Bearer ' + token,
         'Content-Type': 'multipart/form-data',
@@ -67,34 +74,33 @@ const UploadDoc = () => {
         { name: 'workspaceId', data: '0' },
         { name: 'parentId', data: 'null' },
         { name: 'isSQL', data: 'false' },
-        { name: 'relativePath', data: '' },
+        { name: 'relativePath', data: folderPath || '' },  // Use folderPath here
         { name: 'disk', data: 'uploads' },
-      ])
+      ]);
 
-      console.log('Upload successful:', response.data)
+      console.log('Upload successful:', response);
       Dialog.show({
         type: ALERT_TYPE.SUCCESS,
         title: 'Success',
         textBody: 'Upload successful',
         button: 'close',
-      })
-      setLoading(false)
-      setTimeout(()=>{
+      });
+      setLoading(false);
+      setTimeout(() => {
         navigation.navigate('Home');
-      },1000);
+      }, 1000);
     } catch (error) {
-      console.error('Error uploading document:', error)
+      console.error('Error uploading document:', error);
       Dialog.show({
         type: ALERT_TYPE.DANGER,
         title: 'Error',
         textBody: 'Error uploading document',
         button: 'close',
-      })
-      setLoading(false)
+      });
+      setLoading(false);
     }
-  }
+  };
 
-  
   return (
     <AlertNotificationRoot>
       <View style={styles.container}>
@@ -106,21 +112,19 @@ const UploadDoc = () => {
           <Text style={styles.boldtext}>{strings.DRAG_DROP_FILES}</Text>
           <Text style={styles.normaltext}>{strings.SUPPORT_ZIP_RAR}</Text>
           <TouchableOpacity onPress={uploadDocument} style={styles.uploadActionButton}>
-          {loading ? (
-            <ActivityIndicator size="small" color="#004181" />
-          ) : (
-            <Text style={styles.buttonText}>{strings.UPLOAD_DOC}</Text>
-          )}
-        </TouchableOpacity>
+            {loading ? (
+              <ActivityIndicator size="small" color="#004181" />
+            ) : (
+              <Text style={styles.buttonText}>{strings.UPLOAD_DOC}</Text>
+            )}
+          </TouchableOpacity>
         </View>
-     
-        
       </View>
     </AlertNotificationRoot>
-  )
-}
+  );
+};
 
-export default UploadDoc
+export default UploadDoc;
 
 const styles = StyleSheet.create({
   container: {
@@ -163,7 +167,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   uploadActionButton: {
-    width:"90%",
+    width: "90%",
     marginTop: 30,
     backgroundColor: '#004181',
     padding: 10,
@@ -171,4 +175,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-})
+});

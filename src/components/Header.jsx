@@ -6,12 +6,13 @@ import strings from '../helper/Language/LocalizedStrings';
 import { useDispatch, useSelector } from 'react-redux';
 import CreateFolderModal from './model/CreateFolder';
 import Modal from 'react-native-modal';
-export default function Header({ modalHandler, setRefresh, handleLoader, loading, handleRefresh, refresh, uploadIcon, notiIcon, settingsIcon, onPress, parentId }) {
+export default function Header({ modalHandler, setRefresh, handleLoader, loading, handleRefresh, refresh, uploadIcon, notiIcon, settingsIcon, onPress, parentId,pathFolder }) {
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [workspace, setWorkspace] = useState(null);
   const [isVisible, setIsvisible] = useState(false);
   const [isVisibleWorkspace, setIsvisibleWorkspace] = useState(false);
-  const [UploadModalVisible, setUploadModalVisible] = useState(false)
+  const [UploadModalVisible, setUploadModalVisible] = useState(false);
+  const [folderPath, setFolderPath] = useState('');
   const hadleModal = () => {
     setUploadModalVisible(!UploadModalVisible)
   }
@@ -21,7 +22,7 @@ export default function Header({ modalHandler, setRefresh, handleLoader, loading
   const user = useSelector((state) => state.auth.user);
   const workspaces = useSelector((state) => state.workspace.workspace);
   useEffect(() => {
-    console.log('*****Render****', workspaces);
+    // console.log('*****Render****', workspaces);
     if (!user?.display_name) {
       navigation.navigate('Login');
     }
@@ -49,10 +50,17 @@ export default function Header({ modalHandler, setRefresh, handleLoader, loading
   const toggleModal = () => {
     setModalVisible(!isModalVisible)
   };
-  const handleUpload=()=>{
-     navigation.navigate('UploadDoc')
-     setUploadModalVisible(!UploadModalVisible)
-  }
+ 
+  
+  console.log('Jamshed______>>>>>>>', pathFolder);
+
+  const handleUpload = () => {
+    const LocationPath = pathFolder.map(folder => folder.id).join('/'); // Map and create the path
+    navigation.navigate('UploadDoc', { path: LocationPath }); // Pass the LocationPath to the next screen
+    setUploadModalVisible(!UploadModalVisible); // Close the modal
+  };
+  
+  
 
   return (
     <>
@@ -98,9 +106,8 @@ export default function Header({ modalHandler, setRefresh, handleLoader, loading
             style={styles.modalItem}
             onPress={() => {
               toggleModal();
-              // toggleFolderModal(); 
-
-              () => { navigation.navigate('UploadDoc') }
+            
+             handleUpload()
 
             }}>
             <Image source={require('../assets/icon/Smallfolder.png')} style={{ height: 30, width: 30 }} />
@@ -123,7 +130,7 @@ export default function Header({ modalHandler, setRefresh, handleLoader, loading
             <TouchableOpacity style={styles.textList} onPress={() => { toggleModal() }}
             ><Text>{strings.CREATE_FOLDER}</Text></TouchableOpacity>
             <TouchableOpacity style={styles.textList} onPress={
-              () => { navigation.navigate('UploadDoc'); }}><Text>{strings.UPLOAD_FILE}</Text></TouchableOpacity>
+              () => { navigation.navigate('UploadDoc',{}); }}><Text>{strings.UPLOAD_FILE}</Text></TouchableOpacity>
           </View>
         </View>
 
@@ -164,6 +171,7 @@ export default function Header({ modalHandler, setRefresh, handleLoader, loading
         refresh={refresh}
         user={user}
         parentId={parentId}
+        // onFolderPathReceived={handleFolderPath} 
 
       />
       {/* <WorkspaceModal
