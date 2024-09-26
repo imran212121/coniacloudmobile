@@ -1,131 +1,114 @@
-import { StyleSheet, Text, View, Dimensions, TouchableOpacity, Platform } from 'react-native';
+import { StyleSheet, Text, View, ActivityIndicator, TouchableOpacity } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { AppSettings } from '../../utils/Settings';
 import { makeApiCall } from '../../helper/apiHelper';
-import FontAwesome from '@react-native-vector-icons/fontawesome';
-import { WebView } from 'react-native-webview';
+import RNFS from 'react-native-fs';
+import FileViewer from 'react-native-file-viewer';
+import CustomHeader from '../CustomHeader';
 
-import RNFetchBlob from 'rn-fetch-blob';
-import { downloadFile, getDownloadPermissionAndroid } from '../../helper/downloadHelper';
+const WordPreview = ({ route, navigation }) => {
+  const { filePath, user } = route.params;
+  const wordId = filePath.id;
+  const [previewToken, setPreviewToken] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [localFilePath, setLocalFilePath] = useState('');
 
-const WordPreview = ({ files, user, closeFile, folderId, handleFolderNavigation }) => {
-    const [PreviewToken, setPreviewToken] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
+  const accessToken = user?.access_token;
 
-    const previewUrl = AppSettings.base_url + files.url;
-    const downloadUrl = AppSettings.base_url + '/api/v1/file-entries/download/' + files.hash;
-    const deviceWidth = Dimensions.get('window').width;
-    const deviceHeight = Dimensions.get('window').height;
-
-
-
-    useEffect(() => {
-        const fetchDocumentData = async () => {
-            try {
-                const token = await makeApiCall('/api/v1/file-entries/' + files.id + '/add-preview-token', user?.access_token, 'post');
-                setPreviewToken(token?.preview_token);
-                setIsLoading(false);
-            } catch (error) {
-                console.error('Error fetching document preview token:', error);
-                setIsLoading(false);
-            }
-        };
-
-        fetchDocumentData();
-    }, [files.id, user?.access_token]);
-
-    const downloadAndOpenFile = () => {
-        const url = downloadUrl + '?add-preview-token=' + PreviewToken;
-        const file_extension = files?.extension;
-        const file_name = files?.name;
-        const file_name_with_extension = file_name + '.' + file_extension;
-
-        if (Platform.OS === 'android') {
-            getDownloadPermissionAndroid().then(granted => {
-                if (granted) {
-                    downloadFile(url, file_name_with_extension);
-                } else {
-                    downloadFile(url, file_name_with_extension);
-                }
-            });
-        } else {
-            downloadFile(url, file_name_with_extension).then(res => {
-                RNFetchBlob.ios.previewDocument(res.path());
-            });
-        }
+  useEffect(() => {
+    const fetchWordData = async () => {
+      try {
+        const tokenResponse = await makeApiCall(`/api/v1/file-entries/${wordId}/add-preview-token`, accessToken, 'post', {});
+        setPreviewToken(tokenResponse?.preview_token);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching Word preview token:', error);
+        setError('Error loading Word preview token.');
+        setIsLoading(false);
+      }
     };
 
-    return (
-        <View>
-            <View style={styles.container}>
-                <View style={styles.header}>
+    fetchWordData();
+  }, [wordId, accessToken]);
 
-                    <TouchableOpacity style={styles.headerItem}>
-                        {/* <Icon name="share" size={22} /> */}
-                        <Image source={share} style={{width:15,height:15}}/>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.headerItem} onPress={() => {
-                        downloadAndOpenFile()
-                    }}>
-                        {/* <Icon name="download" size={22} /> */}
-                        <Image source={download} style={{width:15,height:15}}/>
-                    </TouchableOpacity>
-                    
-                    <TouchableOpacity style={styles.headerItem} onPress={async() => {
-                           let data = {
-                            entryIds:[files.id],
-                            deleteForever:0,
-                            
-                           }
-                           const res = await makeApiCall('/api/v1/file-entries/delete', user?.access_token, 'post',data);
-                           handleFolderNavigation(0);
-                           //console.log('res',res)
-                    }}>
-                        <Image source={trash} style={{width:15,height:15}}/>
-                    </TouchableOpacity>
+  const wordUrl = previewToken ? `${AppSettings.base_url}${filePath.url}?preview_token=${previewToken}` : null;
 
-                </View>
-            </View>
-            <View style={styles.doccontainer}>
-                <View style={{ justifyContent: 'center', flex: 1 }}>
-                    {isLoading ? (
-                        <Text>Loading.....</Text>
-                    ) : (
-                        <WebView 
-                            source={{ uri: previewUrl + '?preview_token=' + PreviewToken }} 
-                            style={{ width: deviceWidth, height: deviceHeight }} 
-                        />
-                    )}
-                </View>
-            </View>
-        </View>
-    );
+  const downloadAndOpenWordFile = async () => {
+    if (wordUrl) {
+      try {
+        const localFile = `${RNFS.DocumentDirectoryPath}/${filePath.file_name}`;
+        const downloadOptions = {
+          fromUrl: wordUrl,
+          toFile: localFile,
+        };
+        
+        const result = await RNFS.downloadFile(downloadOptions).promise;
+        setLocalFilePath(localFile);
+        FileViewer.open(localFile)
+          .then(() => {
+            // Success: Word document opened in an external app
+          })
+          .catch((error) => {
+            console.error('Error opening Word document:', error);
+            setError('Unable to open Word document.');
+          });
+      } catch (error) {
+        console.error('Error downloading Word file:', error);
+        setError('Unable to download Word file.');
+      }
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <CustomHeader back={true} left={true} OnPress={() => navigation.goBack()} />
+      <View style={styles.wordContainer}>
+        {isLoading ? (
+          <ActivityIndicator size="large" color="#000" />
+        ) : error ? (
+          <Text style={styles.errorText}>{error}</Text>
+        ) : (
+          <TouchableOpacity style={styles.openButton} onPress={downloadAndOpenWordFile}>
+            <Text style={styles.openButtonText}>Open Word Document</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
+  );
 };
 
 export default WordPreview;
 
 const styles = StyleSheet.create({
-    container: {
-        width: 'auto',
-        height: 'auto',
-    },
-    doccontainer: {
-        width: 'auto',
-        height: 'auto',
-        display: 'flex',
-        flexDirection: 'row',
-    },
-    header: {
-        backgroundColor: '#fff',
-        height: 55,
-        width: 'auto',
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'flex-start',
-    },
-    headerItem: {
-        marginRight: 20,
-        marginLeft: 10,
-        paddingVertical: 12,
-    },
+  container: {
+    flex: 1,
+    padding: 15,
+    backgroundColor: '#fff',
+  },
+  wordContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  openButton: {
+    backgroundColor: '#007BFF',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  openButtonText: {
+    color: '#fff',
+    fontSize: 18,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 16,
+    textAlign: 'center',
+  },
 });
+
+
+
+
+

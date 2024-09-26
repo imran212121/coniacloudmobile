@@ -8,6 +8,7 @@ import { makeApiCall } from '../../helper/apiHelper';
 //import Share from 'react-native-share';
 
 const ShareFileModal = ({ isVisible, onClose, file,user }) => {
+  // console.log('Item',file)
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);

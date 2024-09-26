@@ -36,10 +36,10 @@ const DashboardShare = () => {
   }
   return (
     <>
-      <View style={{padding:15}}>
+      {/* <View style={{padding:15}}>
 
       <CustomHeader back={true} left={true} right={true} title={strings.SHARED} grid={true}/>
-      </View>
+      </View> */}
       <View style={styles.mainContainer} showsVerticalScrollIndicator={false}>
         {/* <ModalView modalHandler ={modalHandler} active={active} isError={isError} message={message}/> */}
         <Shared loading={loading} active={active} refresh={refresh} handleLoader={handleLoader} setRefresh={setRefresh}/>

@@ -8,6 +8,7 @@ import {
   Text,
   useColorScheme,
   View,
+ 
 } from 'react-native';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { Provider, useDispatch } from 'react-redux';
@@ -27,6 +28,10 @@ function App() {
   return (
    
  <GestureHandlerRootView style={{ flex: 1 }}>
+  <StatusBar 
+        barStyle="light-content"  // You can change this to 'dark-content' for lighter text/icons
+        backgroundColor='#0071BC'  // Set the background color of the status bar
+      />
       <Provider store={store}>
         <View style={{ flex: 1 }}>
           <StackNavigation />

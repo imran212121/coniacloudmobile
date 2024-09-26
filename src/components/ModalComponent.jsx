@@ -9,20 +9,28 @@ import { makeApiCall } from '../helper/apiHelper';
 import strings from '../helper/Language/LocalizedStrings';
 import { PermissionsAndroid, } from 'react-native';
 
-const ModalComponent = ({ isVisible, onClose, item, user, PreviewToken, setRefresh, refresh, setModalVisible }) => {
+const ModalComponent = ({ isVisible, onClose, item, user, PreviewToken, setRefresh, refresh, setModalVisible, }) => {
+ 
   const [isShareModalVisible, setShareModalVisible] = useState(false);
   const [isRenameModalVisible, setRenameModalVisible] = useState(false);
 
   const sharePopup = () => {
     setShareModalVisible(true);
   };
-
+  const handleRenameSuccess = () => {
+    setRefresh(prev => !prev);
+    setModalVisible(false);
+    // setRefresh(false)
+  };
   const toggleShareModal = () => {
     setShareModalVisible(!isShareModalVisible);
   };
 
   const toggleRenameModal = () => {
     setRenameModalVisible(!isRenameModalVisible);
+    setRefresh(prev => !prev);
+    setModalVisible(false);
+    // setRefresh(false)
   };
 
   const deleteFile = async () => {
@@ -35,56 +43,43 @@ const ModalComponent = ({ isVisible, onClose, item, user, PreviewToken, setRefre
       setRefresh(!refresh);
       setModalVisible(!isVisible);
       Alert.alert('Success', 'File deleted successfully!');
+      setRefresh(false)
     } catch (error) {
       console.error('Error deleting file:', error);
       Alert.alert('Error', 'Error deleting file.');
     }
   };
-  const downloadAndOpenFile = async () => {
-    const downloadUrl = `${AppSettings.base_url}/api/v1/file-entries/download/${item?.hash}?add-preview-token=${PreviewToken}`;
-    const filename = item?.name || 'downloaded_file';
-    const fileExt = item?.extension || 'file';
-    const { dirs } = RNFetchBlob.fs;
-    const path = `${dirs.DownloadDir}/${filename}.${fileExt}`;
+
+
+  const downloadFile = async (fileHash, previewToken, fileName) => {
+    const downloadUrl = `${AppSettings.base_url}/api/v1/file-entries/download/${fileHash}?add-preview-token=${previewToken}`;
   
-    try {
-      if (Platform.OS === 'android') {
-        const permission = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-          {
-            title: 'Storage Permission Required',
-            message: 'App needs access to your storage to download files',
-          }
-        );
-        if (permission !== PermissionsAndroid.RESULTS.GRANTED) {
-          Alert.alert('Storage Permission Not Granted');
-          return;
-        }
-      }
+    // Request permission for Android
+    // const granted = await requestStoragePermission();
+    // if (!granted) {
+    //   Alert.alert('Permission Denied', 'Storage permission is required to download files.');
+    //   return;
+    // }
   
-      RNFetchBlob.config({
+    const { fs } = RNFetchBlob;
+    const downloadsPath = Platform.OS === 'android' ? fs.dirs.DownloadDir : fs.dirs.DocumentDir; // Adjust path based on platform
+    const localPath = `${downloadsPath}/${fileName}`; // Path to store the downloaded file
+  
+    RNFetchBlob
+      .config({
+        path: localPath, // Save the file to this path
         fileCache: true,
-        path,
-        addAndroidDownloads: {
-          useDownloadManager: true,
-          notification: true,
-          path,
-          description: 'File downloaded by the app',
-        },
+        appendExt: fileName.split('.').pop(), // Extract file extension and append it (e.g., jpg, pdf)
       })
-        .fetch('GET', downloadUrl)
-        .then(res => {
-          console.log('File saved to:', res.path());
-          Alert.alert('Download Complete', 'File has been downloaded successfully.');
-        })
-        .catch(error => {
-          console.error('Error downloading file:', error);
-          Alert.alert('Error', 'Error occurred while downloading the file.');
-        });
-    } catch (error) {
-      console.error('Error during file download:', error);
-      Alert.alert('An error occurred.');
-    }
+      .fetch('GET', downloadUrl)
+      .then((res) => {
+        console.log('File downloaded and saved locally at:', res.path());
+        Alert.alert('Success', 'File downloaded successfully!');
+      })
+      .catch((error) => {
+        console.error('Error downloading the file:', error.message);
+        Alert.alert('Error', 'Failed to download the file.');
+      });
   };
 
   return (
@@ -110,7 +105,7 @@ const ModalComponent = ({ isVisible, onClose, item, user, PreviewToken, setRefre
               <Image source={require('../assets/icons/share.png')} style={styles.image} />
               <Text>{strings.SHARE}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.itemContainer} onPress={downloadAndOpenFile}>
+            <TouchableOpacity style={styles.itemContainer} onPress={() => downloadFile(item?.hash, PreviewToken, item?.name)}>
               <Image source={require('../assets/icons/fi_download.png')} style={styles.image} />
               <Text>{strings.DOWNLOAD}</Text>
             </TouchableOpacity>
@@ -132,12 +127,19 @@ const ModalComponent = ({ isVisible, onClose, item, user, PreviewToken, setRefre
         file={item}
       />
       <RenameModal
+        // isVisible={isRenameModalVisible}
+        // onClose={toggleRenameModal}
+        // setRefresh={setRefresh}
+        // refresh={refresh}
+        // user={user}
+        // file={item}
         isVisible={isRenameModalVisible}
         onClose={toggleRenameModal}
         setRefresh={setRefresh}
         refresh={refresh}
         user={user}
         file={item}
+        onRenameSuccess={handleRenameSuccess}
       />
     </>
   );

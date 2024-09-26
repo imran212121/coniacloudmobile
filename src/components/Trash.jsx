@@ -8,6 +8,9 @@ import fileIcon from '../assets/icon/file.png';
 import pdfIcon from '../assets/icons/pdf.png';
 import wordIcon from '../assets/icon/word.png';
 import imageIcon from '../assets/icon/image.png';
+import play from '../assets/icons/pdf.png';
+import video from '../assets/icon/video.png';
+
 import back from '../assets/icons/fi_arrow-left.png';
 import { baseURL, fileColorCode } from '../constant/settings';
 import StorageStatus from './StorageStatus';
@@ -19,6 +22,7 @@ import { useSelector } from 'react-redux';
 
 import ModalTrashedComponent from './ModalTrashedComponent';
 import { timeAgo } from '../helper/functionHelper';
+import Search from './Search';
 const Trashed = ({ handleLoader, loading, refresh, setRefresh }) => {
   const [driveData, setDriveData] = useState([]);
   const [token, setToken] = useState(null);
@@ -34,6 +38,7 @@ const Trashed = ({ handleLoader, loading, refresh, setRefresh }) => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [files, setFile] = useState(null);
+  const [search, setSearch] = useState('');
   const navigation = useNavigation();
   const workspaces = useSelector((state) => state.workspace.workspace);
   const fetchImageData = async (file_id) => {
@@ -72,22 +77,25 @@ const Trashed = ({ handleLoader, loading, refresh, setRefresh }) => {
   }, []);
 
   useEffect(() => {
-    const fetchFolderFiles = async () => {
+    const fetchFolderFiles = async(search = '') => {
       if (!token) return;
       handleLoader(true);
       try {
         const response = await axios.get(`${baseURL}/drive/file-entries?timestamp=${new Date().getTime()}`, {
           headers: { Authorization: `Bearer ${token}` },
           params: {
-            pageId: 0,
-            folderId,
+            pageId: search ? 'search' : 0,
+            folderId: search ? null : (folderId === 0 ? null : folderId),
             page,
-            workspaceId: workspaces,
+            query: search,
+            workspaceId: search ? 0 : workspaces,
             deletedOnly: true,
             starredOnly: false,
             recentOnly: false,
             sharedOnly: false,
-            per_page: 100
+            per_page: 100,
+            orderBy: search ? 'updated_at' : undefined,
+            orderDir: search ? 'desc' : undefined,
           }
         });
         handleLoader(false);
@@ -111,6 +119,16 @@ const Trashed = ({ handleLoader, loading, refresh, setRefresh }) => {
     };
     fetchFolderFiles();
   }, [token, folderId, page, refresh]);
+
+
+  const handleSearch = (serach) => {
+    if (search.trim() !== '') {
+      fetchFolderFiles(search);
+    } else {
+      fetchFolderFiles(); // Fetch all files if search query is empty
+    }
+  };
+
 
   const handleFile = (files) => {
     if (files.type === 'folder') {
@@ -140,17 +158,43 @@ const Trashed = ({ handleLoader, loading, refresh, setRefresh }) => {
 
   const closeFile = () => setSelected(false);
 
-  const fileType = {
-    folder: folderIcon,
-    file: fileIcon,
-    pdf: pdfIcon,
-    word: wordIcon,
-    image: imageIcon
-  };
 
   const renderGridItem = ({ item, index }) => {
-    if (item.extension === 'jpg' || item.extension === 'jpeg' || item.extension === 'svg') {
-      item.type = 'image';
+    const fileType = {
+      folder: folderIcon,
+      file: fileIcon,
+      pdf: pdfIcon,
+      word: wordIcon,
+      image: imageIcon,
+      jpg: imageIcon,
+      jpeg: imageIcon,
+      png: imageIcon,
+      gif: imageIcon,
+      svg: imageIcon,
+      audio: play,
+      video: video,
+    };
+    let fileTypeKey = 'file';
+    if (item.type === 'folder') {
+      fileTypeKey = 'folder';
+    } else if (['jpg', 'jpeg', 'png', 'gif', 'svg'].includes(item.extension)) {
+      fileTypeKey = 'image';
+    } else if (item.extension === 'pdf') {
+      fileTypeKey = 'pdf';
+    } else if (['doc', 'docx'].includes(item.extension)) {
+      fileTypeKey = 'word';
+    } else if (['xls', 'xlsx'].includes(item.extension)) {
+      fileTypeKey = 'xls';
+    } else if (['ppt', 'pptx'].includes(item.extension)) {
+      fileTypeKey = 'ppt';
+    } else if (['mp4', 'avi', 'mkv', 'mov', 'wmv'].includes(item.extension)) {
+      fileTypeKey = 'video';
+    } else if (['mp3', 'wav', 'aac', 'flac'].includes(item.extension)) {
+      fileTypeKey = 'audio';
+    } else if (item.extension === 'txt') {
+      fileTypeKey = 'file';
+    }else{
+      fileTypeKey = 'file';
     }
     return (
       <TouchableOpacity
@@ -159,7 +203,7 @@ const Trashed = ({ handleLoader, loading, refresh, setRefresh }) => {
           styles.fileData,
           {
             width: deviceWidth * 0.42,
-            backgroundColor: fileColorCode[Math.floor(Math.random() * 4)],
+            backgroundColor: '#CFECFF',
             flexDirection: 'column',
           },
         ]}
@@ -180,8 +224,39 @@ const Trashed = ({ handleLoader, loading, refresh, setRefresh }) => {
   };
 
   const renderListItem = ({ item, index }) => {
-    if (item.extension === 'jpg' || item.extension === 'jpeg' || item.extension === 'svg') {
-      item.type = 'image';
+    const fileType = {
+      folder: folderIcon,
+      file: fileIcon,
+      pdf: pdfIcon,
+      word: wordIcon,
+      image: imageIcon,
+      jpg: imageIcon,
+      jpeg: imageIcon,
+      png: imageIcon,
+      gif: imageIcon,
+      svg: imageIcon,
+      audio: play,
+      video: video,
+    };
+    let fileTypeKey = 'file';
+    if (item.type === 'folder') {
+      fileTypeKey = 'folder';
+    } else if (['jpg', 'jpeg', 'png', 'gif', 'svg'].includes(item.extension)) {
+      fileTypeKey = 'image';
+    } else if (item.extension === 'pdf') {
+      fileTypeKey = 'pdf';
+    } else if (['doc', 'docx'].includes(item.extension)) {
+      fileTypeKey = 'word';
+    } else if (['xls', 'xlsx'].includes(item.extension)) {
+      fileTypeKey = 'xls';
+    } else if (['ppt', 'pptx'].includes(item.extension)) {
+      fileTypeKey = 'ppt';
+    } else if (['mp4', 'avi', 'mkv', 'mov', 'wmv'].includes(item.extension)) {
+      fileTypeKey = 'video';
+    } else if (['mp3', 'wav', 'aac', 'flac'].includes(item.extension)) {
+      fileTypeKey = 'audio';
+    } else if (item.extension === 'txt') {
+      fileTypeKey = 'file';
     }
     return (
       <TouchableOpacity
@@ -189,7 +264,7 @@ const Trashed = ({ handleLoader, loading, refresh, setRefresh }) => {
         style={[
           styles.fileData,
           {
-            backgroundColor: fileColorCode[Math.floor(Math.random() * 4)],
+            backgroundColor: '#CFECFF',
             height: 90
           },
         ]}
@@ -232,13 +307,7 @@ const Trashed = ({ handleLoader, loading, refresh, setRefresh }) => {
             <StorageStatus user={user} usertoken={token} />
           </View>
           <View style={styles.inputContainer}>
-            <TouchableOpacity>
-              <Image source={require('../assets/Search.png')} style={styles.leftImage} />
-            </TouchableOpacity>
-            <TextInput style={styles.input} placeholder="Search" />
-            <TouchableOpacity>
-              <Image source={require('../assets/Filter.png')} style={styles.rightImage} />
-            </TouchableOpacity>
+          <Search search={search} setsearch={setSearch} handleSearch={handleSearch} />
           </View>
           {!selected ? (
             <>
@@ -351,7 +420,7 @@ const styles = StyleSheet.create({
   fileText: {
     fontSize: 14,
     fontWeight: '500',
-    height: 21,
+  
     color: '#071625',
     marginTop: 20,
   },

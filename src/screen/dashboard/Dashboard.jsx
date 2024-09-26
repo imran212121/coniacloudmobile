@@ -12,8 +12,8 @@ const Dashboard = () => {
   const [message, setMessage] = useState('');
   const [isError, setIsError] = useState(false);
   const [refresh, setRefresh] = useState(false);
-  const [folderId, setFolderId] = useState(null);  // To manage folder navigation
-  const [folderPath, setFolderPath] = useState('');  // To track folder path
+  const [folderId, setFolderId] = useState(null);  
+  const [folderPath, setFolderPath] = useState('');  
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -41,19 +41,8 @@ const Dashboard = () => {
 
   return (
     <>
-      <Header 
-        parentId={folderId} 
-        handleRefresh={handleRefresh} 
-        setRefresh={setRefresh} 
-        refresh={refresh} 
-        loading={loading} 
-        handleLoader={handleLoader} 
-        modalHandler={modalHandler} 
-        active={active} 
-        pathFolder={folderPath}
-        onPress={() => navigation.navigate('Notification')} 
-      />
-      <ScrollView style={styles.mainContainer} showsVerticalScrollIndicator={false}>
+      
+    
         {/* Displaying the Drive component */}
         <Drive 
           folderId={folderId}  // Folder ID for navigation
@@ -65,7 +54,7 @@ const Dashboard = () => {
           setRefresh={setRefresh} 
           handleFolderPath={handleFolderPath}  // To handle folder path changes
         />
-      </ScrollView>
+   
     </>
   );
 };

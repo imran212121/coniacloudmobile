@@ -1,404 +1,185 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, FlatList, Alert, Image, TextInput } from 'react-native';
-import RNFS from 'react-native-fs';
-import { PermissionsAndroid } from 'react-native';
-import Modal from 'react-native-modal';
-import DocumentPicker from 'react-native-document-picker';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { baseURL } from '../../constant/settings';
-import axios from 'axios';
-import { useSelector } from 'react-redux';
+import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
+import { CommonActions, useNavigation } from '@react-navigation/native';
+import CustomHeader from '../../components/CustomHeader';
+import { AppColor } from '../../utils/AppColors';
+import { useFocusEffect } from '@react-navigation/native';
+import ProgressBar from '../../components/ProgressBar';
+import { logout } from '../../redux/reducers/authSlice';
 import { makeApiCall } from '../../helper/apiHelper';
-const FileSystem = ({ navigation }) => {
-  const [modalVisible, setModalVisible] = useState(false);
-  const [folderModalVisible, setFolderModalVisible] = useState(false);
-  const [currentPath, setCurrentPath] = useState(RNFS.DocumentDirectoryPath);
-  const [contents, setContents] = useState([]);
-  const [newFolderName, setNewFolderName] = useState('');
-  const workspaces = useSelector((state) => state.workspace.workspace);
-const [user,setUser]=useState('')
-  const toggleModal = () => {
-    setModalVisible(!modalVisible);
-  };
+import strings from '../../helper/Language/LocalizedStrings';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-  const toggleFolderModal = () => {
-    setFolderModalVisible(!folderModalVisible);
-  };
+const UserProfile = () => {
+  const navigation = useNavigation();
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
+  const language = useSelector((state) => state.language.language);
 
+  const [spendStorage, setSpendStorage] = useState(0);
+  const [token, setToken] = useState(null);
+  const [totalStorage, setTotalStorage] = useState(100);
+  const [percentage, setPercentage] = useState(0);
 
   useEffect(() => {
     const checkLoginStatus = async () => {
-      const users = JSON.parse(await AsyncStorage.getItem('user'));
-        setUser(users);
+      const user = JSON.parse(await AsyncStorage.getItem('user'));
+      console.log('o----',user)
+      if (user && user.access_token) {
+        setToken(user.access_token);
+      } else {
+        navigation.navigate('Login');
+      }
     };
     checkLoginStatus();
-  }, []);
+  }, [user]);
 
-  const fetchImageData = async (file_id) => {
-    try {
-      const token = await makeApiCall('/api/v1/file-entries/' + file_id + '/add-preview-token', user?.access_token, 'post');
-     
-      setPreviewToken(token?.preview_token);
-      console.log(previewUrl + '?preview_token=' + PreviewToken);
 
-    } catch (error) {
-      console.log('error', error);
-    }
-  }
-  useEffect(()=>{
-fetchImageData()
-  },[])
 
 
   useEffect(() => {
-    const fetchFolderFiles = async () => {
-      if (!user?.access_token) return;
-  
-      handleLoader(true);  // Show loader while fetching data
+    const fetchData = async () => {
       try {
-        const response = await axios.get(`${baseURL}/drive/file-entries`, {
-          headers: { Authorization: `Bearer ${user.access_token}` },
-          params: {
-            pageId,
-            folderId,
-            page,
-            query: search,
-            workspaceId: workspaces,
-            deletedOnly: false,
-            starredOnly: false,
-            recentOnly: false,
-            sharedOnly: false,
-            per_page: 100,
-            timestamp: new Date().getTime(),  // Cache busting by adding timestamp
-          },
-        });
-  
-        const { data } = response;
-        handleLoader(false);  // Hide loader after fetching data
-  
-        // Update folder state
-        if (data?.folder) {
-          setFolder(prevFolders => {
-            if (!prevFolders.some(f => f.id === data.folder.id)) {
-              return [...prevFolders, { id: data.folder.id, name: data.folder.name }];
-            }
-            return prevFolders;
-          });
-        } else {
-          setFolder([{ id: 0, name: "All Files" }]);  
-        }
-  
-        setDriveData(data.data);  
+        const storage = await makeApiCall(`/api/v1/user/space-usage?timestamp=${new Date().getTime()}`,token, 'get');
+        setSpendStorage(MBtoGB(storage?.used));
+        let per = (storage?.used / storage?.available) * 100;
+        setTotalStorage(MBtoGB(storage?.available));
+        setPercentage(per);
+        console.log('------->',per)
       } catch (error) {
-        handleLoader(false);  
-  
-        if (error.response) {
-          console.error('Server responded with an error:', error.response.status, error.response.data);
-        } else if (error.request) {
-          console.error('No response received from the server:', error.request);
-        } else {
-          console.error('Error setting up the request:', error.message);
-        }
-  
-     
-        console.error('Failed to fetch folder files:', error);
+        console.error('Error fetching storage data:', error);
+        if(error.status==403 || error.status==402)
+          {
+             navigation.navigate('Login');
+          }
+        fetchData();
       }
     };
+    //if(user?.access_token!==undefined){
+      // fetchData();
+    //}
   
-    fetchFolderFiles(); 
-  
-    
-  }, [user,]); 
-  
+  }, [user?.access_token,]);
 
-
-
-  const requestStoragePermission = async () => {
-    try {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-        {
-          title: 'File System App Storage Permission',
-          message: 'File System App needs access to your storage to manage files and folders.',
-          buttonNeutral: 'Ask Me Later',
-          buttonNegative: 'Cancel',
-          buttonPositive: 'OK',
-        },
-      );
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        console.log('Storage permission granted');
-        getAllContents();
-      } else {
-        console.log('Storage permission denied');
-      }
-    } catch (err) {
-      console.warn(err);
-    }
+  const MBtoGB = (mb) => {
+    return Math.round(mb / 1024 ** 3);
   };
 
-  const getAllContents = () => {
-    RNFS.readDir(currentPath)
-      .then((result) => {
-        setContents(result);
+  const logoutHandler = async () => {
+    // Remove user token from AsyncStorage
+    await AsyncStorage.removeItem('user');
+    // Dispatch logout action to Redux
+    dispatch(logout());
+    // Reset navigation stack and navigate to Login
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: 'Login' }],
       })
-      .catch((err) => {
-        console.log(err.message, err.code);
-      });
-  };
-
-  const createFolder = () => {
-    if (newFolderName.trim() === '') {
-      Alert.alert('Error', 'Please enter a folder name');
-      return;
-    }
-
-    const newFolderPath = `${currentPath}/${newFolderName}`;
-    RNFS.mkdir(newFolderPath)
-      .then(() => {
-        toggleFolderModal();
-        setNewFolderName('');
-        getAllContents();
-      })
-      .catch((err) => {
-        console.log(err.message);
-        Alert.alert('Error', 'Failed to create folder');
-      });
-  };
-
-  const navigateToFolder = (item) => {
-    if (item.isDirectory()) {  
-      setCurrentPath(`${currentPath}/${item.name}`);
-    } else if (item.name.endsWith('.pdf')) {
-      navigation.navigate('PdfView', { filePath: `${currentPath}/${item.name}` });
-    } else if (item.name.match(/\.(jpg|jpeg|png|gif)$/)) {
-      navigation.navigate('ImageViewer', { filePath: `${currentPath}/${item.name}` });
-    }
-  };
-
-  const goBack = () => {
-    const parentPath = currentPath.substring(0, currentPath.lastIndexOf('/'));
-    if (parentPath.length >= RNFS.DocumentDirectoryPath.length) {
-      setCurrentPath(parentPath);
-    }
-  };
-
-  const uploadFile = async () => {
-    console.log('=======', user);
-    try {
-      const res = await DocumentPicker.pick({
-        type: [DocumentPicker.types.allFiles],
-      });
-  
-      const fileUri = res[0].uri;
-      const fileName = res[0].name;
-      const uploadUrl = `${baseURL}/uploads`;
-      const token = user?.access_token;
-  
-      if (!token) {
-        Alert.alert('Error', 'User token not available. Please log in again.');
-        return;
-      }
-  
-      const formData = new FormData();
-      formData.append('file', {
-        uri: fileUri,
-        type: res[0].type,
-        name: fileName,
-      });
-  
-      console.log('FormData:', formData);
-  
-      const response = await axios.post(uploadUrl, formData, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-  
-      console.log('-------->Response:',response.data);
-  
-      if (response.data.status === 'success') {
-        Alert.alert('Success', 'File uploaded successfully!');
-        getAllContents();
-      } else {
-        throw new Error('Upload failed');
-      }
-    } catch (error) {
-      if (DocumentPicker.isCancel(error)) {
-        console.log('User cancelled the picker');
-      } else {
-        console.error('Error uploading file:', error);
-        Alert.alert('Error', `Failed to upload file: ${error.message}`);
-      }
-    }
+    );
   };
   
-  useEffect(() => {
-    requestStoragePermission();
-  }, []);
 
-  useEffect(() => {
-    getAllContents();
-  }, [currentPath]);
-
-  const renderItemList = ({ item }) => (
-    <TouchableOpacity onPress={() => navigateToFolder(item)}>
-      <View style={styles.item}>
-        <Text>{item.isDirectory() ? '📁' : '📄'} {item.name}</Text>
-      </View>
-    </TouchableOpacity>
-  );
+  const Data = [
+    {
+      id: 1,
+      ImagePath: require('../../assets/icon/fi_user-check.png'),
+      text: strings.ACCOUNT_INFORMATION,
+      navigate: "Profile"
+    },
+    {
+      id: 2,
+      ImagePath: require('../../assets/icon/Lock.png'),
+      text: strings.CHANGE_PASSWORD,
+      navigate: "UpdatePassword"
+    },
+    {
+      id: 3,
+      ImagePath: require('../../assets/icon/smallFile.png'),
+      text: strings.CHANGE_LANGUAGE,
+      navigate: "choselanguage"
+    },
+  ];
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={goBack}>
-          <Text style={styles.backButton}>← Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.currentPath}>{currentPath}</Text>
+      <CustomHeader back={true} left={true}  title={strings.User} />
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 25 }}>
+        <View style={styles.profileImageContainer}>
+          <Image source={{ uri: user?.avatar }} style={styles.avatar} />
+        </View>
+        <View>
+          <Text style={styles.Heading}>{user?.display_name}</Text>
+        </View>
       </View>
-
-      <FlatList
-        data={contents}
-        renderItem={renderItemList}
-        keyExtractor={(item) => item.path}
-      />
-
-      <TouchableOpacity style={styles.btn} onPress={toggleModal}>
-        <Text style={styles.text}>+</Text>
+      <Text style={[styles.Heading, { lineHeight: 27, fontSize: 18, marginTop: 40 }]}>
+        {spendStorage} GB of {totalStorage} {strings.GB_USED}
+      </Text>
+      <ProgressBar progress={percentage} />
+      <View style={{ marginTop: 30 }}>
+      </View>
+      {Data.map((item) => (
+        <TouchableOpacity
+          key={item.id}
+          style={{ flexDirection: 'row', marginTop: 10, marginVertical: 15 }}
+          onPress={() => {
+            navigation.navigate(item.navigate);
+          }}
+        >
+          <Image source={item.ImagePath} style={{ height: 25, width: 25, marginRight: 15, resizeMode: 'contain' }} />
+          <Text style={{ fontSize: 14, color: '#696D70', fontWeight: "400" }}>{item.text}</Text>
+        </TouchableOpacity>
+      ))}
+      <TouchableOpacity onPress={logoutHandler} style={{ marginTop: 40, flexDirection: 'row', alignItems: 'center', gap: 20 }}>
+        <Image source={require('../../assets/icon/Logout.png')} style={{ height: 30, width: 30 }} />
+        <Text style={[styles.headingText, { color: '#FF4E4E', marginTop: 0 }]}>{strings.LOGOUT}</Text>
       </TouchableOpacity>
-      
-      <Modal
-        isVisible={modalVisible}
-        onBackdropPress={toggleModal}
-        style={{ margin: 0, justifyContent: 'flex-end' }}
-      >
-        <View style={styles.modalcontainer}>
-          <TouchableOpacity 
-            style={styles.modalItem} 
-            onPress={() => {
-              toggleModal(); 
-              toggleFolderModal(); 
-            }}>
-            <Image source={require('../../assets/icon/Smallfolder.png')} style={{ height: 30, width: 30 }} />
-            <Text>Create Folder</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.modalItem} onPress={uploadFile}>
-            <Image source={require('../../assets/icons8-upload-52.png')} style={{ height: 30, width: 30 }} />
-            <Text>Upload File</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
-
-      <Modal
-        isVisible={folderModalVisible}
-        onBackdropPress={toggleFolderModal}
-        style={{ margin: 0, justifyContent: 'center', alignItems: 'center' }}
-      >
-        <View style={styles.modalContainer}>
-          <TextInput
-            placeholder="Enter Folder Name"
-            style={styles.input}
-            value={newFolderName}
-            onChangeText={setNewFolderName}
-          />
-          <TouchableOpacity
-            style={styles.createButton}
-            onPress={createFolder}
-          >
-            <Text style={styles.createButtonText}>Create Folder</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
     </View>
   );
 };
 
+export default UserProfile;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 10,
+    padding: 15,
+    backgroundColor: AppColor.bgcolor,
   },
-  header: {
+  profileImageContainer: {
+    height: 60,
+    width: 60,
+    backgroundColor: 'red',
+    borderRadius: 50,
+  },
+  avatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginTop: 0,
+    marginLeft: 0,
+  },
+  Heading: {
+    fontWeight: '500',
+    fontSize: 16,
+    lineHeight: 24,
+    color: AppColor.noermalText,
+  },
+  normaltext: {
+    fontWeight: '400',
+    fontSize: 12,
+    lineHeight: 18,
+    color: '#696D70',
+  },
+  Box: {
     flexDirection: 'row',
+    justifyContent: "space-between",
+    padding: 15,
+    backgroundColor: AppColor.white,
+    height: 70,
     alignItems: 'center',
-    marginBottom: 10,
-  },
-  backButton: {
-    fontSize: 18,
-    marginRight: 10,
-  },
-  currentPath: {
-    fontSize: 14,
-    color: 'gray',
-  },
-  item: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-  },
-  btn: {
-    position: 'absolute',
-    right: 20,
-    bottom: 40,
-    backgroundColor: '#000',
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  text: {
-    color: '#fff',
-    fontSize: 30,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContainer: {
-    backgroundColor: '#fff',
-    width: '90%',
-    padding: 20,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  input: {
-    width: '100%',
-    height: 50,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    paddingLeft: 10,
-    borderRadius: 5,
-    marginBottom: 20,
-  },
-  createButton: {
-    width: '100%',
-    height: 50,
-    borderRadius: 5,
-    backgroundColor: '#000',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  createButtonText: {
-    color: '#fff',
-  },
-  modalItem: {
-    flexDirection: 'row',
-    gap: 30,
-    alignItems: 'center',
+    borderRadius: 15,
     marginTop: 20,
   },
-  modalcontainer: {
-    width: '100%',
-    backgroundColor: '#ffffff',
-    height: '30%',
-    padding: 20,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-  },
 });
-
-export default FileSystem;

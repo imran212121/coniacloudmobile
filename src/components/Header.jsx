@@ -6,7 +6,8 @@ import strings from '../helper/Language/LocalizedStrings';
 import { useDispatch, useSelector } from 'react-redux';
 import CreateFolderModal from './model/CreateFolder';
 import Modal from 'react-native-modal';
-export default function Header({ modalHandler, setRefresh, handleLoader, loading, handleRefresh, refresh, uploadIcon, notiIcon, settingsIcon, onPress, parentId,pathFolder }) {
+export default function Header({ modalHandler, handleLoader, loading, handleRefresh, uploadIcon, notiIcon, settingsIcon, onPress, parentId, pathFolder, userData }) {
+  // console.log('first',userData?.avatar)
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [workspace, setWorkspace] = useState(null);
   const [isVisible, setIsvisible] = useState(false);
@@ -21,13 +22,7 @@ export default function Header({ modalHandler, setRefresh, handleLoader, loading
   const [isModalVisible, setModalVisible] = useState(false);
   const user = useSelector((state) => state.auth.user);
   const workspaces = useSelector((state) => state.workspace.workspace);
-  useEffect(() => {
-    // console.log('*****Render****', workspaces);
-    if (!user?.display_name) {
-      navigation.navigate('Login');
-    }
-    setRefresh(!refresh);
-  }, [workspaces, user])
+
 
 
   const dispatch = useDispatch();
@@ -50,45 +45,47 @@ export default function Header({ modalHandler, setRefresh, handleLoader, loading
   const toggleModal = () => {
     setModalVisible(!isModalVisible)
   };
- 
-  
-  console.log('Jamshed______>>>>>>>', pathFolder);
+
+
+  // console.log('Jamshed______>>>>>>>', pathFolder);
 
   const handleUpload = () => {
     const LocationPath = pathFolder.map(folder => folder.id).join('/'); // Map and create the path
     navigation.navigate('UploadDoc', { path: LocationPath }); // Pass the LocationPath to the next screen
     setUploadModalVisible(!UploadModalVisible); // Close the modal
   };
-  
-  
+
+
 
   return (
     <>
 
       <View style={styles.headerContainer} >
         <View style={{ flexDirection: 'row' }}>
-          <Image source={{ uri: user?.avatar }} style={styles.avatar} />
+          <Image source={{ uri: userData?.avatar }} style={styles.avatar} />
           <View style={styles.userInfo}>
             <Text style={styles.welcomeText}>{strings.WELCOME_BACK}</Text>
-            <Text style={styles.userName}>{user?.display_name}</Text>
+            <Text style={styles.userName}>{userData?.display_name}</Text>
           </View>
         </View>
         <View style={{ flexDirection: 'row' }}>
           <TouchableOpacity onPress={() => toggleDisplayWork()}>
             <Image source={uploadIcon || require('../assets/arrangement.png')} style={styles.icon} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => hadleModal()}>
-            <Image source={uploadIcon || require('../assets/upload.png')} style={styles.icon} />
-          </TouchableOpacity>
           {/* <TouchableOpacity onPress={() => hadleModal()}>
+            <Image source={uploadIcon || require('../assets/upload.png')} style={styles.icon} />
+          </TouchableOpacity> */}
+          <TouchableOpacity onPress={() => navigation.navigate('Notification')}>
             <Image source={notiIcon || require('../assets/noti.png')} style={styles.icon} />
 
-          </TouchableOpacity> */}
+          </TouchableOpacity>
           {/* {!notiIcon ?
             <View style={{ height: 10, width: 10, backgroundColor: 'red', position: 'absolute', right: 0, bottom: 15, borderRadius: 10 }}>
             </View> : null} */}
           {/* Uncomment this if you want to include the settings button */}
-          {/* <TouchableOpacity onPress={settingScreen}>
+          {/* <TouchableOpacity 
+          // onPress={settingScreen}
+          >
               <Image source={settingsIcon || require('../assets/settings.png')} style={styles.icon} />
             </TouchableOpacity> */}
         </View>
@@ -106,8 +103,8 @@ export default function Header({ modalHandler, setRefresh, handleLoader, loading
             style={styles.modalItem}
             onPress={() => {
               toggleModal();
-            
-             handleUpload()
+
+              handleUpload()
 
             }}>
             <Image source={require('../assets/icon/Smallfolder.png')} style={{ height: 30, width: 30 }} />
@@ -130,7 +127,7 @@ export default function Header({ modalHandler, setRefresh, handleLoader, loading
             <TouchableOpacity style={styles.textList} onPress={() => { toggleModal() }}
             ><Text>{strings.CREATE_FOLDER}</Text></TouchableOpacity>
             <TouchableOpacity style={styles.textList} onPress={
-              () => { navigation.navigate('UploadDoc',{}); }}><Text>{strings.UPLOAD_FILE}</Text></TouchableOpacity>
+              () => { navigation.navigate('UploadDoc', {}); }}><Text>{strings.UPLOAD_FILE}</Text></TouchableOpacity>
           </View>
         </View>
 
@@ -147,7 +144,7 @@ export default function Header({ modalHandler, setRefresh, handleLoader, loading
                 <Text >Private</Text>
               }
             </TouchableOpacity>
-            {user?.workspace?.map((item, index) => (
+            {userData?.workspace?.map((item, index) => (
               <>
                 {item.id === workspaces
                   ?
@@ -167,11 +164,11 @@ export default function Header({ modalHandler, setRefresh, handleLoader, loading
       <CreateFolderModal
         isVisible={isModalVisible}
         onClose={toggleModal}
-        setRefresh={setRefresh}
-        refresh={refresh}
+        // setRefresh={setRefresh}
+        // refresh={refresh}
         user={user}
         parentId={parentId}
-        // onFolderPathReceived={handleFolderPath} 
+      // onFolderPathReceived={handleFolderPath} 
 
       />
       {/* <WorkspaceModal
@@ -215,8 +212,10 @@ const styles = StyleSheet.create({
     width: 140,
     height: 'auto',
     minHeight: 100,
-    top: 0,
-
+    top: 60,
+    right:0,
+    // left:30,
+    position: 'absolute',
     display: 'flex',
     flexDirection: 'column',
     borderRadius: 10,
@@ -269,6 +268,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 26,
     marginLeft: 18,
+    resizeMode:"contain"
   },
   modalItem: {
     flexDirection: 'row',

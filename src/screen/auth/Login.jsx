@@ -25,7 +25,7 @@ const Login = () => {
       if (loginResponse) {
         navigation.navigate('Dashboard');
       } else {
-        console.error('Login failed:', loginResponse);
+        console.log('Login failed:', loginResponse);
       }
     } catch (error) {
       console.error('Login failed with error:', error);

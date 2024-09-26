@@ -19,6 +19,11 @@ import FullSizeFileViewer from '../components/model/FullSizeFileViewer';
 import FileSystem from '../screen/dashboard/FileSystem';
 import PdfView from '../components/preview/PdfView';
 import ImageViewer from '../components/preview/ImageViewer';
+import Splesh1 from '../screen/auth/Splesh1';
+import PdfPreview from '../components/preview/PdfPreview';
+import VideoPreview from '../components/preview/VideoPreview';
+import TextFilePreview from '../components/preview/TextPreview';
+import Drive from '../components/Drive';
 const Stack = createNativeStackNavigator();
 const StackNavigation = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(null);
@@ -33,8 +38,9 @@ const StackNavigation = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName={isLoggedIn ? 'Home' : 'Splesh'}>
-        {/* <Stack.Navigator initialRouteName={ 'FileSystem'}> */}
+        {/* <Stack.Navigator initialRouteName={ 'Drive'}> */}
         <Stack.Screen options={{ headerShown: false }} name='Splesh' component={Splesh} />
+        <Stack.Screen options={{ headerShown: false }} name='Splesh1' component={Splesh1} />
         <Stack.Screen options={{ headerShown: false }} name='Home' component={BottomNavigation} />
         <Stack.Screen options={{ headerShown: false }} name='Login' component={Login} />
         <Stack.Screen options={{ headerShown: false }} name='Signup' component={Signup} />
@@ -48,9 +54,15 @@ const StackNavigation = () => {
         <Stack.Screen options={{ headerShown: false }} name='FullSizeFileViewer' component={FullSizeFileViewer} />
         <Stack.Screen options={{ headerShown: false }} name='Test' component={Test} />
         <Stack.Screen options={{ headerShown: false }} name='Test1' component={Test1} />
+
+        {/* important File */}
         <Stack.Screen options={{ headerShown: false }} name='FileSystem' component={FileSystem} />
         <Stack.Screen options={{ headerShown: false }} name='PdfView' component={PdfView} />
         <Stack.Screen options={{ headerShown: false }} name='ImageViewer' component={ImageViewer} />
+        <Stack.Screen options={{ headerShown: false }} name='PdfPreview' component={PdfPreview} />
+        <Stack.Screen options={{ headerShown: false }} name='VideoPreview' component={VideoPreview} />
+        <Stack.Screen options={{ headerShown: false }} name='TextFilePreview' component={TextFilePreview} />
+        <Stack.Screen options={{ headerShown: false }} name='Drive' component={Drive} />
       </Stack.Navigator>
     </NavigationContainer>
   )

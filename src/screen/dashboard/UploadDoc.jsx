@@ -14,10 +14,7 @@ import strings from '../../helper/Language/LocalizedStrings';
 const UploadDoc = () => {
   const route = useRoute();
   const { folderPath } = route.params || {}; // Get folderPath from route params
-  console.log('Jamshed______', pathFolder);
-
-
-  
+console.log('.....jams',folderPath)
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);

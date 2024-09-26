@@ -17,7 +17,13 @@ import ModalComponent from './ModalComponent';
 import { timeAgo } from '../helper/functionHelper';
 import { useSelector } from 'react-redux';
 import strings from '../helper/Language/LocalizedStrings';
-
+// import folderIcon from '../assets/icon/folder.png';
+// import fileIcon from '../assets/icon/file.png';
+// import pdfIcon from '../assets/icons/pdf.png';
+// import play from '../assets/icons/pdf.png';
+// import video from '../assets/icon/video.png';
+// import wordIcon from '../assets/icon/word.png';
+// import imageIcon from '../assets/icon/image.png';
 const MyDrive = ({ handleLoader, loading, refresh, setRefresh }) => {
   const [driveData, setDriveData] = useState([]);
   const [token, setToken] = useState(null);

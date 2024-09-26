@@ -39,7 +39,7 @@ const DashboardTrash = () => {
    <>
     <View style={{padding:15}}>
 
-<CustomHeader back={true} left={true} right={true} title={strings.TRASH_FILE} grid={true}/>
+<CustomHeader back={true} left={true} title={strings.TRASH_FILE} />
 </View>
 <View style={styles.mainContainer} showsVerticalScrollIndicator={false}>
   {/* <ModalView modalHandler ={modalHandler} active={active} isError={isError} message={message}/> */}

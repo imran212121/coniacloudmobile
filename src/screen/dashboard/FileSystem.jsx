@@ -1,179 +1,215 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, FlatList, Alert, Image, TextInput, ActivityIndicator, PermissionsAndroid } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, FlatList, Alert, Image, TextInput, ActivityIndicator, Platform, Dimensions } from 'react-native';
 import Modal from 'react-native-modal';
 import DocumentPicker from 'react-native-document-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { baseURL } from '../../constant/settings';
+import { baseURL, fileColorCode } from '../../constant/settings';
 import axios from 'axios';
+const deviceWidth = Dimensions.get('window').width;
 import { useFocusEffect } from '@react-navigation/native';
-
+import { AlertNotificationRoot, Dialog, ALERT_TYPE } from 'react-native-alert-notification';
+import { makeApiCall } from '../../helper/apiHelper';
+import RNFetchBlob from 'rn-fetch-blob';
+import folderIcon from '../../assets/icon/folder.png';
+import fileIcon from '../../assets/icon/file.png';
+import pdfIcon from '../../assets/icons/pdf.png';
+import play from '../../assets/icons/pdf.png';
+import video from '../../assets/icon/video.png'
+import wordIcon from '../../assets/icon/word.png';
+import imageIcon from '../../assets/icon/image.png';
+import back from '../../assets/icons/fi_arrow-left.png';
+import { timeAgo } from '../../helper/functionHelper';
+import Header from '../../components/Header';
+import CustomHeader from '../../components/CustomHeader';
+import StorageStatus from '../../components/StorageStatus';
+import ModalComponent from '../../components/ModalComponent';
+import CustomModal from '../../components/model/CustomModal ';
+import { AppSettings } from '../../utils/Settings';
+import Search from '../../components/Search';
 const FileSystem = ({ navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
+  const [token, setToken] = useState(null);
   const [folderModalVisible, setFolderModalVisible] = useState(false);
   const [driveData, setDriveData] = useState([]);
   const [folder, setFolder] = useState([{ id: 0, name: "All Files" }]);
   const [folderId, setFolderId] = useState(0);
   const [newFolderName, setNewFolderName] = useState('');
   const [user, setUser] = useState(null);
+  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [workspaces, setWorkspaces] = useState(0);
   const [pageId, setPageId] = useState(null);
   const [refresh, setRefresh] = useState(false);
-
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [folderPath, setFolderPath] = useState([]);
+  const [parentId, setParentId] = useState(null);
+  const [currentFolder, setCurrentFolder] = useState(null);
+  const [ViewType,setViewType]=useState('grid')
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [visibleShereModal,setVisible]=useState(false)
   const toggleModal = () => setModalVisible(!modalVisible);
   const toggleFolderModal = () => setFolderModalVisible(!folderModalVisible);
-
-  const handleLoader = (value) => setIsLoading(value);
+  // let previewUrl = AppSettings.base_url + files.url;
 
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
-        const userData = JSON.parse(await AsyncStorage.getItem('user'));
-        setUser(userData);
+        const userData = await AsyncStorage.getItem('user');
+        if (userData) {
+          setUser(JSON.parse(userData));
+          setToken(userData.access_token);
+        } else {
+          // Handle case where user data is not available
+          // navigation.navigate('Login');
+        }
       } catch (error) {
         console.error('Error checking login status:', error);
-        Alert.alert('Error', 'Failed to retrieve user data. Please log in again.');
+         Alert.alert('Error', 'Failed to retrieve user data. Please log in again.');
+        navigation.navigate('Login');
       }
     };
     checkLoginStatus();
-  }, []);
-
-  const requestStoragePermission = async () => {
-    try {
-        const granted = await PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-            {
-                title: 'File System App Storage Permission',
-                message: 'File System App needs access to your storage to manage files and folders.',
-                buttonNeutral: 'Ask Me Later',
-                buttonNegative: 'Cancel',
-                buttonPositive: 'OK',
-            },
-        );
-
-        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-            console.log('Storage permission granted');
-        } else {
-            console.log('Storage permission denied');
-            Alert.alert('Permission Denied', 'Storage permission is required to manage files and folders.');
-        }
-    } catch (err) {
-        console.warn(err);
-    }
-};
-
-  useEffect(() => {
-    requestStoragePermission();
-  }, []);
-
-// Handle errors more effectively and log response
-const fetchFolderFiles = useCallback(async () => {
-  if (!user?.access_token) return;
-  
-  handleLoader(true);
-  try {
-    const response = await axios.get(`${baseURL}/drive/file-entries`, {
-      headers: { Authorization: `Bearer ${user?.access_token}` },
-      params: {
-        pageId: pageId,
-        folderId,
-        page,
-        query: search,
-        workspaceId: workspaces,
-        deletedOnly: false,
-        starredOnly: false,
-        recentOnly: false,
-        sharedOnly: false,
-        per_page: 100
-      }
-    });
-    handleLoader(false);
-    const { data } = response;
-
-    // Ensure folder structure is managed correctly
-    if (data?.folder) {
-      if (!folder.some(f => f.id === data.folder.id)) {
-        setFolder((prev) => [...prev, { id: data.folder.id, name: data.folder.name }]);
-      }
-    } else {
-      setFolder([{ id: 0, name: "All Files" }]);
-    }
-
-    setDriveData(data.data);
-  } catch (error) {
-    handleLoader(false);
-
-    // Enhanced error handling
-    if (error.response) {
-      console.log('Server Error:', error.response.data);
-      Alert.alert('Error', `Failed to fetch files: ${error.response.data.message || 'Unknown error'}`);
-    } else if (error.request) {
-      console.log('No response from server:', error.request);
-      Alert.alert('Network Error', 'Unable to connect to the server.');
-    } else {
-      console.log('Request error:', error.message);
-      Alert.alert('Error', `Unexpected error: ${error.message}`);
-    }
-  }
-}, [user, folderId, page, pageId, search, workspaces]);
-
-
-  useFocusEffect(
-    useCallback(() => {
-      fetchFolderFiles();
-      return () => {
-       
-        console.log('FileSystem Screen is unfocused');
-      };
-    }, [fetchFolderFiles])
-  );
+  }, [navigation]);
 
   const createFolder = async () => {
     if (newFolderName.trim() === "") {
-      Alert.alert('Error', 'Please enter a folder name');
+      setError('Please enter a folder name');
       return;
     }
-  
-    try {
-      const response = await axios.post(`${baseURL}/drive/folders`, { name: newFolderName, parent_id: folderId }, { headers: { Authorization: `Bearer ${user?.access_token}` } });
 
-       
-  
-      if (response.data?.status === 'success') {
-        const newFolder = response.data.folder;
-        setDriveData((prevContents) => [...prevContents, newFolder]); // Add new folder to the current view
-        toggleFolderModal(); // Close the folder modal
-        setNewFolderName(''); // Reset the folder name input
-        Alert.alert('Success', 'Folder created successfully!');
-        fetchFolderFiles(); // Refresh folder contents
+    setError('');
+    setIsLoading(true);
+
+    try {
+      const response = await makeApiCall('/api/v1/folders', user?.access_token, 'post', {
+        parentId: folderId === 0 ? null : folderId,
+        name: newFolderName,
+      });
+      console.log('Folder', response.folder.path)
+      // setfolderpath(response.folder.path)
+      setParentId(response.folder.parent_id)
+      if (response?.status === 'success' && response.folder) {
+        const newFolder = {
+          id: response.folder.id,
+          name: response.folder.name,
+          type: 'folder',
+          parent_id: response.folder.parent_id,
+          hash: response.folder.hash,
+        };
+
+        setDriveData(prevData => [newFolder, ...prevData]);
+        setNewFolderName('');
+        setFolderModalVisible(false);
+        setModalVisible(false);
+
+        Dialog.show({
+          type: ALERT_TYPE.SUCCESS,
+          title: 'Success',
+          textBody: 'Folder successfully created!',
+          button: 'close',
+        });
+
+        // No need to call fetchFolderFiles here as we've already updated the state
       } else {
         throw new Error('Folder creation failed');
       }
     } catch (error) {
       console.error('Error creating folder:', error);
-      Alert.alert('Error', `Failed to create folder: ${error.message}`);
+
+      Dialog.show({
+        type: ALERT_TYPE.DANGER,
+        title: 'Error',
+        textBody: "There was an issue creating the folder.",
+        button: 'close',
+      });
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+
+  
+  const fetchFolderFiles = useCallback(async (search = '') => {
+    if (!user?.access_token) return;
+  
+    setIsLoading(true);
+  
+    try {
+      const response = await axios.get(`${baseURL}/drive/file-entries`, {
+        headers: { Authorization: `Bearer ${user?.access_token}` },
+        params: {
+          pageId: search ? 'search' : pageId,
+          folderId: search ? null : (folderId === 0 ? null : folderId),
+          page,
+          query: search,
+          workspaceId: search ? 0 : workspaces,
+          deletedOnly: false,
+          starredOnly: false,
+          recentOnly: false,
+          sharedOnly: false,
+          per_page: 100,
+          orderBy: search ? 'updated_at' : undefined,
+          orderDir: search ? 'desc' : undefined,
+        },
+      });
+  
+      const { data } = response;
+  
+      if (data?.folder) {
+        setCurrentFolder(data.folder);
+      } else {
+        setCurrentFolder(null);
+      }
+  
+      setDriveData(data.data || []);
+    } catch (error) {
+      console.error('Error fetching folder files:', error);
+      Alert.alert('Error', 'Failed to fetch files. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user, folderId, page, pageId, search, workspaces]);
+  
+  useEffect(() => {
+    if (user?.access_token) {
+      fetchFolderFiles();
+      updateDataAndFetchFiles();
+    }
+  }, [fetchFolderFiles, user, refresh]);
+  
+  useFocusEffect(
+    useCallback(() => {
+      if (user?.access_token) {
+        fetchFolderFiles();
+      }
+  
+      return () => {
+        setIsLoading(false);
+      };
+    }, [user, folderId, page, pageId, workspaces])
+  );
+  
+  const handleSearch = (serach) => {
+    if (search.trim() !== '') {
+      fetchFolderFiles(search);
+    } else {
+      fetchFolderFiles(); // Fetch all files if search query is empty
+    }
+  };
+
+
+
+
+
+
+  const updateDataAndFetchFiles = (newData) => {
+    setDriveData(prevData => [newData, ...prevData]);
+    setRefresh(false); // Triggers fetchFolderFiles in useEffect
   };
   
 
-  const navigateToFolder = (item) => {
-    if (item.type === 'folder') {
-      setFolderId(item.id);
-      setFolder(prev => [...prev, {id: item.id, hash: item.hash, name: item.name, extension: item.extension}]);
-      fetchFolderFiles();
-    } else if (item.type === 'file') {
-      // Handle file navigation based on file type
-      if (item.mime_type === 'application/pdf') {
-        navigation.navigate('PdfView', { filePath: item.url });
-      } else if (item.mime_type.startsWith('image/')) {
-        navigation.navigate('ImageViewer', { filePath: item.url });
-      } else {
-        Alert.alert('File', `File name: ${item.name}\nType: ${item.mime_type}`);
-      }
-    }
-  };
 
   const goBack = () => {
     if (folder.length > 1) {
@@ -184,136 +220,404 @@ const fetchFolderFiles = useCallback(async () => {
     }
   };
 
+
+  const fileType = {
+    folder: folderIcon,
+    file: fileIcon,
+    pdf: pdfIcon,
+    word: wordIcon,
+    image: imageIcon,
+    jpg: imageIcon,
+    jpeg: imageIcon,
+    png: imageIcon,
+    gif: imageIcon,
+    svg: imageIcon,
+    audio: play,
+    video: video
+  };
+
+
+
+
+
+
+ 
+  const toggleModalVisible = (item) => {
+    setSelectedItem(item); 
+    setVisible(!visibleShereModal);
+  };
+  const toggleHideModal=()=>{
+    setVisible(!visibleShereModal);
+  }
+
   const uploadFile = async () => {
     try {
       const res = await DocumentPicker.pick({
         type: [DocumentPicker.types.allFiles],
       });
-  
-      const fileUri = res[0].uri;
+      const fileUri = Platform.OS === 'ios' ? res[0].uri.replace('file://', '') : res[0].uri;
       const fileName = res[0].name;
-      const fileType = res[0].type;
-      
-      const uploadUrl = `${baseURL}/drive/upload/${folderId}`;
+      const uploadUrl = `${baseURL}/uploads`;
       const token = user?.access_token;
-  
-      if (!token) {
-        Alert.alert('Error', 'User token not available. Please log in again.');
-        return;
-      }
-  
-      // For Android, prepend "file://" if needed
-      const formattedFileUri = Platform.OS === 'android' ? `file://${fileUri}` : fileUri;
-  
-      const formData = new FormData();
-      formData.append('file', {
-        uri: formattedFileUri,
-        type: fileType, // This is important for the backend to identify the file type
-        name: fileName,
-      });
-  
-      const response = await fetch(uploadUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          // Do NOT set 'Content-Type' manually when sending FormData
-        },
-        body: formData,
-      });
-  
-      const responseData = await response.json(); // Expect JSON response from server
-  
-      if (response.ok) {
-        Alert.alert('Success', 'File uploaded successfully!');
-        fetchFolderFiles(); // Refresh folder contents after upload
+
+      setIsLoading(true);
+
+      console.log('Uploading file:', fileName);
+      console.log('Current folder:', currentFolder);
+
+      let parentId = currentFolder ? currentFolder.id : null;
+      let relativePath = currentFolder ? currentFolder.path : '';
+
+      console.log('Parent ID:', parentId);
+      console.log('Relative Path:', relativePath);
+
+      const formData = [
+        { name: 'file', filename: fileName, type: res[0].type, data: RNFetchBlob.wrap(fileUri) },
+        { name: 'workspaceId', data: '0' },
+        { name: 'parentId', data: parentId ? parentId.toString() : '' },
+        { name: 'isSQL', data: 'false' },
+        { name: 'relativePath', data: relativePath },
+        { name: 'disk', data: 'uploads' },
+      ];
+
+      console.log('Form Data:', formData);
+
+      const response = await RNFetchBlob.fetch('POST', uploadUrl, {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data',
+      }, formData);
+
+      console.log('Response status:', response.respInfo.status);
+      console.log('Response data:', response.data);
+
+      if (response.respInfo.status === 200 || response.respInfo.status === 201) {
+        const responseData = JSON.parse(response.data);
+        if (responseData.status === 'success') {
+          Dialog.show({
+            type: ALERT_TYPE.SUCCESS,
+            title: 'Success',
+            textBody: 'File uploaded successfully!',
+            button: 'close',
+          });
+
+          // Refresh the current folder contents
+          setRefresh(true)
+          fetchFolderFiles();
+        } else {
+          throw new Error(responseData.message || 'Upload failed');
+        }
       } else {
-        throw new Error(responseData.message || 'Upload failed');
+        throw new Error(`Server responded with status ${response.respInfo.status}`);
       }
-    } catch (error) {
-      if (DocumentPicker.isCancel(error)) {
-        console.log('User cancelled the picker');
+    } catch (err) {
+      if (DocumentPicker.isCancel(err)) {
+        console.log('Document picking cancelled');
       } else {
-        console.error('Error uploading file:', error);
-        Alert.alert('Error', `Failed to upload file: ${error.message}`);
+        console.error('Error uploading file:', err);
+        let errorMessage = 'Failed to upload file';
+        if (err.message) {
+          errorMessage += ': ' + err.message;
+        }
+        Alert.alert('Error', errorMessage);
       }
+    } finally {
+      setIsLoading(false);
+      setModalVisible(false);
+    }
+  };
+
+
+  const navigateToFolder = (item) => {
+    if (item.type === 'folder') {
+      setFolderId(item.id);
+      setFolder(prev => [...prev, { id: item.id, name: item.name }]);
+      fetchFolderFiles();
+    } else if (item.type === 'file') {
+      // Handle general file logic
+      Alert.alert('File Selected', `You selected: ${item.name}`);
+    } else if (item.type === 'pdf') {
+      // Navigate to PdfView screen
+      navigation.navigate('PdfView', {
+        filePath: item,
+        user: user, 
+      });
+    } else if (['jpg', 'jpeg', 'png', 'gif', 'svg'].includes(item.extension)) {
+      // Navigate to ImageViewer for image file types
+      navigation.navigate('ImageViewer', {
+        filePath: item,
+        user: user, 
+      });
+    } 
+    else if (['mp4', 'avi', 'mkv', 'mov', 'wmv'].includes(item.extension)){
+      navigation.navigate('VideoPreview', {
+        filePath: item,
+        user: user, 
+      });
+    } else if (['mp3', 'wav', 'aac', 'flac'].includes(item.extension)){
+      navigation.navigate('AudioPreview', {
+        filePath: item,
+        user: user, 
+      });
+    }
+    else if (['doc', 'docx'].includes(item.extension)){
+      navigation.navigate('WordPreview', {
+        filePath: item,
+        user: user, 
+      });
+    }
+    else if (['txt'].includes(item.extension)){
+      navigation.navigate('TextFilePreview', {
+        filePath: item,
+        user: user, 
+      });
+    }
+    
+    else {
+      Alert.alert('Unknown Type', `Unsupported file type: ${item.type}`);
     }
   };
   
-  
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => navigateToFolder(item)}>
-      <View style={styles.item}>
-        <Image 
-          source={item.type === 'folder' ? require('../../assets/icon/Smallfolder.png') : require('../../assets/icon/file.png')} 
-          style={styles.itemIcon} 
-        />
-        <Text>{item.name}</Text>
-      </View>
-    </TouchableOpacity>
-  );
 
+
+
+
+
+
+
+  const renderItemGrid = ({ item, index }) => {
+    let fileTypeKey = 'file';
+    if (item.type === 'folder') {
+      fileTypeKey = 'folder';
+    } else if (['jpg', 'jpeg', 'png', 'gif', 'svg'].includes(item.extension)) {
+      fileTypeKey = 'image';
+    } else if (item.extension === 'pdf') {
+      fileTypeKey = 'pdf';
+    } else if (['doc', 'docx'].includes(item.extension)) {
+      fileTypeKey = 'word';
+    } else if (['xls', 'xlsx'].includes(item.extension)) {
+      fileTypeKey = 'xls';
+    } else if (['ppt', 'pptx'].includes(item.extension)) {
+      fileTypeKey = 'ppt';
+    } else if (['mp4', 'avi', 'mkv', 'mov', 'wmv'].includes(item.extension)) {
+      fileTypeKey = 'video';
+    } else if (['mp3', 'wav', 'aac', 'flac'].includes(item.extension)) {
+      fileTypeKey = 'audio';
+    } else if (item.extension === 'txt') {
+      fileTypeKey = 'file';
+    }
+    return (
+      <TouchableOpacity onPress={() => navigateToFolder(item)}
+        style={[
+          styles.fileData,
+          {
+            width: deviceWidth * 0.42,
+            backgroundColor: '#CFECFF',
+            flexDirection: 'column',
+          },
+        ]}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          {/* Display the correct icon based on file type */}
+          <Image source={fileType[fileTypeKey]} style={styles.itemIcon} />
+
+          {/* More options button */}
+          <TouchableOpacity
+            // onPress={() => handleModalOpen(item)}
+            onPress={() => toggleModalVisible(item)}
+          >
+            <Image source={require('../../assets/MoreOption.png')} style={[styles.moreicon, { height: 20, width: 15 ,tintColor:fileColorCode[Math.floor(Math.random() * fileColorCode.length)]}]} />
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.fileText}>
+          {item.name.length > 15 ? `${item.name.substring(0, 15)}...` : item.name}
+        </Text>
+
+        {/* Display the relative time when the file was created */}
+        <Text style={styles.filetxtnormal}>{timeAgo(item.created_at)}</Text>
+      </TouchableOpacity>
+    )
+  };
+  const renderItemList = ({ item, index }) => {
+    let fileTypeKey = 'file';
+    if (item.type === 'folder') {
+      fileTypeKey = 'folder';
+    } else if (['jpg', 'jpeg', 'png', 'gif', 'svg'].includes(item.extension)) {
+      fileTypeKey = 'image';
+    } else if (item.extension === 'pdf') {
+      fileTypeKey = 'pdf';
+    } else if (['doc', 'docx'].includes(item.extension)) {
+      fileTypeKey = 'word';
+    } else if (['xls', 'xlsx'].includes(item.extension)) {
+      fileTypeKey = 'xls';
+    } else if (['ppt', 'pptx'].includes(item.extension)) {
+      fileTypeKey = 'ppt';
+    } else if (['mp4', 'avi', 'mkv', 'mov', 'wmv'].includes(item.extension)) {
+      fileTypeKey = 'video';
+    } else if (['mp3', 'wav', 'aac', 'flac'].includes(item.extension)) {
+      fileTypeKey = 'audio';
+    } else if (item.extension === 'txt') {
+      fileTypeKey = 'file';
+    }
+    return (
+      <TouchableOpacity onPress={() => navigateToFolder(item)}
+      style={[
+        styles.fileData,
+        {
+          backgroundColor: '#CFECFF',
+          height: 90,
+        },
+      ]}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}>
+          <Image source={fileType[fileTypeKey]} style={[styles.fileIcon, { height: 40, width: 40 }]} />
+          <View>
+            <Text style={[styles.fileText, { marginTop: 0 }]}>
+              {item.name.length > 15 ? `${item.name.substring(0, 15)}...` : item.name}
+            </Text>
+            <Text style={styles.filetxtnormal}>{timeAgo(item.created_at)}</Text>
+          </View>
+        </View>
+          {/* More options button */}
+          <TouchableOpacity
+           onPress={() => toggleModalVisible(item)}
+          >
+            <Image source={require('../../assets/MoreOption.png')} style={[styles.moreicon, { height: 30, width: 20,tintColor:fileColorCode[Math.floor(Math.random() * 4)] }]} />
+          </TouchableOpacity>
+        </View>
+       
+
+        {/* Display the relative time when the file was created */}
+        {/* <Text style={styles.filetxtnormal}>{timeAgo(item.created_at)}</Text> */}
+      </TouchableOpacity>
+    )
+  };
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={goBack} disabled={folder.length <= 1}>
-          <Text style={[styles.backButton, folder.length <= 1 && styles.disabledText]}>← Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.currentPath}>{folder[folder.length - 1].name}</Text>
-      </View>
+    <AlertNotificationRoot>
+      <View style={{ flex: 1 }}>
+        <Header
+          parentId={currentFolder}
+          // handleRefresh={handleRefresh} 
+          setRefresh={setRefresh}
+          refresh={refresh}
+          loading={isLoading}
+          // handleLoader={handleLoader} 
+          // modalHandler={modalHandler} 
+          // active={active} 
+          userData={user}
+          pathFolder={currentFolder}
+        // onPress={() => navigation.navigate('Notification')} 
+        />
 
-      {isLoading ? (
-        <ActivityIndicator size="large" color="#0000ff" />
-      ) : (
-        <FlatList
-          data={driveData}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id.toString()}
-          ListEmptyComponent={<Text style={styles.emptyText}>This folder is empty</Text>}
+        {/* <Image source={require('../../assets/ConiaSoft.png')} style={{height:120,width:130,alignSelf:'center',resizeMode:'contain'}}/> */}
+        <View style={styles.StatusContainer}>
+          <StorageStatus user={user} usertoken={token} />
+        </View>
+        <View style={styles.inputContainer}>
+            <Search search={search} setsearch={setSearch} handleSearch={handleSearch} />
+          </View>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: 18 }}>
+          <Text style={styles.heading}>Recently Edited</Text>
+          <View style={{ flexDirection: "row", gap: 10 }}>
+            <TouchableOpacity
+             onPress={() => setViewType('list')}
+            >
+              <Image source={require('../../assets/list.png')} style={[styles.rightImage, { tintColor: ViewType === 'list' ? '#004181' : '#B3B4B6' }]} />
+            </TouchableOpacity>
+            <TouchableOpacity
+             onPress={() => setViewType('grid')}
+            >
+              <Image source={require('../../assets/Grid.png')} style={[styles.rightImage, { tintColor: ViewType === 'list' ?'#B3B4B6' :'#004181' }]} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <TouchableOpacity onPress={goBack} disabled={folder.length <= 1}>
+              <Text style={[styles.backButton, folder.length <= 1 && styles.disabledText]}>← Back</Text>
+            </TouchableOpacity>
+            <Text style={styles.currentPath}>{folder[folder.length - 1].name}</Text>
+          </View>
+
+          {isLoading ? (
+            <ActivityIndicator size="large" color="#0000ff" />
+          ) : (
+            <FlatList
+            key={ViewType}
+              data={driveData}
+              renderItem={ViewType==='grid'? renderItemGrid:renderItemList}
+              keyExtractor={(item) => item.id.toString()}
+              ListEmptyComponent={<Text style={styles.emptyText}>This folder is empty</Text>}
+              refreshing={refresh}
+              numColumns={ViewType==='grid'? 2: 1}
+              onRefresh={() => {
+                // setRefresh(true);
+                fetchFolderFiles().then(() => setRefresh(false));
+              }}
+            />
+          )}
+
+          <TouchableOpacity style={styles.btn} onPress={toggleModal}>
+            <Text style={styles.text}>+</Text>
+          </TouchableOpacity>
+
+          <Modal
+            isVisible={modalVisible}
+            onBackdropPress={toggleModal}
+            style={styles.bottomModal}
+          >
+            <View style={styles.modalContainer}>
+              <TouchableOpacity style={styles.modalItem} onPress={() => { toggleModal(); toggleFolderModal(); }}>
+                <Image source={require('../../assets/icon/Smallfolder.png')} style={styles.modalIcon} />
+                <Text>Create Folder</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalItem} onPress={() => { toggleModal(); uploadFile(); }}>
+                <Image source={require('../../assets/icon/spreadsheet.png')} style={styles.modalIcon} />
+                <Text>Upload File</Text>
+              </TouchableOpacity>
+            </View>
+          </Modal>
+
+          <Modal
+            isVisible={folderModalVisible}
+            onBackdropPress={toggleFolderModal}
+            style={styles.centerModal}
+          >
+            <View style={styles.folderModalContainer}>
+              <TextInput
+                placeholder="Enter Folder Name"
+                style={styles.input}
+                value={newFolderName}
+                onChangeText={setNewFolderName}
+              />
+              <TouchableOpacity style={styles.createButton} onPress={createFolder}>
+                <Text style={styles.createButtonText}>Create Folder</Text>
+              </TouchableOpacity>
+            </View>
+          </Modal>
+        </View>
+        {selectedItem && (
+        <ModalComponent
+        isVisible={visibleShereModal}
+         setModalVisible={setVisible}
+         onClose={toggleHideModal} 
+         user={user}
+         PreviewToken={token}
+         item={selectedItem}
+         setRefresh={setRefresh}
+          refresh={refresh}
+          loading={isLoading}
+         
         />
       )}
-
-      <TouchableOpacity style={styles.btn} onPress={()=>navigation.navigate('UploadDoc')}>
-        <Text style={styles.text}>+</Text>
-      </TouchableOpacity>
-      
-      <Modal
-        isVisible={modalVisible}
-        onBackdropPress={toggleModal}
-        style={styles.bottomModal}
-      >
-        <View style={styles.modalContainer}>
-          <TouchableOpacity style={styles.modalItem} onPress={() => { toggleModal(); toggleFolderModal(); }}>
-            <Image source={require('../../assets/icon/Smallfolder.png')} style={styles.modalIcon} />
-            <Text>Create Folder</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.modalItem} onPress={() => { toggleModal(); uploadFile(); }}>
-            <Image source={require('../../assets/icon/spreadsheet.png')} style={styles.modalIcon} />
-            <Text>Upload File</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
-
-      <Modal
-        isVisible={folderModalVisible}
-        onBackdropPress={toggleFolderModal}
-        style={styles.centerModal}
-      >
-        <View style={styles.folderModalContainer}>
-          <TextInput
-            placeholder="Enter Folder Name"
-            style={styles.input}
-            value={newFolderName}
-            onChangeText={setNewFolderName}
-          />
-          <TouchableOpacity style={styles.createButton} onPress={createFolder}>
-            <Text style={styles.createButtonText}>Create Folder</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
-    </View>
+      </View>
+    </AlertNotificationRoot>
   );
 };
+
+
+
+
 
 const styles = StyleSheet.create({
   container: {
@@ -344,15 +648,15 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ccc',
   },
   itemIcon: {
-    width: 24,
-    height: 24,
+    width: 30,
+    height: 30,
     marginRight: 10,
   },
   btn: {
     position: 'absolute',
     right: 20,
     bottom: 40,
-    backgroundColor: '#000',
+    backgroundColor: '#0071BC',
     width: 50,
     height: 50,
     borderRadius: 25,
@@ -420,6 +724,127 @@ const styles = StyleSheet.create({
     marginTop: 20,
     color: 'gray',
   },
+  driveContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    flex: 1
+  },
+  StatusContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backContainer: {
+    alignItems: 'flex-start',
+  }, headerBottom: {
+    height: 50,
+    backgroundColor: '#FFF',
+    borderBottomWidth: 1,
+    borderBlockColor: '#e5e7eb'
+  },
+  previewContainer: {
+    width: 'auto',
+    height: 'auto',
+  },
+  fileData: {
+    margin: 10,
+    height: 115,
+    padding: 12,
+    borderRadius: 20,
+    justifyContent: 'center'
+  },
+  loader: {
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  paginationContainer: {
+    flexDirection: 'row',
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  paginationButton: {
+    backgroundColor: '#007bff',
+    borderRadius: 8,
+    alignItems: 'center',
+    height: 40,
+    marginHorizontal: 15,
+  },
+  paginationButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    paddingVertical: 9,
+  },
+  disabledButton: {
+    opacity: 0.5,
+  },
+  noDataContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 300,
+    marginLeft: 42,
+  },
+  noDataImage: {
+    width: 300,
+    height: 220,
+    borderRadius: 5,
+  },
+  noDataText: {
+    fontSize: 18,
+    fontWeight: '500',
+    paddingLeft: 32,
+    paddingTop: 20,
+  },
+  fileIcon: {
+    width: 30,
+    height: 30,
+    alignItems: 'flex-start',
+  },
+  fileText: {
+    fontSize: 14,
+    fontWeight: '500',
+    // height: 21,
+    color: '#071625',
+    marginTop: 20,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    backgroundColor: '#fff',
+    borderRadius: 25,
+    paddingHorizontal: 15,
+    height: 45,
+    width: '95%',
+    alignSelf: 'center',
+    marginTop: 40,
+  },
+  leftImage: {
+    width: 24,
+    height: 24,
+    marginRight: 10,
+  },
+ 
+  rightImage: {
+    width: 20,
+    height: 20,
+    marginLeft: 10,
+  },
+  filetxtnormal: {
+    // background: '#696D70',
+    fontWeight: '400',
+    fontSize: 12
+  },
+  moreicon: {
+    height: 25,
+    width: 10,
+    resizeMode: 'contain'
+  },
+  heading: {
+    fontSize: 18,
+    color: '#071625',
+    lineHeight: 27,
+    fontWeight: '600'
+  }
 });
 
 export default FileSystem;

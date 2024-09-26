@@ -1,50 +1,78 @@
-import { StyleSheet, Text, Image, View , BackHandler,Alert} from 'react-native';
-import React, {useEffect}from 'react';
+import { StyleSheet, Text, Image, View, BackHandler, Alert } from 'react-native';
+import React, { useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useFocusEffect } from '@react-navigation/native';
 import Dashboard from '../screen/dashboard/Dashboard';
-import DashboardMyfiles from '../screen/dashboard/DashboardStarted';
 import DashboardShare from '../screen/dashboard/DashboardShare';
 import DashboardTrash from '../screen/dashboard/DashboardTrash';
 import UserProfile from '../screen/dashboard/UserProfile';
-import SettingsScreen from '../components/SettingsScreen';
-import Settings from '../screen/settings/Settings';
-import Trashed from '../components/Trash';
-
-import { setLanguage } from '../redux/reducers/languageSlice'; 
+import FileSystem from '../screen/dashboard/FileSystem';
 import strings from '../helper/Language/LocalizedStrings';
 import { useSelector } from 'react-redux';
 
 const Tab = createBottomTabNavigator();
 
-const BottomNavigation = () => {
+const BottomNavigation = ({ navigation }) => {
   const language = useSelector((state) => state.language.language);
- 
+
+  const handleBackButton = () => {
+    const currentRouteIndex = navigation.getState().routes[navigation.getState().index].name;
+
+    if (currentRouteIndex === 'FileSystem') {
+      // If on the FileSystem screen, show the exit alert
+      Alert.alert(
+        'Exit App',
+        'Are you sure you want to exit?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'OK', onPress: () => BackHandler.exitApp() },
+        ],
+        { cancelable: false }
+      );
+      return true;
+    } else {
+      // Navigate to the first tab (FileSystem) if not already there
+      // navigation.navigate('FileSystem');
+      return true;
+    }
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => handleBackButton();
+
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation])
+  );
+
   return (
     <Tab.Navigator
+      backBehaviour="initialRoute"
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#fff',
-          height: 60,
-          paddingBottom: 5,
-          paddingHorizontal:10
-        
+          backgroundColor: '#0071BC',
+          height: 70,
+          paddingHorizontal: 10,
         },
-        tabBarShowLabel: false, 
+        tabBarShowLabel: false,
         tabBarIcon: ({ focused }) => {
           let iconName;
           let label;
           let iconSize = 20;
 
           switch (route.name) {
-            case 'My Drive':
-              iconName = require('../assets/icons/home.png');
+            case 'FileSystem':
+              iconName = require('../assets/icons/Dashboard.png');
               label = strings.HOME;
               iconSize = 20;
               break;
-              case 'Recents':
-              iconName = require('../assets/icons/AddDoc.png');
-              label = strings.MyFiles;
+            case 'My Drive':
+              iconName = require('../assets/MyDrive.png');
+              label = 'My Drive';
+              iconSize = 20;
               break;
             case 'Shared':
               iconName = require('../assets/icons/Users.png');
@@ -54,14 +82,14 @@ const BottomNavigation = () => {
               iconName = require('../assets/icons/setting.png');
               label = strings.Settings;
               break;
-              case 'User':
-                iconName = require('../assets/icons/user.png');
-                label = strings.User;
-                break;
-                case 'Trash':
-                iconName = require('../assets/icons/trash.png');
-                label = strings.TRASH_FILE;
-                break;
+            case 'User':
+              iconName = require('../assets/icons/user.png');
+              label = strings.User;
+              break;
+            case 'Trash':
+              iconName = require('../assets/icons/trash.png');
+              label = strings.TRASH_FILE;
+              break;
             default:
               break;
           }
@@ -72,7 +100,8 @@ const BottomNavigation = () => {
                 style={{
                   width: iconSize,
                   height: iconSize,
-                  tintColor: focused ? '#007bff' : '#414a4c' 
+                  tintColor: focused ? '#007bff' : '#F1F4FE',
+                  resizeMode: 'contain',
                 }}
                 source={iconName}
               />
@@ -82,12 +111,11 @@ const BottomNavigation = () => {
         },
       })}
     >
-      <Tab.Screen name='My Drive' component={Dashboard} />
-      <Tab.Screen name='Recents' component={DashboardMyfiles} />
-      <Tab.Screen name='Shared' component={DashboardShare} />
-      {/* <Tab.Screen name='Trash' component={Trashed} /> */}
-       <Tab.Screen name='Trash' component={DashboardTrash} /> 
-      <Tab.Screen name='User' component={UserProfile} />
+      <Tab.Screen name="FileSystem" component={FileSystem} />
+      <Tab.Screen name="My Drive" component={Dashboard} />
+      <Tab.Screen name="Shared" component={DashboardShare} />
+      <Tab.Screen name="Trash" component={DashboardTrash} />
+      <Tab.Screen name="User" component={UserProfile} />
     </Tab.Navigator>
   );
 };
@@ -99,14 +127,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 10,
-    height:40
+    padding: 5,
+    height: 40,
   },
   tabItemFocused: {
     backgroundColor: '#F1F4FE',
-    borderRadius: 15,
-    paddingHorizontal:5,
-    width:115
+    borderRadius: 10,
+    paddingHorizontal: 5,
+    width: 100,
+    left: 8,
+    right: 5,
   },
   label: {
     marginLeft: 5,

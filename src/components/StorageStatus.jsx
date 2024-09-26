@@ -182,38 +182,44 @@ const defaultStyles = StyleSheet.create({
     overflow: 'hidden'
   },
   pregressText:{
-    width:'80%',
+    // width:'70%',
     height:24,
     color:'white',
     fontWeight:'600',
     alignContent:'center',
     alignItems:'center',
     marginLeft:28,
-    marginTop:5
+    marginTop:5,
+   alignSelf:'center'
   },
   percentBar:{
     height:21,
     radius:8,
     backgroundColor:'#F16623',
-    alignContent:'flex-start'
-    
+    alignContent:'flex-start',
+    borderRadius:30,
+    margin:0,
+    padding:4
   },
   pregressBar:{
-    width:'80%',
+    width:'70%',
     height:21,
     radius:8,
     alignContent:'center',
     backgroundColor:'#CFECFF',
-    
+    alignSelf:'center',
     marginTop:20,
-    marginLeft:25
+    marginLeft:25,
+    borderRadius:30,
+   
   },
   ProfresBarContainer:{
     backgroundColor:'#0071BC',
     borderRadius:8,
     height:84,
     marginTop:10,
-    marginBottom:10
+    marginBottom:10,
+    
   },
   ContainerLogo:{
     alignContent:'center',
@@ -229,7 +235,8 @@ const defaultStyles = StyleSheet.create({
     display:'flex',
     flexDirection:'column',
     alignContent:'center',
-    width:'80%',
+    // alignItems:'center'
+    width:'60%',
     height:200
     
   },
@@ -248,8 +255,8 @@ const defaultStyles = StyleSheet.create({
     overflow: 'hidden',
     justifyContent: 'flex-end',
     alignItems: 'center',
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
   },
   Heading:{
     fontSize:20,

@@ -4,11 +4,46 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import RNFS from 'react-native-fs';
 import Share from 'react-native-share';
 
-const CustomModal = ({ visible, onClose, document }) => {
-    
-  const handleDownload = async () => {
+const CustomModal = ({ visible, onClose, document,user, PreviewToken, setRefresh, refresh, }) => {
+  console.log('first',document)
+
+  const deleteFile = async () => {
     try {
-      const downloadPath = `${RNFS.DocumentDirectoryPath}/${document.name}`;
+      if (!document?.permissions?.['files.delete']) {
+        Alert.alert('Permission Denied', 'You do not have permission to delete this file.');
+        return;
+      }
+
+      let data = {
+        entryIds: [document?.id], // Use document's id
+        deleteForever: 0, // You can set it to 1 if you want to delete permanently
+      };
+
+      await makeApiCall('/api/v1/file-entries/delete', user?.access_token, 'post', data);
+
+      // Refresh the file list after deletion
+      setRefresh(!refresh);
+      onClose(); // Close the modal after deletion
+      Alert.alert('Success', 'File deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting file:', error);
+      Alert.alert('Error', 'Error deleting file.');
+    }
+  };
+
+  const handleDownload = async () => {
+    if (isFolder) {
+      Alert.alert('Invalid Action', 'Folders cannot be downloaded.');
+      return;
+    }
+
+    try {
+      if (!document?.permissions?.['files.download']) {
+        Alert.alert('Permission Denied', 'You do not have permission to download this file.');
+        return;
+      }
+
+      const downloadPath = `${RNFS.DocumentDirectoryPath}/${document.file_name}`;
       await RNFS.downloadFile({
         fromUrl: document.url, 
         toFile: downloadPath,
@@ -21,6 +56,22 @@ const CustomModal = ({ visible, onClose, document }) => {
       alert('Error downloading file.');
     }
   };
+    
+  // const handleDownload = async () => {
+  //   try {
+  //     const downloadPath = `${RNFS.DocumentDirectoryPath}/${document.name}`;
+  //     await RNFS.downloadFile({
+  //       fromUrl: document.url, 
+  //       toFile: downloadPath,
+  //     }).promise;
+
+  //     console.log('File downloaded to:', downloadPath);
+  //     alert('File downloaded successfully!');
+  //   } catch (error) {
+  //     console.error('Error downloading file:', error);
+  //     alert('Error downloading file.');
+  //   }
+  // };
 
   const handleShare = async () => {
     try {
@@ -68,9 +119,6 @@ const CustomModal = ({ visible, onClose, document }) => {
         <TouchableOpacity style={styles.iconButton} onPress={() => alert('Rename')}>
           <Icon name="edit" size={30} color="#4F8EF7" />
           <Text style={styles.buttonText}>Rename</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-          <Text style={styles.closeButtonText}>Close</Text>
         </TouchableOpacity>
       </View>
     </View>

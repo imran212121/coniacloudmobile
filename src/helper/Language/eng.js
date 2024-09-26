@@ -28,7 +28,7 @@ export default {
   GB_USED: 'GB used',
   SHARED: "Shared",
   MY_FILES: 'My Files',
-  HOME: 'My Drive',
+  HOME: 'Home',
   MyFiles: 'Recent',
   Shared: 'Shared',
   Settings: 'Settings',
