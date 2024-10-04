@@ -702,10 +702,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  StatusContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   folderContainer: {
     flexDirection: 'row',
     //  flexWrap: 'wrap', // Allows multiple rows if necessary

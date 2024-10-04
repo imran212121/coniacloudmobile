@@ -29,8 +29,8 @@ function App() {
    
  <GestureHandlerRootView style={{ flex: 1 }}>
   <StatusBar 
-        barStyle="light-content"  // You can change this to 'dark-content' for lighter text/icons
-        backgroundColor='#0071BC'  // Set the background color of the status bar
+        barStyle="light-content"  
+        backgroundColor='#0071BC'  
       />
       <Provider store={store}>
         <View style={{ flex: 1 }}>

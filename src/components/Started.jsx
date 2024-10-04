@@ -376,10 +376,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     flex: 1
   },
-  StatusContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+
   backContainer: {
     alignItems: 'flex-start',
   },
